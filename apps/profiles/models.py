@@ -1,2 +1,3 @@
 from django.db import models
-# Profiles models will be added here
+from django.conf import settings
+from apps.core.models import TimeStampedModel
