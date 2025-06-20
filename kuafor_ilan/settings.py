@@ -74,8 +74,6 @@ else:
     }
 
 # Custom User Model
-AUTH_USER_MODEL = 'authentication.User'
-
 # REST Framework
 REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
