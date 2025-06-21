@@ -15,9 +15,17 @@ class CustomUser(AbstractUser, TimeStampedModel):
     is_phone_verified = models.BooleanField(default=False)
     is_email_verified = models.BooleanField(default=False)
     
+    # Bu satırlar kritik!
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['username']
     
     def __str__(self):
         return f"{self.email} ({self.get_user_type_display()})"
-      
+        
+    # Bu method eksikse session çalışmaz
+    def get_full_name(self):
+        return f"{self.first_name} {self.last_name}".strip()
+    
+    def get_short_name(self):
+        return self.first_name
+        
