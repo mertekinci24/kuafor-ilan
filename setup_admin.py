@@ -1,8 +1,8 @@
 import os
 import django
 
-# Django setup
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'core.settings')  # core yerine proje adınızı yazın
+# Django setup - proje adınıza göre
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'kuafor_ilan.settings')  
 django.setup()
 
 from django.contrib.auth import get_user_model
@@ -20,4 +20,4 @@ if not User.objects.filter(username=username).exists():
     print(f"Superuser '{username}' created successfully!")
 else:
     print(f"Superuser '{username}' already exists!")
-  
+    
