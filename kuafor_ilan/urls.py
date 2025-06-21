@@ -3,6 +3,7 @@ from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
 from django.http import JsonResponse
+from django.shortcuts import render
 
 def api_root(request):
     return JsonResponse({
@@ -18,8 +19,13 @@ def api_root(request):
         }
     })
 
+def home_view(request):
+    """Ana sayfa view'ı"""
+    return render(request, 'home.html')
+
 urlpatterns = [
-    path('', api_root, name='api_root'),
+    path('', home_view, name='home'),  # Ana sayfa HTML
+    path('api/', api_root, name='api_root'),  # API endpoint'i
     path('admin/', admin.site.urls),
     path('api/v1/auth/', include('apps.authentication.urls')),
 ]
