@@ -12,136 +12,177 @@
         }
         
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
-            padding: 20px 0;
+            overflow-x: hidden;
         }
         
-        .register-container {
-            max-width: 1000px;
+        .container {
+            max-width: 1200px;
             margin: 0 auto;
-            padding: 0 20px;
+            padding: 40px 20px;
         }
         
-        .register-header {
+        .header {
             text-align: center;
-            color: white;
-            margin-bottom: 40px;
-            animation: fadeIn 0.6s ease-out;
+            margin-bottom: 50px;
+            animation: fadeInDown 0.8s ease-out;
         }
         
         .logo {
-            font-size: 48px;
-            margin-bottom: 10px;
-            animation: pulse 2s infinite;
+            font-size: 60px;
+            margin-bottom: 20px;
+            animation: bounce 2s infinite;
         }
         
-        .register-title {
-            font-size: 36px;
-            font-weight: 700;
-            margin-bottom: 8px;
+        .title {
+            font-size: 42px;
+            font-weight: 800;
+            color: white;
+            margin-bottom: 12px;
+            letter-spacing: -1px;
         }
         
-        .register-subtitle {
+        .subtitle {
             font-size: 18px;
-            opacity: 0.9;
+            color: rgba(255,255,255,0.9);
+            font-weight: 400;
         }
         
-        /* Pricing Plans */
-        .pricing-section {
+        /* Pricing Section */
+        .pricing-container {
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 24px;
+            padding: 40px;
+            margin-bottom: 40px;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.1);
+            animation: fadeInUp 0.8s ease-out 0.2s both;
+        }
+        
+        .pricing-header {
+            text-align: center;
             margin-bottom: 40px;
         }
         
         .pricing-title {
-            text-align: center;
-            color: white;
-            font-size: 24px;
-            font-weight: 600;
+            font-size: 32px;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 16px;
+        }
+        
+        .billing-toggle {
+            display: inline-flex;
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 4px;
             margin-bottom: 30px;
         }
         
-        .pricing-plans {
+        .billing-option {
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .billing-option.active {
+            background: #0a66c2;
+            color: white;
+            box-shadow: 0 4px 12px rgba(10,102,194,0.3);
+        }
+        
+        .pricing-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 20px;
-            margin-bottom: 40px;
+            gap: 24px;
         }
         
         .pricing-card {
             background: white;
-            border-radius: 12px;
-            padding: 30px;
+            border-radius: 16px;
+            padding: 32px 24px;
             text-align: center;
             position: relative;
-            transition: all 0.3s ease;
-            animation: slideUp 0.6s ease-out;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            transition: all 0.4s ease;
+            border: 2px solid transparent;
+            cursor: pointer;
         }
         
         .pricing-card:hover {
-            transform: translateY(-10px);
-            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+            transform: translateY(-8px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
         }
         
-        .pricing-card.recommended {
-            border: 3px solid #0a66c2;
+        .pricing-card.popular {
+            border-color: #0a66c2;
             transform: scale(1.05);
         }
         
-        .pricing-card.recommended::before {
+        .pricing-card.popular::before {
             content: 'ÖNERİLEN';
             position: absolute;
             top: -12px;
             left: 50%;
             transform: translateX(-50%);
-            background: #0a66c2;
+            background: linear-gradient(135deg, #0a66c2, #004182);
             color: white;
-            padding: 6px 20px;
+            padding: 8px 24px;
             border-radius: 20px;
             font-size: 12px;
-            font-weight: 600;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+        
+        .pricing-card.selected {
+            border-color: #0a66c2;
+            background: linear-gradient(135deg, #f8fcff, #e8f4f8);
         }
         
         .plan-name {
             font-size: 24px;
             font-weight: 700;
             color: #333;
-            margin-bottom: 10px;
+            margin-bottom: 16px;
         }
         
         .plan-price {
-            font-size: 36px;
-            font-weight: 700;
+            font-size: 48px;
+            font-weight: 800;
             color: #0a66c2;
-            margin-bottom: 5px;
+            margin-bottom: 8px;
+            line-height: 1;
         }
         
         .plan-period {
             color: #666;
             font-size: 14px;
-            margin-bottom: 20px;
+            margin-bottom: 24px;
         }
         
         .plan-features {
             list-style: none;
-            margin-bottom: 30px;
+            margin-bottom: 32px;
+            text-align: left;
         }
         
         .plan-features li {
-            padding: 8px 0;
-            color: #333;
-            font-size: 14px;
+            padding: 10px 0;
             display: flex;
             align-items: center;
-            justify-content: center;
-            gap: 8px;
+            font-size: 14px;
+            color: #555;
         }
         
         .plan-features li::before {
             content: '✓';
-            color: #0a66c2;
+            color: #27ae60;
             font-weight: bold;
+            margin-right: 12px;
+            font-size: 16px;
         }
         
         .plan-features li.unavailable {
@@ -150,73 +191,95 @@
         
         .plan-features li.unavailable::before {
             content: '✗';
-            color: #999;
-        }
-        
-        .plan-button {
-            width: 100%;
-            height: 48px;
-            border: 2px solid #0a66c2;
-            border-radius: 8px;
-            background: transparent;
-            color: #0a66c2;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-        
-        .plan-button:hover,
-        .plan-button.selected {
-            background: #0a66c2;
-            color: white;
-            transform: translateY(-2px);
-        }
-        
-        .pricing-card.recommended .plan-button {
-            background: #0a66c2;
-            color: white;
-        }
-        
-        .pricing-card.recommended .plan-button:hover {
-            background: #004182;
+            color: #e74c3c;
         }
         
         /* Registration Form */
-        .register-form-container {
-            background: white;
-            border-radius: 12px;
+        .registration-container {
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 24px;
             padding: 40px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
-            animation: fadeIn 0.8s ease-out;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.1);
+            animation: fadeInUp 0.8s ease-out 0.4s both;
         }
         
         .form-header {
             text-align: center;
-            margin-bottom: 30px;
+            margin-bottom: 40px;
         }
         
         .form-title {
             font-size: 28px;
             font-weight: 700;
             color: #333;
-            margin-bottom: 8px;
+            margin-bottom: 16px;
         }
         
-        .selected-plan {
-            background: #e8f4f8;
-            color: #0a66c2;
-            padding: 8px 16px;
+        .selected-plan-display {
+            background: linear-gradient(135deg, #0a66c2, #004182);
+            color: white;
+            padding: 12px 24px;
             border-radius: 20px;
-            font-size: 14px;
             font-weight: 600;
             display: inline-block;
         }
         
-        .register-form {
+        /* User Type Selection */
+        .user-type-container {
+            margin-bottom: 32px;
+        }
+        
+        .user-type-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+        
+        .user-type-card {
+            position: relative;
+        }
+        
+        .user-type-input {
+            position: absolute;
+            opacity: 0;
+        }
+        
+        .user-type-label {
+            display: block;
+            padding: 24px 20px;
+            border: 2px solid #e1e5e9;
+            border-radius: 16px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: white;
+        }
+        
+        .user-type-input:checked + .user-type-label {
+            border-color: #0a66c2;
+            background: linear-gradient(135deg, #f8fcff, #e8f4f8);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(10,102,194,0.15);
+        }
+        
+        .user-type-icon {
+            font-size: 32px;
+            margin-bottom: 12px;
+        }
+        
+        .user-type-name {
+            font-weight: 600;
+            font-size: 16px;
+            color: #333;
+        }
+        
+        /* Form Fields */
+        .form-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 20px;
+            margin-bottom: 24px;
         }
         
         .form-group {
@@ -229,87 +292,44 @@
         
         .form-label {
             display: block;
-            font-size: 14px;
             font-weight: 600;
             color: #333;
             margin-bottom: 8px;
+            font-size: 14px;
         }
         
-        .form-input,
-        .form-select {
+        .form-input, .form-select {
             width: 100%;
-            height: 48px;
+            height: 52px;
             border: 2px solid #e1e5e9;
-            border-radius: 8px;
+            border-radius: 12px;
             padding: 0 16px;
             font-size: 16px;
             transition: all 0.3s ease;
-            background: #fafbfc;
+            background: white;
         }
         
-        .form-input:focus,
-        .form-select:focus {
+        .form-input:focus, .form-select:focus {
             outline: none;
             border-color: #0a66c2;
-            background: white;
-            box-shadow: 0 0 0 3px rgba(10, 102, 194, 0.1);
+            box-shadow: 0 0 0 4px rgba(10,102,194,0.1);
             transform: translateY(-1px);
         }
         
-        .user-type-selector {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
-            margin-bottom: 20px;
-        }
-        
-        .user-type-option {
+        .password-container {
             position: relative;
-        }
-        
-        .user-type-radio {
-            position: absolute;
-            opacity: 0;
-        }
-        
-        .user-type-label {
-            display: block;
-            padding: 20px;
-            border: 2px solid #e1e5e9;
-            border-radius: 8px;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            background: #fafbfc;
-        }
-        
-        .user-type-radio:checked + .user-type-label {
-            border-color: #0a66c2;
-            background: #e8f4f8;
-            color: #0a66c2;
-        }
-        
-        .user-type-icon {
-            font-size: 32px;
-            margin-bottom: 8px;
-        }
-        
-        .user-type-name {
-            font-weight: 600;
-            font-size: 16px;
         }
         
         .password-strength {
             margin-top: 8px;
-            font-size: 12px;
         }
         
         .strength-bar {
             height: 4px;
             background: #e1e5e9;
             border-radius: 2px;
-            margin: 4px 0;
             overflow: hidden;
+            margin-bottom: 4px;
         }
         
         .strength-fill {
@@ -323,18 +343,26 @@
         .strength-good { width: 75%; background: #3498db; }
         .strength-strong { width: 100%; background: #27ae60; }
         
+        .strength-text {
+            font-size: 12px;
+            color: #666;
+        }
+        
+        .terms-container {
+            margin: 24px 0;
+        }
+        
         .terms-checkbox {
             display: flex;
             align-items: flex-start;
             gap: 12px;
-            margin: 20px 0;
         }
         
-        .terms-checkbox input[type="checkbox"] {
+        .terms-checkbox input {
+            margin-top: 2px;
             width: 18px;
             height: 18px;
             accent-color: #0a66c2;
-            margin-top: 2px;
         }
         
         .terms-text {
@@ -346,44 +374,38 @@
         .terms-text a {
             color: #0a66c2;
             text-decoration: none;
-        }
-        
-        .terms-text a:hover {
-            text-decoration: underline;
+            font-weight: 600;
         }
         
         .register-button {
             width: 100%;
-            height: 48px;
-            background: linear-gradient(135deg, #0a66c2 0%, #004182 100%);
+            height: 56px;
+            background: linear-gradient(135deg, #0a66c2, #004182);
             color: white;
             border: none;
-            border-radius: 8px;
+            border-radius: 12px;
             font-size: 16px;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.3s ease;
-            position: relative;
-            overflow: hidden;
+            margin-bottom: 20px;
         }
         
-        .register-button:hover {
+        .register-button:hover:not(:disabled) {
             transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(10, 102, 194, 0.3);
+            box-shadow: 0 12px 30px rgba(10,102,194,0.3);
         }
         
         .register-button:disabled {
-            background: #ccc;
+            opacity: 0.5;
             cursor: not-allowed;
             transform: none;
-            box-shadow: none;
         }
         
         .auth-footer {
             text-align: center;
-            margin-top: 20px;
-            font-size: 14px;
             color: #666;
+            font-size: 14px;
         }
         
         .auth-footer a {
@@ -392,64 +414,66 @@
             font-weight: 600;
         }
         
-        .auth-footer a:hover {
-            text-decoration: underline;
-        }
-        
         .back-home {
             position: fixed;
-            top: 20px;
-            left: 20px;
+            top: 30px;
+            left: 30px;
             color: white;
             text-decoration: none;
             display: flex;
             align-items: center;
             gap: 8px;
             font-weight: 600;
-            transition: transform 0.3s ease;
+            background: rgba(255,255,255,0.1);
+            padding: 12px 16px;
+            border-radius: 12px;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
             z-index: 1000;
         }
         
         .back-home:hover {
-            transform: translateX(-5px);
+            background: rgba(255,255,255,0.2);
+            transform: translateX(-4px);
         }
         
         /* Animations */
-        @keyframes fadeIn {
+        @keyframes fadeInDown {
+            from { opacity: 0; transform: translateY(-30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        @keyframes fadeInUp {
             from { opacity: 0; transform: translateY(30px); }
             to { opacity: 1; transform: translateY(0); }
         }
         
-        @keyframes slideUp {
-            from { opacity: 0; transform: translateY(50px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        
-        @keyframes pulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.05); }
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-10px); }
+            60% { transform: translateY(-5px); }
         }
         
         /* Responsive */
         @media (max-width: 768px) {
-            .register-form {
+            .form-grid {
                 grid-template-columns: 1fr;
             }
             
-            .pricing-plans {
+            .pricing-grid {
                 grid-template-columns: 1fr;
             }
             
-            .pricing-card.recommended {
+            .pricing-card.popular {
                 transform: none;
             }
             
-            .register-form-container {
-                padding: 30px 20px;
+            .title {
+                font-size: 32px;
             }
             
-            .register-title {
-                font-size: 28px;
+            .pricing-title {
+                font-size: 24px;
             }
         }
     </style>
@@ -460,19 +484,25 @@
         <span>Ana Sayfa</span>
     </a>
     
-    <div class="register-container">
-        <div class="register-header">
+    <div class="container">
+        <div class="header">
             <div class="logo">💇‍♀️</div>
-            <h1 class="register-title">Kuaför İlan'a Katılın</h1>
-            <p class="register-subtitle">Kariyerinizi bir sonraki seviyeye taşıyın</p>
+            <h1 class="title">Kuaför İlan'a Katılın</h1>
+            <p class="subtitle">Kariyerinizi bir sonraki seviyeye taşıyın</p>
         </div>
         
         <!-- Pricing Section -->
-        <div class="pricing-section">
-            <h2 class="pricing-title">Size Uygun Planı Seçin</h2>
+        <div class="pricing-container">
+            <div class="pricing-header">
+                <h2 class="pricing-title">Size Uygun Planı Seçin</h2>
+                <div class="billing-toggle">
+                    <div class="billing-option active" onclick="toggleBilling('monthly')">Aylık</div>
+                    <div class="billing-option" onclick="toggleBilling('yearly')">Yıllık (-20%)</div>
+                </div>
+            </div>
             
-            <div class="pricing-plans">
-                <div class="pricing-card" data-plan="free">
+            <div class="pricing-grid">
+                <div class="pricing-card" data-plan="free" onclick="selectPlan('free')">
                     <h3 class="plan-name">Ücretsiz</h3>
                     <div class="plan-price">₺0</div>
                     <div class="plan-period">her zaman ücretsiz</div>
@@ -482,63 +512,58 @@
                         <li>Temel arama filtreleri</li>
                         <li class="unavailable">Profil öne çıkarma</li>
                         <li class="unavailable">Detaylı istatistikler</li>
-                        <li class="unavailable">Öncelikli destek</li>
                     </ul>
-                    <button class="plan-button" onclick="selectPlan('free', '₺0/ay')">Seç</button>
                 </div>
                 
-                <div class="pricing-card recommended" data-plan="pro">
+                <div class="pricing-card popular selected" data-plan="pro" onclick="selectPlan('pro')">
                     <h3 class="plan-name">Pro</h3>
-                    <div class="plan-price">₺29</div>
-                    <div class="plan-period">aylık</div>
+                    <div class="plan-price" data-monthly="₺29" data-yearly="₺23">₺29</div>
+                    <div class="plan-period" data-monthly="aylık" data-yearly="aylık (₺276/yıl)">aylık</div>
                     <ul class="plan-features">
                         <li>Gelişmiş profil özellikleri</li>
                         <li>Sınırsız iş başvurusu</li>
                         <li>Gelişmiş arama filtreleri</li>
                         <li>Profil öne çıkarma</li>
                         <li>Detaylı istatistikler</li>
-                        <li class="unavailable">Öncelikli destek</li>
                     </ul>
-                    <button class="plan-button selected" onclick="selectPlan('pro', '₺29/ay')">Seç</button>
                 </div>
                 
-                <div class="pricing-card" data-plan="business">
+                <div class="pricing-card" data-plan="business" onclick="selectPlan('business')">
                     <h3 class="plan-name">İşletme</h3>
-                    <div class="plan-price">₺99</div>
-                    <div class="plan-period">aylık</div>
+                    <div class="plan-price" data-monthly="₺99" data-yearly="₺79">₺99</div>
+                    <div class="plan-period" data-monthly="aylık" data-yearly="aylık (₺948/yıl)">aylık</div>
                     <ul class="plan-features">
                         <li>Tüm Pro özellikler</li>
                         <li>Sınırsız ilan verme</li>
                         <li>Aday havuzu erişimi</li>
                         <li>Analitik raporlar</li>
-                        <li>Özel etiketler</li>
                         <li>Öncelikli destek</li>
                     </ul>
-                    <button class="plan-button" onclick="selectPlan('business', '₺99/ay')">Seç</button>
                 </div>
             </div>
         </div>
         
         <!-- Registration Form -->
-        <div class="register-form-container">
+        <div class="registration-container">
             <div class="form-header">
                 <h2 class="form-title">Hesabınızı Oluşturun</h2>
-                <div class="selected-plan" id="selectedPlanDisplay">Pro Plan - ₺29/ay</div>
+                <div class="selected-plan-display" id="selectedPlanDisplay">Pro Plan - ₺29/ay</div>
             </div>
             
-            <form class="register-form" id="registerForm">
-                <div class="form-group full-width">
-                    <label class="form-label">Hesap Türü</label>
-                    <div class="user-type-selector">
-                        <div class="user-type-option">
-                            <input type="radio" id="jobseeker" name="user_type" value="jobseeker" class="user-type-radio" checked>
+            <form method="post" id="registerForm">
+                {% csrf_token %}
+                
+                <div class="user-type-container">
+                    <div class="user-type-grid">
+                        <div class="user-type-card">
+                            <input type="radio" id="jobseeker" name="user_type" value="jobseeker" class="user-type-input" checked>
                             <label for="jobseeker" class="user-type-label">
                                 <div class="user-type-icon">👨‍💼</div>
                                 <div class="user-type-name">İş Arayan</div>
                             </label>
                         </div>
-                        <div class="user-type-option">
-                            <input type="radio" id="business" name="user_type" value="business" class="user-type-radio">
+                        <div class="user-type-card">
+                            <input type="radio" id="business" name="user_type" value="business" class="user-type-input">
                             <label for="business" class="user-type-label">
                                 <div class="user-type-icon">🏢</div>
                                 <div class="user-type-name">İş Veren</div>
@@ -547,67 +572,25 @@
                     </div>
                 </div>
                 
-                <div class="form-group">
-                    <label class="form-label" for="firstName">Ad</label>
-                    <input type="text" id="firstName" name="first_name" class="form-input" required>
-                </div>
-                
-                <div class="form-group">
-                    <label class="form-label" for="lastName">Soyad</label>
-                    <input type="text" id="lastName" name="last_name" class="form-input" required>
-                </div>
-                
-                <div class="form-group">
-                    <label class="form-label" for="email">E-posta</label>
-                    <input type="email" id="email" name="email" class="form-input" required>
-                </div>
-                
-                <div class="form-group">
-                    <label class="form-label" for="phone">Telefon</label>
-                    <input type="tel" id="phone" name="phone" class="form-input" required>
-                </div>
-                
-                <div class="form-group">
-                    <label class="form-label" for="city">Şehir</label>
-                    <select id="city" name="city" class="form-select" required>
-                        <option value="">Şehir seçin</option>
-                        <option value="istanbul">İstanbul</option>
-                        <option value="ankara">Ankara</option>
-                        <option value="izmir">İzmir</option>
-                        <option value="bursa">Bursa</option>
-                        <option value="antalya">Antalya</option>
-                        <option value="adana">Adana</option>
-                        <option value="konya">Konya</option>
-                        <option value="gaziantep">Gaziantep</option>
-                        <option value="kayseri">Kayseri</option>
-                        <option value="mersin">Mersin</option>
-                    </select>
-                </div>
-                
-                <div class="form-group">
-                    <label class="form-label" for="experience">Deneyim (Yıl)</label>
-                    <select id="experience" name="experience" class="form-select" required>
-                        <option value="">Deneyim seçin</option>
-                        <option value="0">Yeni başlayan</option>
-                        <option value="1">1-2 yıl</option>
-                        <option value="3">3-5 yıl</option>
-                        <option value="6">6-10 yıl</option>
-                        <option value="11">10+ yıl</option>
-                    </select>
+                <!-- Dynamic form fields will be inserted here -->
+                <div id="formFields" class="form-grid">
+                    <!-- Fields will be dynamically generated -->
                 </div>
                 
                 <div class="form-group full-width">
-                    <label class="form-label" for="password">Şifre</label>
-                    <input type="password" id="password" name="password" class="form-input" required>
-                    <div class="password-strength">
-                        <div class="strength-bar">
-                            <div class="strength-fill" id="strengthFill"></div>
+                    <label class="form-label">Şifre</label>
+                    <div class="password-container">
+                        <input type="password" name="password" class="form-input" required id="passwordInput">
+                        <div class="password-strength">
+                            <div class="strength-bar">
+                                <div class="strength-fill" id="strengthFill"></div>
+                            </div>
+                            <div class="strength-text" id="strengthText">Şifre girin</div>
                         </div>
-                        <div id="strengthText">Şifre girin</div>
                     </div>
                 </div>
                 
-                <div class="form-group full-width">
+                <div class="terms-container">
                     <div class="terms-checkbox">
                         <input type="checkbox" id="terms" required>
                         <label for="terms" class="terms-text">
@@ -616,11 +599,9 @@
                     </div>
                 </div>
                 
-                <div class="form-group full-width">
-                    <button type="submit" class="register-button" id="registerBtn" disabled>
-                        Hesap Oluştur
-                    </button>
-                </div>
+                <button type="submit" class="register-button" id="registerBtn" disabled>
+                    Hesap Oluştur
+                </button>
             </form>
             
             <div class="auth-footer">
@@ -632,35 +613,142 @@
 
     <script>
         let selectedPlan = 'pro';
-        let selectedPlanPrice = '₺29/ay';
+        let billingType = 'monthly';
+        let currentUserType = 'jobseeker';
+        
+        // Form field configurations
+        const formFields = {
+            jobseeker: [
+                { name: 'first_name', label: 'Ad', type: 'text', required: true },
+                { name: 'last_name', label: 'Soyad', type: 'text', required: true },
+                { name: 'email', label: 'E-posta', type: 'email', required: true },
+                { name: 'phone', label: 'Telefon', type: 'tel', required: true },
+                { name: 'city', label: 'Şehir', type: 'select', required: true, options: [
+                    'İstanbul', 'Ankara', 'İzmir', 'Bursa', 'Antalya', 'Adana', 'Konya', 'Gaziantep'
+                ]},
+                { name: 'experience_years', label: 'Deneyim (Yıl)', type: 'select', required: true, options: [
+                    'Yeni başlayan', '1-2 yıl', '3-5 yıl', '6-10 yıl', '10+ yıl'
+                ]}
+            ],
+            business: [
+                { name: 'company_name', label: 'Şirket Adı', type: 'text', required: true },
+                { name: 'contact_person', label: 'Yetkili Kişi', type: 'text', required: true },
+                { name: 'email', label: 'E-posta', type: 'email', required: true },
+                { name: 'phone', label: 'Telefon', type: 'tel', required: true },
+                { name: 'city', label: 'Şehir', type: 'select', required: true, options: [
+                    'İstanbul', 'Ankara', 'İzmir', 'Bursa', 'Antalya', 'Adana', 'Konya', 'Gaziantep'
+                ]},
+                { name: 'establishment_year', label: 'Kuruluş Yılı', type: 'select', required: true, options: [
+                    '2024', '2023', '2022', '2021', '2020', '2019', '2018', '2017', '2016', '2015', 'Daha eski'
+                ]}
+            ]
+        };
         
         // Plan selection
-        function selectPlan(plan, price) {
+        function selectPlan(plan) {
             selectedPlan = plan;
-            selectedPlanPrice = price;
             
-            // Update visual selection
-            document.querySelectorAll('.plan-button').forEach(btn => {
-                btn.classList.remove('selected');
-                btn.textContent = 'Seç';
+            document.querySelectorAll('.pricing-card').forEach(card => {
+                card.classList.remove('selected');
             });
             
-            document.querySelector(`[data-plan="${plan}"] .plan-button`).classList.add('selected');
-            document.querySelector(`[data-plan="${plan}"] .plan-button`).textContent = 'Seçildi';
-            
-            // Update display
-            document.getElementById('selectedPlanDisplay').textContent = `${plan.charAt(0).toUpperCase() + plan.slice(1)} Plan - ${price}`;
+            document.querySelector(`[data-plan="${plan}"]`).classList.add('selected');
+            updateSelectedPlanDisplay();
         }
         
+        // Billing toggle
+        function toggleBilling(type) {
+            billingType = type;
+            
+            document.querySelectorAll('.billing-option').forEach(option => {
+                option.classList.remove('active');
+            });
+            
+            event.target.classList.add('active');
+            
+            document.querySelectorAll('.plan-price').forEach(price => {
+                const monthly = price.dataset.monthly;
+                const yearly = price.dataset.yearly;
+                if (monthly && yearly) {
+                    price.textContent = type === 'monthly' ? monthly : yearly;
+                }
+            });
+            
+            document.querySelectorAll('.plan-period').forEach(period => {
+                const monthly = period.dataset.monthly;
+                const yearly = period.dataset.yearly;
+                if (monthly && yearly) {
+                    period.textContent = type === 'monthly' ? monthly : yearly;
+                }
+            });
+            
+            updateSelectedPlanDisplay();
+        }
+        
+        // Update selected plan display
+        function updateSelectedPlanDisplay() {
+            const planNames = { free: 'Ücretsiz', pro: 'Pro', business: 'İşletme' };
+            const prices = { 
+                free: '₺0', 
+                pro: billingType === 'monthly' ? '₺29/ay' : '₺23/ay',
+                business: billingType === 'monthly' ? '₺99/ay' : '₺79/ay'
+            };
+            
+            document.getElementById('selectedPlanDisplay').textContent = 
+                `${planNames[selectedPlan]} Plan - ${prices[selectedPlan]}`;
+        }
+        
+        // Generate form fields
+        function generateFormFields(userType) {
+            const container = document.getElementById('formFields');
+            container.innerHTML = '';
+            
+            formFields[userType].forEach(field => {
+                const div = document.createElement('div');
+                div.className = 'form-group';
+                
+                if (field.type === 'select') {
+                    div.innerHTML = `
+                        <label class="form-label">${field.label}</label>
+                        <select name="${field.name}" class="form-select" ${field.required ? 'required' : ''}>
+                            <option value="">${field.label} seçin</option>
+                            ${field.options.map(option => `<option value="${option}">${option}</option>`).join('')}
+                        </select>
+                    `;
+                } else {
+                    div.innerHTML = `
+                        <label class="form-label">${field.label}</label>
+                        <input type="${field.type}" name="${field.name}" class="form-input" 
+                               ${field.required ? 'required' : ''} placeholder="${field.label}">
+                    `;
+                }
+                
+                container.appendChild(div);
+            });
+            
+            // Add event listeners to new inputs
+            container.querySelectorAll('input, select').forEach(input => {
+                input.addEventListener('input', checkFormValidity);
+                input.addEventListener('change', checkFormValidity);
+            });
+        }
+        
+        // User type change handler
+        document.querySelectorAll('input[name="user_type"]').forEach(radio => {
+            radio.addEventListener('change', function() {
+                currentUserType = this.value;
+                generateFormFields(currentUserType);
+                checkFormValidity();
+            });
+        });
+        
         // Password strength checker
-        document.getElementById('password').addEventListener('input', function() {
+        document.getElementById('passwordInput').addEventListener('input', function() {
             const password = this.value;
             const strengthFill = document.getElementById('strengthFill');
             const strengthText = document.getElementById('strengthText');
             
             let strength = 0;
-            let text = '';
-            
             if (password.length >= 8) strength++;
             if (/[A-Z]/.test(password)) strength++;
             if (/[0-9]/.test(password)) strength++;
@@ -668,27 +756,16 @@
             
             strengthFill.className = 'strength-fill';
             
-            switch (strength) {
-                case 0:
-                case 1:
-                    strengthFill.classList.add('strength-weak');
-                    text = 'Zayıf';
-                    break;
-                case 2:
-                    strengthFill.classList.add('strength-fair');
-                    text = 'Orta';
-                    break;
-                case 3:
-                    strengthFill.classList.add('strength-good');
-                    text = 'İyi';
-                    break;
-                case 4:
-                    strengthFill.classList.add('strength-strong');
-                    text = 'Güçlü';
-                    break;
+            const levels = ['strength-weak', 'strength-fair', 'strength-good', 'strength-strong'];
+            const texts = ['Zayıf', 'Orta', 'İyi', 'Güçlü'];
+            
+            if (strength > 0) {
+                strengthFill.classList.add(levels[strength - 1]);
+                strengthText.textContent = texts[strength - 1];
+            } else {
+                strengthText.textContent = 'Şifre girin';
             }
             
-            strengthText.textContent = text;
             checkFormValidity();
         });
         
@@ -697,7 +774,7 @@
             const form = document.getElementById('registerForm');
             const registerBtn = document.getElementById('registerBtn');
             const terms = document.getElementById('terms');
-            const password = document.getElementById('password');
+            const password = document.getElementById('passwordInput');
             
             const isValid = form.checkValidity() && 
                            terms.checked && 
@@ -706,24 +783,14 @@
             registerBtn.disabled = !isValid;
         }
         
-        // Add event listeners to all form inputs
-        document.querySelectorAll('input, select').forEach(input => {
-            input.addEventListener('input', checkFormValidity);
-            input.addEventListener('change', checkFormValidity);
-        });
-        
         // Form submission
         document.getElementById('registerForm').addEventListener('submit', function(e) {
             e.preventDefault();
-            
-            const formData = new FormData(this);
-            formData.append('plan', selectedPlan);
             
             const registerBtn = document.getElementById('registerBtn');
             registerBtn.textContent = 'Hesap oluşturuluyor...';
             registerBtn.disabled = true;
             
-            // Simulate registration
             setTimeout(() => {
                 alert('Hesabınız başarıyla oluşturuldu! Giriş sayfasına yönlendiriliyorsunuz...');
                 window.location.href = '/auth/login/';
@@ -731,7 +798,10 @@
         });
         
         // Initialize
-        selectPlan('pro', '₺29/ay');
+        generateFormFields(currentUserType);
+        
+        // Add event listeners
+        document.getElementById('terms').addEventListener('change', checkFormValidity);
     </script>
 </body>
 </html>
