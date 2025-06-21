@@ -594,7 +594,7 @@
                     
                     {% if profile.skills %}
                         <div class="skills-list">
-                            {% for skill in profile.skills|split:"," %}
+                            {% for skill in profile.skills.all %}
                                 <span class="skill-tag">{{ skill|trim }}</span>
                             {% endfor %}
                         </div>
