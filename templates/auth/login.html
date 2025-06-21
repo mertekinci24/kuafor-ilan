@@ -154,6 +154,11 @@
             border-radius: 8px;
             margin-bottom: 20px;
             font-size: 14px;
+            display: none;
+        }
+        
+        .error-messages.show {
+            display: block;
         }
         
         @media (max-width: 480px) {
@@ -177,13 +182,11 @@
         </div>
         
         <form class="auth-form" method="post">
-            {% csrf_token %}
+            <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
             
-            {% if form.errors %}
-                <div class="error-messages">
-                    Giriş bilgilerinizi kontrol edin ve tekrar deneyin.
-                </div>
-            {% endif %}
+            <div class="error-messages" id="errorMessages">
+                Giriş bilgilerinizi kontrol edin ve tekrar deneyin.
+            </div>
             
             <div class="form-group">
                 <label class="form-label" for="id_username">E-posta veya Telefon</label>
@@ -223,5 +226,16 @@
             </div>
         </form>
     </div>
+
+    <script>
+        // Show error message if there are form errors
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('error') === '1' || document.referrer.includes('login')) {
+            const errorDiv = document.getElementById('errorMessages');
+            if (errorDiv) {
+                errorDiv.classList.add('show');
+            }
+        }
+    </script>
 </body>
 </html>
