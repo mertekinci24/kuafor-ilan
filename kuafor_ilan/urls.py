@@ -24,10 +24,11 @@ def home_view(request):
     return render(request, 'home.html')
 
 urlpatterns = [
-    path('', home_view, name='home'),  # Ana sayfa HTML
-    path('api/', api_root, name='api_root'),  # API endpoint'i
+    path('', home_view, name='home'),
+    path('api/', api_root, name='api_root'),
     path('admin/', admin.site.urls),
-    path('auth/', include('apps.authentication.urls')),  # Authentication URLs
+    path('auth/', include('apps.authentication.urls')),
+    path('jobs/', include('apps.jobs.urls')),  # Bu satırı ekleyin
     path('api/v1/auth/', include('apps.authentication.urls')),
 ]
 
@@ -40,10 +41,4 @@ if settings.DEBUG:
 admin.site.site_header = "Kuaför İlan Admin"
 admin.site.site_title = "Kuaför İlan Admin Portal"
 admin.site.index_title = "Kuaför İlan Yönetim Paneli"
-urlpatterns = [
-    path('', home_view, name='home'),
-    path('api/', api_root, name='api_root'),
-    path('admin/', admin.site.urls),
-    path('auth/', include('apps.authentication.urls')),
-    path('api/v1/auth/', include('apps.authentication.urls')),
-]
+
