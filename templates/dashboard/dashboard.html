@@ -1,0 +1,718 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Kuaför İlan</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #f8fafc;
+            color: #1e293b;
+        }
+        
+        /* Sidebar */
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            height: 100vh;
+            width: 260px;
+            background: linear-gradient(180deg, #1e293b 0%, #334155 100%);
+            z-index: 1000;
+            transition: transform 0.3s ease;
+        }
+        
+        .sidebar-header {
+            padding: 24px 20px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .logo-container {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .logo {
+            font-size: 32px;
+        }
+        
+        .logo-text {
+            font-size: 20px;
+            font-weight: 700;
+            color: white;
+        }
+        
+        .nav-menu {
+            padding: 20px 0;
+        }
+        
+        .nav-item {
+            margin-bottom: 4px;
+        }
+        
+        .nav-link {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 20px;
+            color: rgba(255,255,255,0.7);
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+        
+        .nav-link:hover,
+        .nav-link.active {
+            background: rgba(255,255,255,0.1);
+            color: white;
+        }
+        
+        .nav-icon {
+            font-size: 20px;
+            width: 20px;
+        }
+        
+        /* Main Content */
+        .main-content {
+            margin-left: 260px;
+            min-height: 100vh;
+        }
+        
+        /* Header */
+        .header {
+            background: white;
+            padding: 16px 32px;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            justify-content: between;
+            align-items: center;
+        }
+        
+        .header-left {
+            flex: 1;
+        }
+        
+        .page-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: #1e293b;
+        }
+        
+        .breadcrumb {
+            color: #64748b;
+            font-size: 14px;
+            margin-top: 4px;
+        }
+        
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        
+        .search-box {
+            display: flex;
+            align-items: center;
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 8px 12px;
+            width: 300px;
+        }
+        
+        .search-box input {
+            border: none;
+            background: none;
+            outline: none;
+            flex: 1;
+            padding: 4px 8px;
+        }
+        
+        .user-menu {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 8px 12px;
+            background: #f8fafc;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+        
+        .user-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #0a66c2, #004182);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+        }
+        
+        /* Dashboard Content */
+        .dashboard-content {
+            padding: 32px;
+        }
+        
+        /* Stats Cards */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 24px;
+            margin-bottom: 32px;
+        }
+        
+        .stat-card {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        
+        .stat-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+        
+        .stat-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .stat-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+        
+        .stat-icon.blue { background: #dbeafe; color: #1d4ed8; }
+        .stat-icon.green { background: #dcfce7; color: #16a34a; }
+        .stat-icon.purple { background: #f3e8ff; color: #9333ea; }
+        .stat-icon.orange { background: #fed7aa; color: #ea580c; }
+        
+        .stat-value {
+            font-size: 32px;
+            font-weight: 800;
+            color: #1e293b;
+            margin-bottom: 8px;
+        }
+        
+        .stat-change {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 14px;
+        }
+        
+        .stat-change.positive { color: #16a34a; }
+        .stat-change.negative { color: #dc2626; }
+        
+        /* Charts Grid */
+        .charts-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 24px;
+            margin-bottom: 32px;
+        }
+        
+        .chart-card {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+        
+        .chart-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: #1e293b;
+        }
+        
+        .chart-filter {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .filter-btn {
+            padding: 6px 12px;
+            border: 1px solid #e2e8f0;
+            background: white;
+            border-radius: 6px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .filter-btn.active,
+        .filter-btn:hover {
+            background: #0a66c2;
+            color: white;
+            border-color: #0a66c2;
+        }
+        
+        .chart-placeholder {
+            height: 300px;
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #64748b;
+            font-size: 14px;
+        }
+        
+        /* Recent Activity */
+        .activity-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+        }
+        
+        .activity-card {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        
+        .activity-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .activity-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: #1e293b;
+        }
+        
+        .view-all {
+            color: #0a66c2;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 600;
+        }
+        
+        .activity-list {
+            list-style: none;
+        }
+        
+        .activity-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 0;
+            border-bottom: 1px solid #f1f5f9;
+        }
+        
+        .activity-item:last-child {
+            border-bottom: none;
+        }
+        
+        .activity-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #0a66c2, #004182);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 14px;
+        }
+        
+        .activity-content {
+            flex: 1;
+        }
+        
+        .activity-text {
+            font-size: 14px;
+            color: #1e293b;
+            margin-bottom: 2px;
+        }
+        
+        .activity-time {
+            font-size: 12px;
+            color: #64748b;
+        }
+        
+        .activity-status {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        
+        .status-success { background: #dcfce7; color: #16a34a; }
+        .status-pending { background: #fef3c7; color: #d97706; }
+        .status-rejected { background: #fee2e2; color: #dc2626; }
+        
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+            
+            .sidebar.open {
+                transform: translateX(0);
+            }
+            
+            .main-content {
+                margin-left: 0;
+            }
+            
+            .header {
+                padding: 16px 20px;
+            }
+            
+            .search-box {
+                width: 200px;
+            }
+            
+            .dashboard-content {
+                padding: 20px;
+            }
+            
+            .charts-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .activity-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="logo-container">
+                <div class="logo">💇‍♀️</div>
+                <div class="logo-text">Kuaför İlan</div>
+            </div>
+        </div>
+        
+        <nav class="nav-menu">
+            <div class="nav-item">
+                <a href="#" class="nav-link active">
+                    <span class="nav-icon">📊</span>
+                    <span>Dashboard</span>
+                </a>
+            </div>
+            <div class="nav-item">
+                <a href="#" class="nav-link">
+                    <span class="nav-icon">💼</span>
+                    <span>İş İlanları</span>
+                </a>
+            </div>
+            <div class="nav-item">
+                <a href="#" class="nav-link">
+                    <span class="nav-icon">👥</span>
+                    <span>Başvurular</span>
+                </a>
+            </div>
+            <div class="nav-item">
+                <a href="#" class="nav-link">
+                    <span class="nav-icon">💬</span>
+                    <span>Mesajlar</span>
+                </a>
+            </div>
+            <div class="nav-item">
+                <a href="#" class="nav-link">
+                    <span class="nav-icon">👤</span>
+                    <span>Profil</span>
+                </a>
+            </div>
+            <div class="nav-item">
+                <a href="#" class="nav-link">
+                    <span class="nav-icon">⚙️</span>
+                    <span>Ayarlar</span>
+                </a>
+            </div>
+        </nav>
+    </div>
+    
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-left">
+                <h1 class="page-title">Dashboard</h1>
+                <div class="breadcrumb">Ana Sayfa / Dashboard</div>
+            </div>
+            
+            <div class="header-right">
+                <div class="search-box">
+                    <span>🔍</span>
+                    <input type="text" placeholder="Ara...">
+                </div>
+                
+                <div class="user-menu">
+                    <div class="user-avatar">A</div>
+                    <div>
+                        <div style="font-size: 14px; font-weight: 600;">Admin User</div>
+                        <div style="font-size: 12px; color: #64748b;">admin@kuaforilan.com</div>
+                    </div>
+                </div>
+            </div>
+        </header>
+        
+        <!-- Dashboard Content -->
+        <div class="dashboard-content">
+            <!-- Stats Cards -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <div class="stat-title">Toplam İlanlar</div>
+                        <div class="stat-icon blue">💼</div>
+                    </div>
+                    <div class="stat-value">124</div>
+                    <div class="stat-change positive">
+                        <span>↗️</span>
+                        <span>+12% bu ay</span>
+                    </div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <div class="stat-title">Aktif Başvurular</div>
+                        <div class="stat-icon green">👥</div>
+                    </div>
+                    <div class="stat-value">89</div>
+                    <div class="stat-change positive">
+                        <span>↗️</span>
+                        <span>+8% bu hafta</span>
+                    </div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <div class="stat-title">Yeni Üyeler</div>
+                        <div class="stat-icon purple">🆕</div>
+                    </div>
+                    <div class="stat-value">45</div>
+                    <div class="stat-change positive">
+                        <span>↗️</span>
+                        <span>+23% bu ay</span>
+                    </div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <div class="stat-title">Toplam Gelir</div>
+                        <div class="stat-icon orange">💰</div>
+                    </div>
+                    <div class="stat-value">₺12,450</div>
+                    <div class="stat-change positive">
+                        <span>↗️</span>
+                        <span>+15% bu ay</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Charts -->
+            <div class="charts-grid">
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <div class="chart-title">İlan Performansı</div>
+                        <div class="chart-filter">
+                            <button class="filter-btn active">7 Gün</button>
+                            <button class="filter-btn">30 Gün</button>
+                            <button class="filter-btn">90 Gün</button>
+                        </div>
+                    </div>
+                    <div class="chart-placeholder">
+                        📈 İlan performans grafiği burada görünecek
+                    </div>
+                </div>
+                
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <div class="chart-title">Kategori Dağılımı</div>
+                    </div>
+                    <div class="chart-placeholder">
+                        🥧 Kategori dağılım grafiği burada görünecek
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Recent Activity -->
+            <div class="activity-grid">
+                <div class="activity-card">
+                    <div class="activity-header">
+                        <div class="activity-title">Son Başvurular</div>
+                        <a href="#" class="view-all">Tümünü Gör</a>
+                    </div>
+                    
+                    <ul class="activity-list">
+                        <li class="activity-item">
+                            <div class="activity-avatar">AY</div>
+                            <div class="activity-content">
+                                <div class="activity-text">Ayşe Yılmaz kuaför pozisyonuna başvurdu</div>
+                                <div class="activity-time">2 saat önce</div>
+                            </div>
+                            <div class="activity-status status-pending">Beklemede</div>
+                        </li>
+                        
+                        <li class="activity-item">
+                            <div class="activity-avatar">MK</div>
+                            <div class="activity-content">
+                                <div class="activity-text">Mehmet Kaya berber pozisyonuna başvurdu</div>
+                                <div class="activity-time">4 saat önce</div>
+                            </div>
+                            <div class="activity-status status-success">Onaylandı</div>
+                        </li>
+                        
+                        <li class="activity-item">
+                            <div class="activity-avatar">EÖ</div>
+                            <div class="activity-content">
+                                <div class="activity-text">Elif Özkan yeni profil oluşturdu</div>
+                                <div class="activity-time">6 saat önce</div>
+                            </div>
+                            <div class="activity-status status-success">Tamamlandı</div>
+                        </li>
+                    </ul>
+                </div>
+                
+                <div class="activity-card">
+                    <div class="activity-header">
+                        <div class="activity-title">Son İlanlar</div>
+                        <a href="#" class="view-all">Tümünü Gör</a>
+                    </div>
+                    
+                    <ul class="activity-list">
+                        <li class="activity-item">
+                            <div class="activity-avatar">🏢</div>
+                            <div class="activity-content">
+                                <div class="activity-text">Güzellik Salonu - Kuaför Aranıyor</div>
+                                <div class="activity-time">İstanbul, Kadıköy</div>
+                            </div>
+                            <div class="activity-status status-success">Aktif</div>
+                        </li>
+                        
+                        <li class="activity-item">
+                            <div class="activity-avatar">💇</div>
+                            <div class="activity-content">
+                                <div class="activity-text">Modern Berber - Deneyimli Berber</div>
+                                <div class="activity-time">Ankara, Çankaya</div>
+                            </div>
+                            <div class="activity-status status-pending">İnceleniyor</div>
+                        </li>
+                        
+                        <li class="activity-item">
+                            <div class="activity-avatar">✨</div>
+                            <div class="activity-content">
+                                <div class="activity-text">Hair Studio - Saç Uzmanı</div>
+                                <div class="activity-time">İzmir, Konak</div>
+                            </div>
+                            <div class="activity-status status-success">Aktif</div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Mobile menu toggle
+        const sidebar = document.getElementById('sidebar');
+        const menuToggle = document.createElement('button');
+        menuToggle.innerHTML = '☰';
+        menuToggle.style.cssText = `
+            display: none;
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1001;
+            background: #1e293b;
+            color: white;
+            border: none;
+            padding: 10px;
+            border-radius: 6px;
+            font-size: 18px;
+            cursor: pointer;
+        `;
+        
+        document.body.appendChild(menuToggle);
+        
+        menuToggle.addEventListener('click', () => {
+            sidebar.classList.toggle('open');
+        });
+        
+        // Show mobile menu button on small screens
+        function handleResize() {
+            if (window.innerWidth <= 768) {
+                menuToggle.style.display = 'block';
+            } else {
+                menuToggle.style.display = 'none';
+                sidebar.classList.remove('open');
+            }
+        }
+        
+        window.addEventListener('resize', handleResize);
+        handleResize();
+        
+        // Chart filter buttons
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                this.parentElement.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+            });
+        });
+        
+        // Simulate real-time updates
+        function updateStats() {
+            const statValues = document.querySelectorAll('.stat-value');
+            statValues.forEach(stat => {
+                const currentValue = parseInt(stat.textContent.replace(/[^0-9]/g, ''));
+                const change = Math.floor(Math.random() * 3) - 1; // -1, 0, or 1
+                if (change !== 0) {
+                    const newValue = currentValue + change;
+                    if (stat.textContent.includes('₺')) {
+                        stat.textContent = `₺${newValue.toLocaleString()}`;
+                    } else {
+                        stat.textContent = newValue.toString();
+                    }
+                }
+            });
+        }
+        
+        // Update stats every 30 seconds
+        setInterval(updateStats, 30000);
+    </script>
+</body>
+</html>
