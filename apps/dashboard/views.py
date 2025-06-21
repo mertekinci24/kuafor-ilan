@@ -123,10 +123,10 @@ def dashboard_view(request):
     
     # Genel kullanıcı bilgileri
     user_info = {
-        'name': f"{user.first_name} {user.last_name}" if hasattr(user, 'first_name') else user.email,
-        'email': user.email,
-        'avatar': user.first_name[0] if hasattr(user, 'first_name') and user.first_name else user.email[0].upper(),
-        'user_type': getattr(user, 'user_type', 'job_seeker')
+        'name': user.email.split('@')[0] if user.email else 'Admin User',
+        'email': user.email or 'admin@kuaforilan.com',
+        'avatar': user.email[0].upper() if user.email else 'A',
+        'user_type': 'job_seeker'
     }
     
     # Chart verileri (örnek)
