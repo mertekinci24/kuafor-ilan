@@ -9,4 +9,4 @@ class CustomUserAdmin(UserAdmin):
     fieldsets = UserAdmin.fieldsets + (
         ('Ek Bilgiler', {'fields': ('user_type', 'phone', 'is_phone_verified', 'is_email_verified')}),
     )
-  
+    
