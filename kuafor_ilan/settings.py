@@ -78,6 +78,12 @@ else:
 # Custom User Model
 AUTH_USER_MODEL = 'authentication.CustomUser'
 
+# Authentication backends
+AUTHENTICATION_BACKENDS = [
+    'apps.authentication.backends.EmailBackend',
+    'django.contrib.auth.backends.ModelBackend',
+]
+
 # Login URLs
 LOGIN_URL = '/auth/login/'
 LOGIN_REDIRECT_URL = '/'
