@@ -27,6 +27,7 @@ urlpatterns = [
     path('', home_view, name='home'),  # Ana sayfa HTML
     path('api/', api_root, name='api_root'),  # API endpoint'i
     path('admin/', admin.site.urls),
+    path('auth/', include('apps.authentication.urls')),  # Authentication URLs
     path('api/v1/auth/', include('apps.authentication.urls')),
 ]
 
