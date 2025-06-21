@@ -24,6 +24,8 @@ INSTALLED_APPS = [
     'rest_framework',
     'apps.core',
     'apps.authentication',
+    # Custom user model
+AUTH_USER_MODEL = 'authentication.CustomUser'
 ]
 
 MIDDLEWARE = [
