@@ -1,0 +1,786 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% if is_own_profile %}Profilim{% else %}{{ profile_user.first_name }} {{ profile_user.last_name }}{% endif %} - Kuaför İlan</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: #f3f2ef;
+            color: #000000e6;
+            line-height: 1.5;
+        }
+        
+        /* Header Navigation */
+        .top-nav {
+            background-color: #fff;
+            border-bottom: 1px solid #00000024;
+            position: fixed;
+            top: 0;
+            width: 100%;
+            z-index: 1000;
+            box-shadow: 0 0 0 1px rgba(0,0,0,0.08), 0 2px 4px rgba(0,0,0,0.08);
+        }
+        
+        .nav-container {
+            max-width: 1128px;
+            margin: 0 auto;
+            padding: 0 24px;
+            display: flex;
+            align-items: center;
+            height: 52px;
+        }
+        
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+            color: #0a66c2;
+            text-decoration: none;
+            margin-right: 32px;
+        }
+        
+        .nav-breadcrumb {
+            font-size: 14px;
+            color: #666;
+        }
+        
+        .nav-breadcrumb a {
+            color: #0a66c2;
+            text-decoration: none;
+        }
+        
+        .nav-breadcrumb a:hover {
+            text-decoration: underline;
+        }
+        
+        .auth-buttons {
+            margin-left: auto;
+            display: flex;
+            gap: 12px;
+        }
+        
+        .btn {
+            padding: 8px 16px;
+            border-radius: 16px;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.15s ease;
+            border: 1px solid #0a66c2;
+        }
+        
+        .btn-secondary {
+            background: transparent;
+            color: #0a66c2;
+        }
+        
+        .btn-secondary:hover {
+            background: #e8f4f8;
+        }
+        
+        .btn-primary {
+            background: #0a66c2;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #004182;
+        }
+        
+        /* Main Container */
+        .main-container {
+            max-width: 1128px;
+            margin: 52px auto 0;
+            padding: 24px;
+            display: grid;
+            grid-template-columns: 1fr 300px;
+            gap: 24px;
+        }
+        
+        /* Profile Content */
+        .profile-content {
+            background: transparent;
+        }
+        
+        /* Profile Header Card */
+        .profile-header-card {
+            background: white;
+            border-radius: 8px;
+            border: 1px solid #00000024;
+            margin-bottom: 16px;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .profile-cover {
+            height: 150px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            position: relative;
+        }
+        
+        .profile-avatar {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            border: 4px solid white;
+            position: absolute;
+            bottom: -60px;
+            left: 24px;
+            background: #ddd;
+            background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23666"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>');
+            background-size: 60px 60px;
+            background-repeat: no-repeat;
+            background-position: center;
+        }
+        
+        .profile-info {
+            padding: 70px 24px 24px;
+        }
+        
+        .profile-name {
+            font-size: 24px;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 4px;
+        }
+        
+        .profile-title {
+            font-size: 16px;
+            color: #666;
+            margin-bottom: 8px;
+        }
+        
+        .profile-location {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 16px;
+        }
+        
+        .profile-actions {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        
+        .action-btn {
+            padding: 8px 16px;
+            border-radius: 20px;
+            border: 1px solid #0a66c2;
+            background: transparent;
+            color: #0a66c2;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+        
+        .action-btn:hover {
+            background: #e8f4f8;
+        }
+        
+        .action-btn.primary {
+            background: #0a66c2;
+            color: white;
+        }
+        
+        .action-btn.primary:hover {
+            background: #004182;
+        }
+        
+        /* Stats Cards */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+        
+        .stat-card {
+            background: white;
+            border-radius: 8px;
+            border: 1px solid #00000024;
+            padding: 20px;
+            text-align: center;
+            transition: transform 0.15s ease;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        
+        .stat-number {
+            font-size: 28px;
+            font-weight: 700;
+            color: #0a66c2;
+            margin-bottom: 4px;
+        }
+        
+        .stat-label {
+            font-size: 14px;
+            color: #666;
+        }
+        
+        /* About Section */
+        .about-card,
+        .experience-card,
+        .activity-card {
+            background: white;
+            border-radius: 8px;
+            border: 1px solid #00000024;
+            padding: 24px;
+            margin-bottom: 16px;
+        }
+        
+        .section-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 16px;
+        }
+        
+        .about-text {
+            font-size: 14px;
+            line-height: 1.6;
+            color: #333;
+            white-space: pre-line;
+        }
+        
+        .skills-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 16px;
+        }
+        
+        .skill-tag {
+            background: #e8f4f8;
+            color: #0a66c2;
+            padding: 6px 12px;
+            border-radius: 16px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        
+        /* Activity Items */
+        .activity-item {
+            display: flex;
+            gap: 12px;
+            padding: 16px 0;
+            border-bottom: 1px solid #f3f2ef;
+        }
+        
+        .activity-item:last-child {
+            border-bottom: none;
+        }
+        
+        .activity-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #e8f4f8;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            flex-shrink: 0;
+        }
+        
+        .activity-content {
+            flex: 1;
+        }
+        
+        .activity-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 4px;
+        }
+        
+        .activity-description {
+            font-size: 13px;
+            color: #666;
+            margin-bottom: 4px;
+        }
+        
+        .activity-date {
+            font-size: 12px;
+            color: #999;
+        }
+        
+        .activity-status {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 500;
+            margin-left: 8px;
+        }
+        
+        .activity-status.pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+        
+        .activity-status.accepted {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .activity-status.rejected {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        .activity-status.active {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+        
+        /* Sidebar */
+        .sidebar {
+            position: sticky;
+            top: 76px;
+            height: fit-content;
+        }
+        
+        .sidebar-card {
+            background: white;
+            border-radius: 8px;
+            border: 1px solid #00000024;
+            padding: 20px;
+            margin-bottom: 16px;
+        }
+        
+        .contact-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 8px 0;
+            font-size: 14px;
+            color: #666;
+        }
+        
+        .contact-icon {
+            width: 20px;
+            text-align: center;
+        }
+        
+        .availability-badge {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 16px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-bottom: 16px;
+        }
+        
+        .availability-badge.available {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .availability-badge.unavailable {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #666;
+        }
+        
+        .empty-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+        }
+        
+        .empty-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+        
+        .empty-text {
+            font-size: 14px;
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .main-container {
+                grid-template-columns: 1fr;
+                padding: 16px;
+            }
+            
+            .sidebar {
+                position: static;
+                order: 1;
+            }
+            
+            .profile-content {
+                order: 2;
+            }
+            
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .profile-info {
+                padding: 70px 16px 16px;
+            }
+            
+            .profile-actions {
+                flex-direction: column;
+            }
+            
+            .nav-container {
+                padding: 0 16px;
+            }
+        }
+        
+        /* Animations */
+        .fade-in {
+            animation: fadeIn 0.3s ease-in;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+    <!-- Top Navigation -->
+    <nav class="top-nav">
+        <div class="nav-container">
+            <a href="/" class="logo">💇‍♀️ Kuaför İlan</a>
+            
+            <div class="nav-breadcrumb">
+                <a href="/">Ana Sayfa</a> / 
+                {% if is_own_profile %}
+                    Profilim
+                {% else %}
+                    {{ profile_user.first_name }} {{ profile_user.last_name }}
+                {% endif %}
+            </div>
+            
+            <div class="auth-buttons">
+                {% if user.is_authenticated %}
+                    <a href="/" class="btn btn-secondary">Ana Sayfa</a>
+                    <a href="/auth/logout/" class="btn btn-primary">Çıkış</a>
+                {% else %}
+                    <a href="/auth/login/" class="btn btn-secondary">Giriş Yap</a>
+                    <a href="/auth/register/" class="btn btn-primary">Kayıt Ol</a>
+                {% endif %}
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Container -->
+    <div class="main-container">
+        <!-- Profile Content -->
+        <main class="profile-content">
+            <!-- Profile Header -->
+            <div class="profile-header-card fade-in">
+                <div class="profile-cover"></div>
+                <div class="profile-avatar"></div>
+                
+                <div class="profile-info">
+                    <h1 class="profile-name">
+                        {% if profile_type == 'jobseeker' %}
+                            {{ profile.full_name }}
+                        {% else %}
+                            {{ profile.business_name }}
+                        {% endif %}
+                    </h1>
+                    
+                    <div class="profile-title">
+                        {% if profile_type == 'jobseeker' %}
+                            {% if profile.bio %}
+                                {{ profile.bio|truncatechars:50 }}
+                            {% else %}
+                                Kuaför Profesyoneli
+                            {% endif %}
+                        {% else %}
+                            İş Veren • {{ profile.city }}
+                        {% endif %}
+                    </div>
+                    
+                    <div class="profile-location">
+                        📍 {{ profile.city }}{% if profile.district %}, {{ profile.district }}{% endif %}
+                    </div>
+                    
+                    <div class="profile-actions">
+                        {% if is_own_profile %}
+                            <a href="/profile/edit/" class="action-btn primary">Profili Düzenle</a>
+                            {% if profile_type == 'jobseeker' %}
+                                <a href="/profile/applications/" class="action-btn">Başvurularım</a>
+                            {% else %}
+                                <a href="/profile/jobs/" class="action-btn">İlanlarım</a>
+                            {% endif %}
+                        {% else %}
+                            <button class="action-btn primary" onclick="sendMessage()">Mesaj Gönder</button>
+                            <button class="action-btn" onclick="connectUser()">Bağlantı Kur</button>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Stats -->
+            <div class="stats-grid fade-in">
+                {% if profile_type == 'jobseeker' %}
+                    <div class="stat-card">
+                        <div class="stat-number">{{ stats.total_applications }}</div>
+                        <div class="stat-label">Toplam Başvuru</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">{{ stats.pending_applications }}</div>
+                        <div class="stat-label">Bekleyen Başvuru</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">{{ stats.accepted_applications }}</div>
+                        <div class="stat-label">Kabul Edilen</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">{{ stats.profile_views }}</div>
+                        <div class="stat-label">Profil Görüntülenme</div>
+                    </div>
+                {% else %}
+                    <div class="stat-card">
+                        <div class="stat-number">{{ stats.total_jobs }}</div>
+                        <div class="stat-label">Toplam İlan</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">{{ stats.active_jobs }}</div>
+                        <div class="stat-label">Aktif İlan</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">{{ stats.total_applications }}</div>
+                        <div class="stat-label">Toplam Başvuru</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">{{ stats.profile_views }}</div>
+                        <div class="stat-label">Profil Görüntülenme</div>
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- About Section -->
+            <div class="about-card fade-in">
+                <h2 class="section-title">Hakkında</h2>
+                {% if profile_type == 'jobseeker' %}
+                    {% if profile.bio %}
+                        <div class="about-text">{{ profile.bio }}</div>
+                    {% else %}
+                        <div class="empty-state">
+                            <div class="empty-icon">📝</div>
+                            <div class="empty-title">Henüz bio eklenmemiş</div>
+                            {% if is_own_profile %}
+                                <div class="empty-text">Profilinizi düzenleyerek kendinizi tanıtın</div>
+                            {% endif %}
+                        </div>
+                    {% endif %}
+                    
+                    {% if profile.skills %}
+                        <div class="skills-list">
+                            {% for skill in profile.skills|split:"," %}
+                                <span class="skill-tag">{{ skill|trim }}</span>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                {% else %}
+                    {% if profile.description %}
+                        <div class="about-text">{{ profile.description }}</div>
+                    {% else %}
+                        <div class="empty-state">
+                            <div class="empty-icon">🏢</div>
+                            <div class="empty-title">Henüz şirket açıklaması eklenmemiş</div>
+                            {% if is_own_profile %}
+                                <div class="empty-text">Şirketinizi tanıtmak için açıklama ekleyin</div>
+                            {% endif %}
+                        </div>
+                    {% endif %}
+                {% endif %}
+            </div>
+
+            <!-- Activity Section -->
+            <div class="activity-card fade-in">
+                <h2 class="section-title">
+                    {% if profile_type == 'jobseeker' %}
+                        Son Başvurular
+                    {% else %}
+                        Son İlanlar
+                    {% endif %}
+                </h2>
+                
+                {% if profile_type == 'jobseeker' %}
+                    {% if recent_applications %}
+                        {% for application in recent_applications %}
+                            <div class="activity-item">
+                                <div class="activity-icon">💼</div>
+                                <div class="activity-content">
+                                    <div class="activity-title">{{ application.job.title }}</div>
+                                    <div class="activity-description">{{ application.job.business.first_name }} {{ application.job.business.last_name }} • {{ application.job.city }}</div>
+                                    <div class="activity-date">
+                                        {{ application.created_at|timesince }} önce
+                                        <span class="activity-status {{ application.status }}">
+                                            {% if application.status == 'pending' %}Beklemede
+                                            {% elif application.status == 'accepted' %}Kabul Edildi
+                                            {% elif application.status == 'rejected' %}Reddedildi
+                                            {% else %}{{ application.status }}{% endif %}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="empty-state">
+                            <div class="empty-icon">📋</div>
+                            <div class="empty-title">Henüz başvuru yapılmamış</div>
+                            <div class="empty-text">İş aramaya başlamak için <a href="/jobs/">iş ilanlarını</a> inceleyin</div>
+                        </div>
+                    {% endif %}
+                {% else %}
+                    {% if recent_jobs %}
+                        {% for job in recent_jobs %}
+                            <div class="activity-item">
+                                <div class="activity-icon">📢</div>
+                                <div class="activity-content">
+                                    <div class="activity-title">{{ job.title }}</div>
+                                    <div class="activity-description">{{ job.category.name }} • {{ job.city }}</div>
+                                    <div class="activity-date">
+                                        {{ job.created_at|timesince }} önce
+                                        <span class="activity-status {{ job.status }}">
+                                            {% if job.status == 'active' %}Aktif
+                                            {% elif job.status == 'closed' %}Kapalı
+                                            {% else %}{{ job.status }}{% endif %}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="empty-state">
+                            <div class="empty-icon">📢</div>
+                            <div class="empty-title">Henüz ilan yayınlanmamış</div>
+                            {% if is_own_profile %}
+                                <div class="empty-text">Yeni ilan vermek için admin paneli kullanın</div>
+                            {% endif %}
+                        </div>
+                    {% endif %}
+                {% endif %}
+            </div>
+        </main>
+
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <!-- Contact Info -->
+            <div class="sidebar-card fade-in">
+                <h3 class="section-title">İletişim Bilgileri</h3>
+                
+                {% if profile_type == 'jobseeker' %}
+                    {% if profile.is_available %}
+                        <div class="availability-badge available">✅ İş Arıyor</div>
+                    {% else %}
+                        <div class="availability-badge unavailable">❌ İş Aramıyor</div>
+                    {% endif %}
+                {% endif %}
+                
+                <div class="contact-item">
+                    <span class="contact-icon">📧</span>
+                    <span>{{ profile_user.email }}</span>
+                </div>
+                
+                {% if profile_user.phone %}
+                    <div class="contact-item">
+                        <span class="contact-icon">📞</span>
+                        <span>{{ profile_user.phone }}</span>
+                    </div>
+                {% endif %}
+                
+                {% if profile_type == 'business' and profile.website %}
+                    <div class="contact-item">
+                        <span class="contact-icon">🌐</span>
+                        <a href="{{ profile.website }}" target="_blank" style="color: #0a66c2;">Website</a>
+                    </div>
+                {% endif %}
+                
+                <div class="contact-item">
+                    <span class="contact-icon">📍</span>
+                    <span>{{ profile.city }}{% if profile.district %}, {{ profile.district }}{% endif %}</span>
+                </div>
+                
+                {% if profile_type == 'jobseeker' and profile.experience_years %}
+                    <div class="contact-item">
+                        <span class="contact-icon">💼</span>
+                        <span>{{ profile.experience_years }} yıl deneyim</span>
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- Additional Info -->
+            <div class="sidebar-card fade-in">
+                <h3 class="section-title">Profil Bilgileri</h3>
+                
+                <div class="contact-item">
+                    <span class="contact-icon">👤</span>
+                    <span>
+                        {% if profile_type == 'jobseeker' %}İş Arayan{% else %}İş Veren{% endif %}
+                    </span>
+                </div>
+                
+                <div class="contact-item">
+                    <span class="contact-icon">📅</span>
+                    <span>{{ profile_user.date_joined|date:"M Y" }}'de katıldı</span>
+                </div>
+                
+                <div class="contact-item">
+                    <span class="contact-icon">🔄</span>
+                    <span>{{ profile.updated_at|timesince }} önce güncellendi</span>
+                </div>
+                
+                {% if profile_type == 'business' and profile.address %}
+                    <div class="contact-item">
+                        <span class="contact-icon">🏢</span>
+                        <span>{{ profile.address|truncatechars:30 }}</span>
+                    </div>
+                {% endif %}
+            </div>
+        </aside>
+    </div>
+
+    <script>
+        // Message functionality
+        function sendMessage() {
+            alert('Mesajlaşma özelliği yakında eklenecek!');
+        }
+        
+        // Connect functionality
+        function connectUser() {
+            alert('Bağlantı kurma özelliği yakında eklenecek!');
+        }
+        
+        // Add fade-in animation
+        function addFadeIn() {
+            const elements = document.querySelectorAll('.fade-in');
+            elements.forEach((element, index) => {
+                element.style.animationDelay = `${index * 0.1}s`;
+            });
+        }
+        
+        // Initialize
+        document.addEventListener('DOMContentLoaded', addFadeIn);
+    </script>
+</body>
+</html>
