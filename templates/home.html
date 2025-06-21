@@ -712,8 +712,8 @@
                 // Get page data
                 const page = this.dataset.page;
                 
-                // Show alert for pages that don't have links yet
-                if (page !== 'home' && page !== 'jobs') {
+                // For now, just show an alert
+                if (page !== 'home' && page !== 'jobs' && page !== 'profile') {
                     alert(`${page} sayfası henüz hazırlanıyor...`);
                 }
             });
