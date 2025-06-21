@@ -1,10 +1,18 @@
 from django.urls import path
-from django.contrib.auth.views import LogoutView
-from .views import CustomLoginView
-from django.views.generic import TemplateView
+from . import views
+
+app_name = 'authentication'
 
 urlpatterns = [
-    path('login/', CustomLoginView.as_view(), name='login'),
-    path('logout/', LogoutView.as_view(), name='logout'),
-    path('register/', TemplateView.as_view(template_name='auth/register.html'), name='register'),
+    # Ana authentication URL'leri
+    path('login/', views.login_view, name='login'),
+    path('register/', views.register_view, name='register'),
+    path('logout/', views.logout_view, name='logout'),
+    
+    # Profil URL'leri
+    path('profile/', views.profile_view, name='profile'),
+    
+    # API URL'leri
+    path('api/check-email/', views.check_email_exists, name='check_email'),
+    path('api/update-profile/', views.update_profile_api, name='update_profile_api'),
 ]
