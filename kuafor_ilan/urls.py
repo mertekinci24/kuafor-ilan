@@ -28,6 +28,7 @@ urlpatterns = [
     path('api/', api_root, name='api_root'),
     path('admin/', admin.site.urls),
     path('auth/', include('apps.authentication.urls')),
+    path('dashboard/', include('apps.dashboard.urls')),
     path('jobs/', include('apps.jobs.urls')),
     path('profile/', include('apps.profiles.urls')),  # Bu satır yeni
     path('api/v1/auth/', include('apps.authentication.urls')),
