@@ -1,0 +1,864 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ job.title }} - Kuaför İlan</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: #f3f2ef;
+            color: #000000e6;
+            line-height: 1.5;
+        }
+        
+        /* Header Navigation */
+        .top-nav {
+            background-color: #fff;
+            border-bottom: 1px solid #00000024;
+            position: fixed;
+            top: 0;
+            width: 100%;
+            z-index: 1000;
+            box-shadow: 0 0 0 1px rgba(0,0,0,0.08), 0 2px 4px rgba(0,0,0,0.08);
+        }
+        
+        .nav-container {
+            max-width: 1128px;
+            margin: 0 auto;
+            padding: 0 24px;
+            display: flex;
+            align-items: center;
+            height: 52px;
+        }
+        
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+            color: #0a66c2;
+            text-decoration: none;
+            margin-right: 32px;
+        }
+        
+        .nav-breadcrumb {
+            font-size: 14px;
+            color: #666;
+        }
+        
+        .nav-breadcrumb a {
+            color: #0a66c2;
+            text-decoration: none;
+        }
+        
+        .nav-breadcrumb a:hover {
+            text-decoration: underline;
+        }
+        
+        .auth-buttons {
+            margin-left: auto;
+            display: flex;
+            gap: 12px;
+        }
+        
+        .btn {
+            padding: 8px 16px;
+            border-radius: 16px;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.15s ease;
+            border: 1px solid #0a66c2;
+        }
+        
+        .btn-secondary {
+            background: transparent;
+            color: #0a66c2;
+        }
+        
+        .btn-secondary:hover {
+            background: #e8f4f8;
+        }
+        
+        .btn-primary {
+            background: #0a66c2;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #004182;
+        }
+        
+        /* Main Container */
+        .main-container {
+            max-width: 1128px;
+            margin: 52px auto 0;
+            padding: 24px;
+            display: grid;
+            grid-template-columns: 1fr 300px;
+            gap: 24px;
+        }
+        
+        /* Job Content */
+        .job-content {
+            background: transparent;
+        }
+        
+        .job-header {
+            background: white;
+            border-radius: 8px;
+            border: 1px solid #00000024;
+            padding: 24px;
+            margin-bottom: 16px;
+        }
+        
+        .job-title {
+            font-size: 28px;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 8px;
+        }
+        
+        .job-company {
+            font-size: 18px;
+            color: #0a66c2;
+            margin-bottom: 16px;
+            cursor: pointer;
+        }
+        
+        .job-company:hover {
+            text-decoration: underline;
+        }
+        
+        .job-meta {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+        
+        .job-meta-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            color: #666;
+        }
+        
+        .job-meta-icon {
+            font-size: 16px;
+        }
+        
+        .job-tags {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+        
+        .job-tag {
+            background: #e8f4f8;
+            color: #0a66c2;
+            padding: 6px 12px;
+            border-radius: 16px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        
+        .job-tag.urgent {
+            background: #fee;
+            color: #e74c3c;
+        }
+        
+        .job-actions {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+        
+        .apply-btn {
+            background: #0a66c2;
+            color: white;
+            border: none;
+            border-radius: 20px;
+            padding: 12px 24px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+        
+        .apply-btn:hover {
+            background: #004182;
+            transform: translateY(-1px);
+        }
+        
+        .apply-btn.applied {
+            background: #28a745;
+            cursor: default;
+        }
+        
+        .apply-btn.applied:hover {
+            transform: none;
+        }
+        
+        .share-btn,
+        .save-btn {
+            background: transparent;
+            color: #666;
+            border: 1px solid #00000024;
+            border-radius: 20px;
+            padding: 12px 16px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+        
+        .share-btn:hover,
+        .save-btn:hover {
+            background: #f3f2ef;
+        }
+        
+        /* Job Description */
+        .job-description {
+            background: white;
+            border-radius: 8px;
+            border: 1px solid #00000024;
+            padding: 24px;
+            margin-bottom: 16px;
+        }
+        
+        .section-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 16px;
+        }
+        
+        .description-text {
+            font-size: 16px;
+            line-height: 1.6;
+            color: #333;
+            white-space: pre-line;
+        }
+        
+        /* Application Form */
+        .application-form {
+            background: white;
+            border-radius: 8px;
+            border: 1px solid #00000024;
+            padding: 24px;
+            margin-bottom: 16px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-label {
+            display: block;
+            font-size: 14px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+        }
+        
+        .form-textarea {
+            width: 100%;
+            min-height: 120px;
+            border: 1px solid #00000024;
+            border-radius: 8px;
+            padding: 12px;
+            font-size: 14px;
+            font-family: inherit;
+            resize: vertical;
+            background: #fafbfc;
+        }
+        
+        .form-textarea:focus {
+            outline: none;
+            border-color: #0a66c2;
+            background: white;
+        }
+        
+        .submit-btn {
+            background: #0a66c2;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 12px 24px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+        
+        .submit-btn:hover {
+            background: #004182;
+        }
+        
+        .submit-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        
+        /* Company Info Sidebar */
+        .sidebar {
+            position: sticky;
+            top: 76px;
+            height: fit-content;
+        }
+        
+        .company-card,
+        .job-stats-card,
+        .similar-jobs-card {
+            background: white;
+            border-radius: 8px;
+            border: 1px solid #00000024;
+            padding: 20px;
+            margin-bottom: 16px;
+        }
+        
+        .company-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+        
+        .company-avatar {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: #ddd;
+            background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23666"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg>');
+            background-size: 24px 24px;
+            background-repeat: no-repeat;
+            background-position: center;
+        }
+        
+        .company-info h3 {
+            font-size: 16px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 4px;
+        }
+        
+        .company-info p {
+            font-size: 14px;
+            color: #666;
+        }
+        
+        .company-contact {
+            padding: 12px 0;
+            border-top: 1px solid #00000024;
+            margin-top: 16px;
+        }
+        
+        .contact-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 8px;
+            font-size: 14px;
+            color: #666;
+        }
+        
+        .job-stats {
+            list-style: none;
+        }
+        
+        .job-stats li {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #f3f2ef;
+            font-size: 14px;
+        }
+        
+        .job-stats li:last-child {
+            border-bottom: none;
+        }
+        
+        .stat-label {
+            color: #666;
+        }
+        
+        .stat-value {
+            font-weight: 600;
+            color: #333;
+        }
+        
+        /* Similar Jobs */
+        .similar-job {
+            padding: 12px 0;
+            border-bottom: 1px solid #f3f2ef;
+            cursor: pointer;
+            transition: background-color 0.15s ease;
+        }
+        
+        .similar-job:last-child {
+            border-bottom: none;
+        }
+        
+        .similar-job:hover {
+            background-color: #f8f9fa;
+            margin: 0 -12px;
+            padding: 12px;
+            border-radius: 4px;
+        }
+        
+        .similar-job h4 {
+            font-size: 14px;
+            font-weight: 600;
+            color: #0a66c2;
+            margin-bottom: 4px;
+        }
+        
+        .similar-job p {
+            font-size: 12px;
+            color: #666;
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .main-container {
+                grid-template-columns: 1fr;
+                padding: 16px;
+            }
+            
+            .sidebar {
+                position: static;
+                order: 1;
+            }
+            
+            .job-content {
+                order: 2;
+            }
+            
+            .job-meta {
+                grid-template-columns: 1fr;
+            }
+            
+            .job-actions {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .nav-container {
+                padding: 0 16px;
+            }
+        }
+        
+        /* Modal for Application */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1001;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+        }
+        
+        .modal-content {
+            background-color: white;
+            margin: 5% auto;
+            padding: 20px;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 500px;
+            position: relative;
+        }
+        
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            position: absolute;
+            top: 10px;
+            right: 15px;
+        }
+        
+        .close:hover {
+            color: #000;
+        }
+        
+        /* Animations */
+        .fade-in {
+            animation: fadeIn 0.3s ease-in;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+        }
+    </style>
+</head>
+<body>
+    <!-- Top Navigation -->
+    <nav class="top-nav">
+        <div class="nav-container">
+            <a href="/" class="logo">💇‍♀️ Kuaför İlan</a>
+            
+            <div class="nav-breadcrumb">
+                <a href="/">Ana Sayfa</a> / <a href="/jobs/">İş İlanları</a> / {{ job.title|truncatechars:30 }}
+            </div>
+            
+            <div class="auth-buttons">
+                {% if user.is_authenticated %}
+                    <a href="/profile/" class="btn btn-secondary">Profilim</a>
+                    <a href="/auth/logout/" class="btn btn-primary">Çıkış</a>
+                {% else %}
+                    <a href="/auth/login/" class="btn btn-secondary">Giriş Yap</a>
+                    <a href="/auth/register/" class="btn btn-primary">Kayıt Ol</a>
+                {% endif %}
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Container -->
+    <div class="main-container">
+        <!-- Job Content -->
+        <main class="job-content">
+            <!-- Job Header -->
+            <div class="job-header fade-in">
+                <h1 class="job-title">{{ job.title }}</h1>
+                <div class="job-company" onclick="viewCompany()">
+                    {{ job.business.first_name }} {{ job.business.last_name }}
+                    {% if job.business.businessprofile %}
+                        - {{ job.business.businessprofile.business_name }}
+                    {% endif %}
+                </div>
+                
+                <div class="job-meta">
+                    <div class="job-meta-item">
+                        <span class="job-meta-icon">📍</span>
+                        <span>{{ job.city }}{% if job.district %}, {{ job.district }}{% endif %}</span>
+                    </div>
+                    <div class="job-meta-item">
+                        <span class="job-meta-icon">🏷️</span>
+                        <span>{{ job.category.name }}</span>
+                    </div>
+                    <div class="job-meta-item">
+                        <span class="job-meta-icon">💰</span>
+                        <span>
+                            {% if job.salary_min and job.salary_max %}
+                                ₺{{ job.salary_min }} - ₺{{ job.salary_max }}
+                            {% elif job.salary_min %}
+                                ₺{{ job.salary_min }}+
+                            {% else %}
+                                Maaş görüşülür
+                            {% endif %}
+                        </span>
+                    </div>
+                    <div class="job-meta-item">
+                        <span class="job-meta-icon">👁️</span>
+                        <span>{{ job.views_count }} görüntülenme</span>
+                    </div>
+                    <div class="job-meta-item">
+                        <span class="job-meta-icon">📅</span>
+                        <span>{{ job.created_at|timesince }} önce yayınlandı</span>
+                    </div>
+                </div>
+                
+                <div class="job-tags">
+                    <span class="job-tag">{{ job.category.name }}</span>
+                    {% if job.is_urgent %}
+                        <span class="job-tag urgent">⚡ Acil</span>
+                    {% endif %}
+                    <span class="job-tag">{{ job.city }}</span>
+                </div>
+                
+                <div class="job-actions">
+                    {% if user.is_authenticated %}
+                        {% if user_applied %}
+                            <button class="apply-btn applied" disabled>
+                                ✓ Başvuru Yapıldı
+                            </button>
+                        {% else %}
+                            <button class="apply-btn" onclick="showApplicationForm()">
+                                Başvur
+                            </button>
+                        {% endif %}
+                    {% else %}
+                        <button class="apply-btn" onclick="redirectToLogin()">
+                            Başvuru İçin Giriş Yap
+                        </button>
+                    {% endif %}
+                    
+                    <button class="save-btn" onclick="saveJob()">
+                        <span>🔖</span> Kaydet
+                    </button>
+                    <button class="share-btn" onclick="shareJob()">
+                        <span>🔗</span> Paylaş
+                    </button>
+                </div>
+            </div>
+
+            <!-- Job Description -->
+            <div class="job-description fade-in">
+                <h2 class="section-title">İş Açıklaması</h2>
+                <div class="description-text">{{ job.description }}</div>
+            </div>
+
+            <!-- Application Form (Hidden by default) -->
+            {% if user.is_authenticated and not user_applied %}
+                <div class="application-form fade-in" id="applicationForm" style="display: none;">
+                    <h2 class="section-title">Başvuru Formu</h2>
+                    <form onsubmit="submitApplication(event)">
+                        <div class="form-group">
+                            <label class="form-label" for="coverLetter">Ön Yazı (İsteğe Bağlı)</label>
+                            <textarea id="coverLetter" name="cover_letter" class="form-textarea" 
+                                      placeholder="Kendinizi tanıtın ve neden bu pozisyon için uygun olduğunuzu açıklayın..."></textarea>
+                        </div>
+                        <button type="submit" class="submit-btn">Başvuru Gönder</button>
+                    </form>
+                </div>
+            {% endif %}
+        </main>
+
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <!-- Company Card -->
+            <div class="company-card fade-in">
+                <div class="company-header">
+                    <div class="company-avatar"></div>
+                    <div class="company-info">
+                        <h3>{{ job.business.first_name }} {{ job.business.last_name }}</h3>
+                        <p>
+                            {% if job.business.businessprofile %}
+                                {{ job.business.businessprofile.business_name }}
+                            {% else %}
+                                İş Veren
+                            {% endif %}
+                        </p>
+                    </div>
+                </div>
+                
+                {% if job.business.businessprofile %}
+                    <p style="font-size: 14px; color: #666; margin-bottom: 16px;">
+                        {{ job.business.businessprofile.description|truncatechars:100 }}
+                    </p>
+                    
+                    <div class="company-contact">
+                        {% if job.business.businessprofile.phone %}
+                            <div class="contact-item">
+                                <span>📞</span>
+                                <span>{{ job.business.businessprofile.phone }}</span>
+                            </div>
+                        {% endif %}
+                        {% if job.business.businessprofile.website %}
+                            <div class="contact-item">
+                                <span>🌐</span>
+                                <a href="{{ job.business.businessprofile.website }}" target="_blank" style="color: #0a66c2;">
+                                    Website
+                                </a>
+                            </div>
+                        {% endif %}
+                        <div class="contact-item">
+                            <span>📧</span>
+                            <span>{{ job.business.email }}</span>
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- Job Stats -->
+            <div class="job-stats-card fade-in">
+                <h3 class="section-title">İlan İstatistikleri</h3>
+                <ul class="job-stats">
+                    <li>
+                        <span class="stat-label">Görüntülenme</span>
+                        <span class="stat-value">{{ job.views_count }}</span>
+                    </li>
+                    <li>
+                        <span class="stat-label">Yayın Tarihi</span>
+                        <span class="stat-value">{{ job.created_at|date:"d M Y" }}</span>
+                    </li>
+                    <li>
+                        <span class="stat-label">Son Güncelleme</span>
+                        <span class="stat-value">{{ job.updated_at|date:"d M Y" }}</span>
+                    </li>
+                    <li>
+                        <span class="stat-label">Durum</span>
+                        <span class="stat-value">
+                            {% if job.status == 'active' %}
+                                🟢 Aktif
+                            {% else %}
+                                🔴 Pasif
+                            {% endif %}
+                        </span>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Similar Jobs -->
+            {% if similar_jobs %}
+                <div class="similar-jobs-card fade-in">
+                    <h3 class="section-title">Benzer İlanlar</h3>
+                    {% for similar_job in similar_jobs %}
+                        <div class="similar-job" onclick="goToJob({{ similar_job.id }})">
+                            <h4>{{ similar_job.title }}</h4>
+                            <p>{{ similar_job.city }} • {{ similar_job.created_at|timesince }} önce</p>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </aside>
+    </div>
+
+    <!-- Application Modal -->
+    <div id="applicationModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal()">&times;</span>
+            <h2>Başvuru Durumu</h2>
+            <p id="modalMessage"></p>
+        </div>
+    </div>
+
+    <script>
+        // Show application form
+        function showApplicationForm() {
+            const form = document.getElementById('applicationForm');
+            form.style.display = 'block';
+            form.scrollIntoView({ behavior: 'smooth' });
+        }
+        
+        // Submit application
+        function submitApplication(event) {
+            event.preventDefault();
+            
+            const coverLetter = document.getElementById('coverLetter').value;
+            const submitBtn = event.target.querySelector('.submit-btn');
+            
+            submitBtn.textContent = 'Gönderiliyor...';
+            submitBtn.disabled = true;
+            
+            fetch(`/jobs/{{ job.id }}/apply/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: `cover_letter=${encodeURIComponent(coverLetter)}`
+            })
+            .then(response => response.json())
+            .then(data => {
+                showModal(data.message);
+                if (data.success) {
+                    // Update page to show applied state
+                    location.reload();
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showModal('Bir hata oluştu. Lütfen tekrar deneyin.');
+            })
+            .finally(() => {
+                submitBtn.textContent = 'Başvuru Gönder';
+                submitBtn.disabled = false;
+            });
+        }
+        
+        // Redirect to login
+        function redirectToLogin() {
+            window.location.href = '/auth/login/?next=' + encodeURIComponent(window.location.pathname);
+        }
+        
+        // Save job
+        function saveJob() {
+            // This would save to user's saved jobs
+            alert('İlan kaydedildi! (Bu özellik yakında eklenecek)');
+        }
+        
+        // Share job
+        function shareJob() {
+            if (navigator.share) {
+                navigator.share({
+                    title: '{{ job.title }}',
+                    text: '{{ job.title }} - {{ job.business.first_name }} {{ job.business.last_name }}',
+                    url: window.location.href
+                });
+            } else {
+                // Fallback: copy to clipboard
+                navigator.clipboard.writeText(window.location.href).then(() => {
+                    alert('İlan linki kopyalandı!');
+                });
+            }
+        }
+        
+        // View company
+        function viewCompany() {
+            alert('Şirket profili özelliği yakında eklenecek!');
+        }
+        
+        // Go to similar job
+        function goToJob(jobId) {
+            window.location.href = `/jobs/${jobId}/`;
+        }
+        
+        // Modal functions
+        function showModal(message) {
+            document.getElementById('modalMessage').textContent = message;
+            document.getElementById('applicationModal').style.display = 'block';
+        }
+        
+        function closeModal() {
+            document.getElementById('applicationModal').style.display = 'none';
+        }
+        
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const modal = document.getElementById('applicationModal');
+            if (event.target === modal) {
+                modal.style.display = 'none';
+            }
+        }
+        
+        // Get CSRF token
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+        
+        // Add fade-in animation
+        function addFadeIn() {
+            const elements = document.querySelectorAll('.fade-in');
+            elements.forEach((element, index) => {
+                element.style.animationDelay = `${index * 0.1}s`;
+            });
+        }
+        
+        // Initialize
+        document.addEventListener('DOMContentLoaded', addFadeIn);
+    </script>
+</body>
+</html>
