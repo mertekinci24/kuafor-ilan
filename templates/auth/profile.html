@@ -1,0 +1,519 @@
+{% extends 'base.html' %}
+
+{% block title %}Profil - Kuaför İlan{% endblock %}
+
+{% block extra_css %}
+<style>
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+    
+    body {
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        background: #f8fafc;
+        color: #1e293b;
+    }
+    
+    .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 40px 20px;
+    }
+    
+    .profile-header {
+        background: white;
+        border-radius: 16px;
+        padding: 40px;
+        margin-bottom: 32px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        display: flex;
+        align-items: center;
+        gap: 32px;
+    }
+    
+    .profile-avatar {
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #0a66c2, #004182);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 48px;
+        font-weight: 700;
+    }
+    
+    .profile-info h1 {
+        font-size: 32px;
+        font-weight: 700;
+        color: #1e293b;
+        margin-bottom: 8px;
+    }
+    
+    .profile-meta {
+        display: flex;
+        gap: 24px;
+        margin-bottom: 16px;
+        flex-wrap: wrap;
+    }
+    
+    .profile-meta span {
+        color: #64748b;
+        font-size: 16px;
+    }
+    
+    .profile-badges {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+    }
+    
+    .badge {
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 600;
+    }
+    
+    .badge-primary {
+        background: #dbeafe;
+        color: #1d4ed8;
+    }
+    
+    .badge-success {
+        background: #dcfce7;
+        color: #16a34a;
+    }
+    
+    .profile-content {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 32px;
+    }
+    
+    .profile-card {
+        background: white;
+        border-radius: 16px;
+        padding: 32px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+    
+    .card-header {
+        display: flex;
+        justify-content: between;
+        align-items: center;
+        margin-bottom: 24px;
+    }
+    
+    .card-title {
+        font-size: 20px;
+        font-weight: 700;
+        color: #1e293b;
+    }
+    
+    .edit-btn {
+        background: #0a66c2;
+        color: white;
+        border: none;
+        padding: 8px 16px;
+        border-radius: 8px;
+        font-size: 12px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    
+    .edit-btn:hover {
+        background: #004182;
+        transform: translateY(-1px);
+    }
+    
+    .form-group {
+        margin-bottom: 20px;
+    }
+    
+    .form-label {
+        display: block;
+        font-weight: 600;
+        color: #333;
+        margin-bottom: 8px;
+        font-size: 14px;
+    }
+    
+    .form-input, .form-select, .form-textarea {
+        width: 100%;
+        border: 2px solid #e1e5e9;
+        border-radius: 8px;
+        padding: 12px 16px;
+        font-size: 16px;
+        transition: all 0.3s ease;
+        background: white;
+    }
+    
+    .form-input:focus, .form-select:focus, .form-textarea:focus {
+        outline: none;
+        border-color: #0a66c2;
+        box-shadow: 0 0 0 3px rgba(10,102,194,0.1);
+    }
+    
+    .form-textarea {
+        min-height: 100px;
+        resize: vertical;
+    }
+    
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 16px;
+        margin-bottom: 24px;
+    }
+    
+    .stat-item {
+        text-align: center;
+        padding: 20px;
+        background: #f8fafc;
+        border-radius: 12px;
+    }
+    
+    .stat-value {
+        font-size: 24px;
+        font-weight: 700;
+        color: #0a66c2;
+        margin-bottom: 4px;
+    }
+    
+    .stat-label {
+        font-size: 12px;
+        color: #64748b;
+        font-weight: 500;
+    }
+    
+    .back-btn {
+        background: #64748b;
+        color: white;
+        text-decoration: none;
+        padding: 12px 24px;
+        border-radius: 8px;
+        font-weight: 600;
+        display: inline-block;
+        margin-bottom: 32px;
+        transition: all 0.3s ease;
+    }
+    
+    .back-btn:hover {
+        background: #475569;
+        transform: translateY(-1px);
+    }
+    
+    .save-btn {
+        background: #16a34a;
+        color: white;
+        border: none;
+        padding: 12px 24px;
+        border-radius: 8px;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        width: 100%;
+    }
+    
+    .save-btn:hover {
+        background: #15803d;
+        transform: translateY(-1px);
+    }
+    
+    @media (max-width: 768px) {
+        .profile-header {
+            flex-direction: column;
+            text-align: center;
+        }
+        
+        .profile-content {
+            grid-template-columns: 1fr;
+        }
+        
+        .profile-meta {
+            justify-content: center;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <a href="{% url 'dashboard:home' %}" class="back-btn">← Dashboard'a Dön</a>
+    
+    <!-- Profile Header -->
+    <div class="profile-header">
+        <div class="profile-avatar">
+            {{ user.first_name.0|default:'U' }}{{ user.last_name.0|default:'' }}
+        </div>
+        <div class="profile-info">
+            <h1>{{ user.get_full_name|default:user.email }}</h1>
+            <div class="profile-meta">
+                <span>📧 {{ user.email }}</span>
+                {% if user.phone %}
+                    <span>📱 {{ user.phone }}</span>
+                {% endif %}
+                <span>📅 {{ user.date_joined|date:"d M Y" }} tarihinde katıldı</span>
+            </div>
+            <div class="profile-badges">
+                {% if user.user_type == 'jobseeker' %}
+                    <span class="badge badge-primary">İş Arayan</span>
+                {% else %}
+                    <span class="badge badge-primary">İş Veren</span>
+                {% endif %}
+                
+                <span class="badge badge-primary">{{ user.get_current_plan_display }}</span>
+                
+                {% if user.is_verified %}
+                    <span class="badge badge-success">Doğrulanmış</span>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Profile Content -->
+    <div class="profile-content">
+        <!-- Sol Panel - Kişisel Bilgiler -->
+        <div class="profile-card">
+            <div class="card-header">
+                <h2 class="card-title">Kişisel Bilgiler</h2>
+                <button class="edit-btn" onclick="toggleEdit('personal')">Düzenle</button>
+            </div>
+            
+            <form id="personalForm">
+                <div class="form-group">
+                    <label class="form-label">Ad</label>
+                    <input type="text" class="form-input" value="{{ user.first_name }}" name="first_name" readonly>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Soyad</label>
+                    <input type="text" class="form-input" value="{{ user.last_name }}" name="last_name" readonly>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">E-posta</label>
+                    <input type="email" class="form-input" value="{{ user.email }}" name="email" readonly>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Telefon</label>
+                    <input type="tel" class="form-input" value="{{ user.phone|default:'' }}" name="phone" readonly>
+                </div>
+                
+                <button type="button" class="save-btn" onclick="savePersonalInfo()" style="display: none;">
+                    Kaydet
+                </button>
+            </form>
+        </div>
+        
+        <!-- Sağ Panel - Profil Detayları -->
+        <div class="profile-card">
+            <div class="card-header">
+                <h2 class="card-title">
+                    {% if user.user_type == 'jobseeker' %}
+                        Profesyonel Bilgiler
+                    {% else %}
+                        Şirket Bilgileri
+                    {% endif %}
+                </h2>
+                <button class="edit-btn" onclick="toggleEdit('professional')">Düzenle</button>
+            </div>
+            
+            {% if user.user_type == 'jobseeker' %}
+                <!-- İş Arayan İstatistikleri -->
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <div class="stat-value">{{ profile.total_applications|default:0 }}</div>
+                        <div class="stat-label">Başvuru</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value">{{ user.profile_views|default:0 }}</div>
+                        <div class="stat-label">Görüntülenme</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value">{{ profile.successful_applications|default:0 }}</div>
+                        <div class="stat-label">Başarılı</div>
+                    </div>
+                </div>
+                
+                <form id="professionalForm">
+                    <div class="form-group">
+                        <label class="form-label">Şehir</label>
+                        <select class="form-select" name="city" disabled>
+                            <option value="">Şehir seçin</option>
+                            <option value="İstanbul" {% if profile.city == 'İstanbul' %}selected{% endif %}>İstanbul</option>
+                            <option value="Ankara" {% if profile.city == 'Ankara' %}selected{% endif %}>Ankara</option>
+                            <option value="İzmir" {% if profile.city == 'İzmir' %}selected{% endif %}>İzmir</option>
+                            <option value="Bursa" {% if profile.city == 'Bursa' %}selected{% endif %}>Bursa</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Deneyim</label>
+                        <select class="form-select" name="experience_years" disabled>
+                            <option value="beginner" {% if profile.experience_years == 'beginner' %}selected{% endif %}>Yeni başlayan</option>
+                            <option value="1-2" {% if profile.experience_years == '1-2' %}selected{% endif %}>1-2 yıl</option>
+                            <option value="3-5" {% if profile.experience_years == '3-5' %}selected{% endif %}>3-5 yıl</option>
+                            <option value="6-10" {% if profile.experience_years == '6-10' %}selected{% endif %}>6-10 yıl</option>
+                            <option value="10+" {% if profile.experience_years == '10+' %}selected{% endif %}>10+ yıl</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Hakkında</label>
+                        <textarea class="form-textarea" name="bio" readonly placeholder="Kendinizi tanıtın...">{{ profile.bio|default:'' }}</textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Portföy URL</label>
+                        <input type="url" class="form-input" value="{{ profile.portfolio_url|default:'' }}" name="portfolio_url" readonly>
+                    </div>
+                    
+                    <button type="button" class="save-btn" onclick="saveProfessionalInfo()" style="display: none;">
+                        Kaydet
+                    </button>
+                </form>
+            {% else %}
+                <!-- İş Veren İstatistikleri -->
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <div class="stat-value">{{ profile.total_job_posts|default:0 }}</div>
+                        <div class="stat-label">İlan</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value">{{ profile.active_job_posts|default:0 }}</div>
+                        <div class="stat-label">Aktif İlan</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value">{{ profile.total_applications_received|default:0 }}</div>
+                        <div class="stat-label">Başvuru</div>
+                    </div>
+                </div>
+                
+                <form id="professionalForm">
+                    <div class="form-group">
+                        <label class="form-label">Şirket Adı</label>
+                        <input type="text" class="form-input" value="{{ profile.company_name|default:'' }}" name="company_name" readonly>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Şehir</label>
+                        <select class="form-select" name="city" disabled>
+                            <option value="">Şehir seçin</option>
+                            <option value="İstanbul" {% if profile.city == 'İstanbul' %}selected{% endif %}>İstanbul</option>
+                            <option value="Ankara" {% if profile.city == 'Ankara' %}selected{% endif %}>Ankara</option>
+                            <option value="İzmir" {% if profile.city == 'İzmir' %}selected{% endif %}>İzmir</option>
+                            <option value="Bursa" {% if profile.city == 'Bursa' %}selected{% endif %}>Bursa</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Şirket Açıklaması</label>
+                        <textarea class="form-textarea" name="company_description" readonly placeholder="Şirketinizi tanıtın...">{{ profile.company_description|default:'' }}</textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Web Sitesi</label>
+                        <input type="url" class="form-input" value="{{ profile.website|default:'' }}" name="website" readonly>
+                    </div>
+                    
+                    <button type="button" class="save-btn" onclick="saveProfessionalInfo()" style="display: none;">
+                        Kaydet
+                    </button>
+                </form>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function toggleEdit(formType) {
+        const form = document.getElementById(formType + 'Form');
+        const inputs = form.querySelectorAll('input, select, textarea');
+        const saveBtn = form.querySelector('.save-btn');
+        const editBtn = form.parentElement.querySelector('.edit-btn');
+        
+        const isReadonly = inputs[0].readOnly || inputs[0].disabled;
+        
+        inputs.forEach(input => {
+            if (input.type !== 'email') { // E-posta değiştirilemez
+                input.readOnly = !isReadonly;
+                input.disabled = !isReadonly;
+            }
+        });
+        
+        if (isReadonly) {
+            saveBtn.style.display = 'block';
+            editBtn.textContent = 'İptal';
+            editBtn.style.background = '#dc2626';
+        } else {
+            saveBtn.style.display = 'none';
+            editBtn.textContent = 'Düzenle';
+            editBtn.style.background = '#0a66c2';
+        }
+    }
+    
+    function savePersonalInfo() {
+        const form = document.getElementById('personalForm');
+        const formData = new FormData(form);
+        
+        fetch('{% url "authentication:update_profile_api" %}', {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': window.csrfToken,
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(Object.fromEntries(formData))
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Bilgiler başarıyla güncellendi!');
+                location.reload();
+            } else {
+                alert('Hata: ' + data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Bir hata oluştu!');
+        });
+    }
+    
+    function saveProfessionalInfo() {
+        const form = document.getElementById('professionalForm');
+        const formData = new FormData(form);
+        
+        fetch('{% url "authentication:update_profile_api" %}', {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': window.csrfToken,
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(Object.fromEntries(formData))
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Bilgiler başarıyla güncellendi!');
+                location.reload();
+            } else {
+                alert('Hata: ' + data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Bir hata oluştu!');
+        });
+    }
+</script>
+{% endblock %}
