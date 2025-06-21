@@ -118,6 +118,40 @@
             text-align: center;
         }
         
+        .auth-buttons {
+            display: flex;
+            gap: 12px;
+            margin-left: 20px;
+        }
+        
+        .btn {
+            padding: 8px 16px;
+            border-radius: 16px;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.15s ease;
+            border: 1px solid #0a66c2;
+        }
+        
+        .btn-secondary {
+            background: transparent;
+            color: #0a66c2;
+        }
+        
+        .btn-secondary:hover {
+            background: #e8f4f8;
+        }
+        
+        .btn-primary {
+            background: #0a66c2;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #004182;
+        }
+        
         /* Main Content */
         .main-container {
             max-width: 1128px;
@@ -439,6 +473,15 @@
             .main-container {
                 padding: 16px;
             }
+            
+            .auth-buttons {
+                margin-left: 10px;
+            }
+            
+            .btn {
+                padding: 6px 12px;
+                font-size: 12px;
+            }
         }
         
         /* Animations */
@@ -506,6 +549,11 @@
                     <div class="nav-icon">👤</div>
                     <div class="nav-text">Ben</div>
                 </a>
+            </div>
+            
+            <div class="auth-buttons">
+                <a href="/auth/login/" class="btn btn-secondary">Giriş Yap</a>
+                <a href="/auth/register/" class="btn btn-primary">Kayıt Ol</a>
             </div>
         </div>
     </nav>
