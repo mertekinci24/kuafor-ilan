@@ -91,7 +91,7 @@
             padding: 16px 32px;
             border-bottom: 1px solid #e2e8f0;
             display: flex;
-            justify-content: between;
+            justify-content: space-between;
             align-items: center;
         }
         
@@ -379,6 +379,9 @@
         .status-success { background: #dcfce7; color: #16a34a; }
         .status-pending { background: #fef3c7; color: #d97706; }
         .status-rejected { background: #fee2e2; color: #dc2626; }
+        .status-new { background: #dbeafe; color: #1d4ed8; }
+        .status-urgent { background: #fecaca; color: #dc2626; }
+        .status-active { background: #dcfce7; color: #16a34a; }
         
         /* Mobile Responsive */
         @media (max-width: 768px) {
@@ -417,6 +420,25 @@
     </style>
 </head>
 <body>
+    <!-- User Data -->
+    <script type="application/json" id="user-data">
+        {
+            "name": "{{ user_info.name|default:'Admin User'|escapejs }}",
+            "email": "{{ user_info.email|default:'admin@kuaforilan.com'|escapejs }}",
+            "avatar": "{{ user_info.avatar|default:'A'|escapejs }}",
+            "userType": "{{ user_info.user_type|default:'job_seeker'|escapejs }}"
+        }
+    </script>
+
+    <script type="application/json" id="stats-data">
+        {
+            "stat1": {{ stats.total_jobs|default:stats.applied_jobs|default:124 }},
+            "stat2": {{ stats.active_applications|default:stats.profile_views|default:89 }},
+            "stat3": {{ stats.new_members|default:stats.saved_jobs|default:45 }},
+            "stat4": {{ stats.total_revenue|default:stats.messages|default:12450 }}
+        }
+    </script>
+
     <!-- Sidebar -->
     <div class="sidebar" id="sidebar">
         <div class="sidebar-header">
@@ -428,7 +450,7 @@
         
         <nav class="nav-menu">
             <div class="nav-item">
-                <a href="#" class="nav-link active">
+                <a href="/dashboard/" class="nav-link active">
                     <span class="nav-icon">📊</span>
                     <span>Dashboard</span>
                 </a>
@@ -452,15 +474,15 @@
                 </a>
             </div>
             <div class="nav-item">
-                <a href="#" class="nav-link">
+                <a href="/profile/" class="nav-link">
                     <span class="nav-icon">👤</span>
                     <span>Profil</span>
                 </a>
             </div>
             <div class="nav-item">
-                <a href="#" class="nav-link">
-                    <span class="nav-icon">⚙️</span>
-                    <span>Ayarlar</span>
+                <a href="/auth/logout/" class="nav-link">
+                    <span class="nav-icon">🚪</span>
+                    <span>Çıkış</span>
                 </a>
             </div>
         </nav>
@@ -482,10 +504,10 @@
                 </div>
                 
                 <div class="user-menu">
-                    <div class="user-avatar">{{ user_info.avatar }}</div>
+                    <div class="user-avatar" id="userAvatar">A</div>
                     <div>
-                        <div style="font-size: 14px; font-weight: 600;">{{ user_info.name }}</div>
-                        <div style="font-size: 12px; color: #64748b;">{{ user_info.email }}</div>
+                        <div style="font-size: 14px; font-weight: 600;" id="userName">Admin User</div>
+                        <div style="font-size: 12px; color: #64748b;" id="userEmail">admin@kuaforilan.com</div>
                     </div>
                 </div>
             </div>
@@ -494,68 +516,22 @@
         <!-- Dashboard Content -->
         <div class="dashboard-content">
             <!-- Stats Cards -->
-            <div class="stats-grid">
-                <div class="stat-card">
-                    <div class="stat-header">
-                        <div class="stat-title">Toplam İlanlar</div>
-                        <div class="stat-icon blue">💼</div>
-                    </div>
-                    <div class="stat-value">124</div>
-                    <div class="stat-change positive">
-                        <span>↗️</span>
-                        <span>+12% bu ay</span>
-                    </div>
-                </div>
-                
-                <div class="stat-card">
-                    <div class="stat-header">
-                        <div class="stat-title">Aktif Başvurular</div>
-                        <div class="stat-icon green">👥</div>
-                    </div>
-                    <div class="stat-value">89</div>
-                    <div class="stat-change positive">
-                        <span>↗️</span>
-                        <span>+8% bu hafta</span>
-                    </div>
-                </div>
-                
-                <div class="stat-card">
-                    <div class="stat-header">
-                        <div class="stat-title">Yeni Üyeler</div>
-                        <div class="stat-icon purple">🆕</div>
-                    </div>
-                    <div class="stat-value">45</div>
-                    <div class="stat-change positive">
-                        <span>↗️</span>
-                        <span>+23% bu ay</span>
-                    </div>
-                </div>
-                
-                <div class="stat-card">
-                    <div class="stat-header">
-                        <div class="stat-title">Toplam Gelir</div>
-                        <div class="stat-icon orange">💰</div>
-                    </div>
-                    <div class="stat-value">₺12,450</div>
-                    <div class="stat-change positive">
-                        <span>↗️</span>
-                        <span>+15% bu ay</span>
-                    </div>
-                </div>
+            <div class="stats-grid" id="statsGrid">
+                <!-- Stats will be loaded here -->
             </div>
             
             <!-- Charts -->
             <div class="charts-grid">
                 <div class="chart-card">
                     <div class="chart-header">
-                        <div class="chart-title">İlan Performansı</div>
+                        <div class="chart-title" id="chartTitle">İlan Performansı</div>
                         <div class="chart-filter">
                             <button class="filter-btn active">7 Gün</button>
                             <button class="filter-btn">30 Gün</button>
                             <button class="filter-btn">90 Gün</button>
                         </div>
                     </div>
-                    <div class="chart-placeholder">
+                    <div class="chart-placeholder" id="chartPlaceholder">
                         📈 İlan performans grafiği burada görünecek
                     </div>
                 </div>
@@ -574,73 +550,23 @@
             <div class="activity-grid">
                 <div class="activity-card">
                     <div class="activity-header">
-                        <div class="activity-title">Son Başvurular</div>
+                        <div class="activity-title" id="activityTitle">Son Başvurular</div>
                         <a href="#" class="view-all">Tümünü Gör</a>
                     </div>
                     
-                    <ul class="activity-list">
-                        <li class="activity-item">
-                            <div class="activity-avatar">AY</div>
-                            <div class="activity-content">
-                                <div class="activity-text">Ayşe Yılmaz kuaför pozisyonuna başvurdu</div>
-                                <div class="activity-time">2 saat önce</div>
-                            </div>
-                            <div class="activity-status status-pending">Beklemede</div>
-                        </li>
-                        
-                        <li class="activity-item">
-                            <div class="activity-avatar">MK</div>
-                            <div class="activity-content">
-                                <div class="activity-text">Mehmet Kaya berber pozisyonuna başvurdu</div>
-                                <div class="activity-time">4 saat önce</div>
-                            </div>
-                            <div class="activity-status status-success">Onaylandı</div>
-                        </li>
-                        
-                        <li class="activity-item">
-                            <div class="activity-avatar">EÖ</div>
-                            <div class="activity-content">
-                                <div class="activity-text">Elif Özkan yeni profil oluşturdu</div>
-                                <div class="activity-time">6 saat önce</div>
-                            </div>
-                            <div class="activity-status status-success">Tamamlandı</div>
-                        </li>
+                    <ul class="activity-list" id="activityList">
+                        <!-- Activities will be loaded here -->
                     </ul>
                 </div>
                 
                 <div class="activity-card">
                     <div class="activity-header">
-                        <div class="activity-title">Son İlanlar</div>
+                        <div class="activity-title" id="jobsTitle">Son İlanlar</div>
                         <a href="#" class="view-all">Tümünü Gör</a>
                     </div>
                     
-                    <ul class="activity-list">
-                        <li class="activity-item">
-                            <div class="activity-avatar">🏢</div>
-                            <div class="activity-content">
-                                <div class="activity-text">Güzellik Salonu - Kuaför Aranıyor</div>
-                                <div class="activity-time">İstanbul, Kadıköy</div>
-                            </div>
-                            <div class="activity-status status-success">Aktif</div>
-                        </li>
-                        
-                        <li class="activity-item">
-                            <div class="activity-avatar">💇</div>
-                            <div class="activity-content">
-                                <div class="activity-text">Modern Berber - Deneyimli Berber</div>
-                                <div class="activity-time">Ankara, Çankaya</div>
-                            </div>
-                            <div class="activity-status status-pending">İnceleniyor</div>
-                        </li>
-                        
-                        <li class="activity-item">
-                            <div class="activity-avatar">✨</div>
-                            <div class="activity-content">
-                                <div class="activity-text">Hair Studio - Saç Uzmanı</div>
-                                <div class="activity-time">İzmir, Konak</div>
-                            </div>
-                            <div class="activity-status status-success">Aktif</div>
-                        </li>
+                    <ul class="activity-list" id="jobsList">
+                        <!-- Jobs will be loaded here -->
                     </ul>
                 </div>
             </div>
@@ -648,6 +574,241 @@
     </div>
 
     <script>
+        // Get data from JSON scripts
+        const userData = JSON.parse(document.getElementById('user-data').textContent);
+        const statsData = JSON.parse(document.getElementById('stats-data').textContent);
+        
+        // Sample data
+        const activitiesData = [
+            {
+                avatar: "AY",
+                userName: "Ayşe Yılmaz",
+                action: "kuaför pozisyonuna başvurdu",
+                time: "2 saat önce",
+                status: "pending"
+            },
+            {
+                avatar: "MK",
+                userName: "Mehmet Kaya",
+                action: "berber pozisyonuna başvurdu",
+                time: "4 saat önce",
+                status: "success"
+            },
+            {
+                avatar: "EÖ",
+                userName: "Elif Özkan",
+                action: "yeni profil oluşturdu",
+                time: "6 saat önce",
+                status: "success"
+            }
+        ];
+        
+        const jobsData = [
+            {
+                icon: "🏢",
+                title: "Güzellik Salonu - Kuaför Aranıyor",
+                location: "İstanbul, Kadıköy",
+                status: "active"
+            },
+            {
+                icon: "💇",
+                title: "Modern Berber - Deneyimli Berber",
+                location: "Ankara, Çankaya",
+                status: "pending"
+            },
+            {
+                icon: "✨",
+                title: "Hair Studio - Saç Uzmanı",
+                location: "İzmir, Konak",
+                status: "active"
+            }
+        ];
+        
+        // Initialize dashboard
+        function initializeDashboard() {
+            // Set user info
+            document.getElementById('userAvatar').textContent = userData.avatar;
+            document.getElementById('userName').textContent = userData.name;
+            document.getElementById('userEmail').textContent = userData.email;
+            
+            // Load stats
+            loadStats();
+            
+            // Load activities
+            loadActivities();
+            
+            // Load jobs
+            loadJobs();
+            
+            // Update titles based on user type
+            updateTitles();
+        }
+        
+        function loadStats() {
+            const statsGrid = document.getElementById('statsGrid');
+            let statsHtml = '';
+            
+            if (userData.userType === 'business') {
+                statsHtml = `
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <div class="stat-title">Toplam İlanlar</div>
+                            <div class="stat-icon blue">💼</div>
+                        </div>
+                        <div class="stat-value">${statsData.stat1}</div>
+                        <div class="stat-change positive">
+                            <span>↗️</span>
+                            <span>+12% bu ay</span>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <div class="stat-title">Aktif Başvurular</div>
+                            <div class="stat-icon green">👥</div>
+                        </div>
+                        <div class="stat-value">${statsData.stat2}</div>
+                        <div class="stat-change positive">
+                            <span>↗️</span>
+                            <span>+8% bu hafta</span>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <div class="stat-title">Yeni Üyeler</div>
+                            <div class="stat-icon purple">🆕</div>
+                        </div>
+                        <div class="stat-value">${statsData.stat3}</div>
+                        <div class="stat-change positive">
+                            <span>↗️</span>
+                            <span>+23% bu ay</span>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <div class="stat-title">Toplam Gelir</div>
+                            <div class="stat-icon orange">💰</div>
+                        </div>
+                        <div class="stat-value">₺${statsData.stat4.toLocaleString()}</div>
+                        <div class="stat-change positive">
+                            <span>↗️</span>
+                            <span>+15% bu ay</span>
+                        </div>
+                    </div>
+                `;
+            } else {
+                statsHtml = `
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <div class="stat-title">Başvurduğum İlanlar</div>
+                            <div class="stat-icon blue">📋</div>
+                        </div>
+                        <div class="stat-value">${statsData.stat1}</div>
+                        <div class="stat-change positive">
+                            <span>↗️</span>
+                            <span>+3 bu hafta</span>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <div class="stat-title">Profil Görüntüleme</div>
+                            <div class="stat-icon green">👁️</div>
+                        </div>
+                        <div class="stat-value">${statsData.stat2}</div>
+                        <div class="stat-change positive">
+                            <span>↗️</span>
+                            <span>+15% bu ay</span>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <div class="stat-title">Kaydedilen İlanlar</div>
+                            <div class="stat-icon purple">⭐</div>
+                        </div>
+                        <div class="stat-value">${statsData.stat3}</div>
+                        <div class="stat-change positive">
+                            <span>↗️</span>
+                            <span>+2 bu hafta</span>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <div class="stat-title">Mesajlar</div>
+                            <div class="stat-icon orange">💬</div>
+                        </div>
+                        <div class="stat-value">${statsData.stat4}</div>
+                        <div class="stat-change positive">
+                            <span>↗️</span>
+                            <span>+1 bugün</span>
+                        </div>
+                    </div>
+                `;
+            }
+            
+            statsGrid.innerHTML = statsHtml;
+        }
+        
+        function loadActivities() {
+            const activityList = document.getElementById('activityList');
+            let activitiesHtml = '';
+            
+            activitiesData.forEach(activity => {
+                const statusText = activity.status === 'pending' ? 'Beklemede' : 
+                                 activity.status === 'success' ? 'Onaylandı' : 'Tamamlandı';
+                
+                activitiesHtml += `
+                    <li class="activity-item">
+                        <div class="activity-avatar">${activity.avatar}</div>
+                        <div class="activity-content">
+                            <div class="activity-text">${activity.userName} ${activity.action}</div>
+                            <div class="activity-time">${activity.time}</div>
+                        </div>
+                        <div class="activity-status status-${activity.status}">${statusText}</div>
+                    </li>
+                `;
+            });
+            
+            activityList.innerHTML = activitiesHtml;
+        }
+        
+        function loadJobs() {
+            const jobsList = document.getElementById('jobsList');
+            let jobsHtml = '';
+            
+            jobsData.forEach(job => {
+                const statusText = job.status === 'active' ? 'Aktif' :
+                                 job.status === 'pending' ? 'İnceleniyor' :
+                                 job.status === 'new' ? 'Yeni' :
+                                 job.status === 'urgent' ? 'Acil' : 'Durum';
+                
+                jobsHtml += `
+                    <li class="activity-item">
+                        <div class="activity-avatar">${job.icon}</div>
+                        <div class="activity-content">
+                            <div class="activity-text">${job.title}</div>
+                            <div class="activity-time">${job.location}</div>
+                        </div>
+                        <div class="activity-status status-${job.status}">${statusText}</div>
+                    </li>
+                `;
+            });
+            
+            jobsList.innerHTML = jobsHtml;
+        }
+        
+        function updateTitles() {
+            if (userData.userType === 'business') {
+                document.getElementById('chartTitle').textContent = 'İlan Performansı';
+                document.getElementById('chartPlaceholder').textContent = '📈 İlan performans grafiği burada görünecek';
+                document.getElementById('activityTitle').textContent = 'Son Başvurular';
+                document.getElementById('jobsTitle').textContent = 'İlanlarım';
+            } else {
+                document.getElementById('chartTitle').textContent = 'Başvuru Aktivitesi';
+                document.getElementById('chartPlaceholder').textContent = '📈 Başvuru aktivite grafiği burada görünecek';
+                document.getElementById('activityTitle').textContent = 'Son Aktiviteler';
+                document.getElementById('jobsTitle').textContent = 'Önerilen İlanlar';
+            }
+        }
+        
         // Mobile menu toggle
         const sidebar = document.getElementById('sidebar');
         const menuToggle = document.createElement('button');
@@ -673,7 +834,6 @@
             sidebar.classList.toggle('open');
         });
         
-        // Show mobile menu button on small screens
         function handleResize() {
             if (window.innerWidth <= 768) {
                 menuToggle.style.display = 'block';
@@ -686,7 +846,6 @@
         window.addEventListener('resize', handleResize);
         handleResize();
         
-        // Chart filter buttons
         document.querySelectorAll('.filter-btn').forEach(btn => {
             btn.addEventListener('click', function() {
                 this.parentElement.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
@@ -694,25 +853,7 @@
             });
         });
         
-        // Simulate real-time updates
-        function updateStats() {
-            const statValues = document.querySelectorAll('.stat-value');
-            statValues.forEach(stat => {
-                const currentValue = parseInt(stat.textContent.replace(/[^0-9]/g, ''));
-                const change = Math.floor(Math.random() * 3) - 1; // -1, 0, or 1
-                if (change !== 0) {
-                    const newValue = currentValue + change;
-                    if (stat.textContent.includes('₺')) {
-                        stat.textContent = `₺${newValue.toLocaleString()}`;
-                    } else {
-                        stat.textContent = newValue.toString();
-                    }
-                }
-            });
-        }
-        
-        // Update stats every 30 seconds
-        setInterval(updateStats, 30000);
+        document.addEventListener('DOMContentLoaded', initializeDashboard);
     </script>
 </body>
 </html>
