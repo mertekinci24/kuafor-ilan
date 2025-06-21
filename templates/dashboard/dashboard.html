@@ -420,25 +420,6 @@
     </style>
 </head>
 <body>
-    <!-- User Data -->
-    <script type="application/json" id="user-data">
-        {
-            "name": "{{ user_info.name|default:'Admin User'|escapejs }}",
-            "email": "{{ user_info.email|default:'admin@kuaforilan.com'|escapejs }}",
-            "avatar": "{{ user_info.avatar|default:'A'|escapejs }}",
-            "userType": "{{ user_info.user_type|default:'job_seeker'|escapejs }}"
-        }
-    </script>
-
-    <script type="application/json" id="stats-data">
-        {
-            "stat1": {{ stats.total_jobs|default:stats.applied_jobs|default:124 }},
-            "stat2": {{ stats.active_applications|default:stats.profile_views|default:89 }},
-            "stat3": {{ stats.new_members|default:stats.saved_jobs|default:45 }},
-            "stat4": {{ stats.total_revenue|default:stats.messages|default:12450 }}
-        }
-    </script>
-
     <!-- Sidebar -->
     <div class="sidebar" id="sidebar">
         <div class="sidebar-header">
@@ -574,9 +555,20 @@
     </div>
 
     <script>
-        // Get data from JSON scripts
-        const userData = JSON.parse(document.getElementById('user-data').textContent);
-        const statsData = JSON.parse(document.getElementById('stats-data').textContent);
+        // Dashboard data
+        const userData = {
+            name: "Admin User",
+            email: "admin@kuaforilan.com",
+            avatar: "A",
+            userType: "job_seeker"
+        };
+        
+        const statsData = {
+            stat1: 124,
+            stat2: 89,
+            stat3: 45,
+            stat4: 12450
+        };
         
         // Sample data
         const activitiesData = [
