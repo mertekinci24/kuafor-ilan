@@ -519,7 +519,7 @@
             </div>
             
             <div class="nav-menu">
-                <a href="#" class="nav-item active" data-page="home">
+                <a href="/" class="nav-item active" data-page="home">
                     <div class="nav-icon">🏠</div>
                     <div class="nav-text">Ana Sayfa</div>
                 </a>
@@ -696,6 +696,11 @@
         // Navigation functionality
         document.querySelectorAll('.nav-item').forEach(item => {
             item.addEventListener('click', function(e) {
+                // Don't prevent default for actual links
+                if (this.href && this.href !== '#') {
+                    return; // Let the browser handle the navigation
+                }
+                
                 e.preventDefault();
                 
                 // Remove active class from all items
@@ -707,10 +712,7 @@
                 // Get page data
                 const page = this.dataset.page;
                 
-                // Here you would normally load different content
-                console.log('Loading page:', page);
-                
-                // For now, just show an alert
+                // Show alert for pages that don't have links yet
                 if (page !== 'home' && page !== 'jobs') {
                     alert(`${page} sayfası henüz hazırlanıyor...`);
                 }
