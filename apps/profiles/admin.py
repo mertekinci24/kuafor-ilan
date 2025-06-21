@@ -10,4 +10,4 @@ class JobSeekerProfileAdmin(admin.ModelAdmin):
 class BusinessProfileAdmin(admin.ModelAdmin):
     list_display = ('business_name', 'city', 'phone')
     list_filter = ('city',)
-  
+    
