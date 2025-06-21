@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard - Kuaför İlan</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -135,6 +138,31 @@
             padding: 4px 8px;
         }
         
+        .export-btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .export-btn.pdf {
+            background: #dc2626;
+            color: white;
+        }
+        
+        .export-btn.excel {
+            background: #16a34a;
+            color: white;
+        }
+        
+        .export-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+        
         .user-menu {
             display: flex;
             align-items: center;
@@ -218,6 +246,7 @@
             font-weight: 800;
             color: #1e293b;
             margin-bottom: 8px;
+            transition: all 0.3s ease;
         }
         
         .stat-change {
@@ -229,6 +258,24 @@
         
         .stat-change.positive { color: #16a34a; }
         .stat-change.negative { color: #dc2626; }
+        
+        /* Live indicator */
+        .live-indicator {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            width: 8px;
+            height: 8px;
+            background: #16a34a;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.3); opacity: 0.7; }
+            100% { transform: scale(1); opacity: 1; }
+        }
         
         /* Charts Grid */
         .charts-grid {
@@ -243,6 +290,7 @@
             border-radius: 12px;
             padding: 24px;
             box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            position: relative;
         }
         
         .chart-header {
@@ -280,15 +328,9 @@
             border-color: #0a66c2;
         }
         
-        .chart-placeholder {
+        .chart-container {
             height: 300px;
-            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #64748b;
-            font-size: 14px;
+            position: relative;
         }
         
         /* Recent Activity */
@@ -484,6 +526,9 @@
                     <input type="text" placeholder="Ara...">
                 </div>
                 
+                <button class="export-btn pdf" onclick="exportToPDF()">📄 PDF</button>
+                <button class="export-btn excel" onclick="exportToExcel()">📊 Excel</button>
+                
                 <div class="user-menu">
                     <div class="user-avatar" id="userAvatar">A</div>
                     <div>
@@ -504,16 +549,17 @@
             <!-- Charts -->
             <div class="charts-grid">
                 <div class="chart-card">
+                    <div class="live-indicator"></div>
                     <div class="chart-header">
                         <div class="chart-title" id="chartTitle">İlan Performansı</div>
                         <div class="chart-filter">
-                            <button class="filter-btn active">7 Gün</button>
-                            <button class="filter-btn">30 Gün</button>
-                            <button class="filter-btn">90 Gün</button>
+                            <button class="filter-btn active" onclick="updateChartData('7')">7 Gün</button>
+                            <button class="filter-btn" onclick="updateChartData('30')">30 Gün</button>
+                            <button class="filter-btn" onclick="updateChartData('90')">90 Gün</button>
                         </div>
                     </div>
-                    <div class="chart-placeholder" id="chartPlaceholder">
-                        📈 İlan performans grafiği burada görünecek
+                    <div class="chart-container">
+                        <canvas id="performanceChart"></canvas>
                     </div>
                 </div>
                 
@@ -521,8 +567,8 @@
                     <div class="chart-header">
                         <div class="chart-title">Kategori Dağılımı</div>
                     </div>
-                    <div class="chart-placeholder">
-                        🥧 Kategori dağılım grafiği burada görünecek
+                    <div class="chart-container">
+                        <canvas id="categoryChart"></canvas>
                     </div>
                 </div>
             </div>
@@ -563,12 +609,15 @@
             userType: "job_seeker"
         };
         
-        const statsData = {
+        let statsData = {
             stat1: 124,
             stat2: 89,
             stat3: 45,
             stat4: 12450
         };
+        
+        // Chart variables
+        let performanceChart, categoryChart;
         
         // Sample data
         const activitiesData = [
@@ -616,6 +665,22 @@
             }
         ];
         
+        // Chart data sets
+        const chartDataSets = {
+            '7': {
+                labels: ['Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt', 'Paz'],
+                data: [12, 19, 8, 15, 22, 18, 25]
+            },
+            '30': {
+                labels: ['Hft 1', 'Hft 2', 'Hft 3', 'Hft 4'],
+                data: [65, 59, 80, 81]
+            },
+            '90': {
+                labels: ['Oca', 'Şub', 'Mar'],
+                data: [180, 210, 195]
+            }
+        };
+        
         // Initialize dashboard
         function initializeDashboard() {
             // Set user info
@@ -634,6 +699,9 @@
             
             // Update titles based on user type
             updateTitles();
+            
+            // Initialize charts
+            initializeCharts();
         }
         
         function loadStats() {
@@ -642,7 +710,8 @@
             
             if (userData.userType === 'business') {
                 statsHtml = `
-                    <div class="stat-card">
+                    <div class="stat-card" style="position: relative;">
+                        <div class="live-indicator"></div>
                         <div class="stat-header">
                             <div class="stat-title">Toplam İlanlar</div>
                             <div class="stat-icon blue">💼</div>
@@ -653,7 +722,8 @@
                             <span>+12% bu ay</span>
                         </div>
                     </div>
-                    <div class="stat-card">
+                    <div class="stat-card" style="position: relative;">
+                        <div class="live-indicator"></div>
                         <div class="stat-header">
                             <div class="stat-title">Aktif Başvurular</div>
                             <div class="stat-icon green">👥</div>
@@ -664,7 +734,8 @@
                             <span>+8% bu hafta</span>
                         </div>
                     </div>
-                    <div class="stat-card">
+                    <div class="stat-card" style="position: relative;">
+                        <div class="live-indicator"></div>
                         <div class="stat-header">
                             <div class="stat-title">Yeni Üyeler</div>
                             <div class="stat-icon purple">🆕</div>
@@ -675,7 +746,8 @@
                             <span>+23% bu ay</span>
                         </div>
                     </div>
-                    <div class="stat-card">
+                    <div class="stat-card" style="position: relative;">
+                        <div class="live-indicator"></div>
                         <div class="stat-header">
                             <div class="stat-title">Toplam Gelir</div>
                             <div class="stat-icon orange">💰</div>
@@ -689,7 +761,8 @@
                 `;
             } else {
                 statsHtml = `
-                    <div class="stat-card">
+                    <div class="stat-card" style="position: relative;">
+                        <div class="live-indicator"></div>
                         <div class="stat-header">
                             <div class="stat-title">Başvurduğum İlanlar</div>
                             <div class="stat-icon blue">📋</div>
@@ -700,7 +773,8 @@
                             <span>+3 bu hafta</span>
                         </div>
                     </div>
-                    <div class="stat-card">
+                    <div class="stat-card" style="position: relative;">
+                        <div class="live-indicator"></div>
                         <div class="stat-header">
                             <div class="stat-title">Profil Görüntüleme</div>
                             <div class="stat-icon green">👁️</div>
@@ -711,7 +785,8 @@
                             <span>+15% bu ay</span>
                         </div>
                     </div>
-                    <div class="stat-card">
+                    <div class="stat-card" style="position: relative;">
+                        <div class="live-indicator"></div>
                         <div class="stat-header">
                             <div class="stat-title">Kaydedilen İlanlar</div>
                             <div class="stat-icon purple">⭐</div>
@@ -722,7 +797,8 @@
                             <span>+2 bu hafta</span>
                         </div>
                     </div>
-                    <div class="stat-card">
+                    <div class="stat-card" style="position: relative;">
+                        <div class="live-indicator"></div>
                         <div class="stat-header">
                             <div class="stat-title">Mesajlar</div>
                             <div class="stat-icon orange">💬</div>
@@ -790,15 +866,230 @@
         function updateTitles() {
             if (userData.userType === 'business') {
                 document.getElementById('chartTitle').textContent = 'İlan Performansı';
-                document.getElementById('chartPlaceholder').textContent = '📈 İlan performans grafiği burada görünecek';
                 document.getElementById('activityTitle').textContent = 'Son Başvurular';
                 document.getElementById('jobsTitle').textContent = 'İlanlarım';
             } else {
                 document.getElementById('chartTitle').textContent = 'Başvuru Aktivitesi';
-                document.getElementById('chartPlaceholder').textContent = '📈 Başvuru aktivite grafiği burada görünecek';
                 document.getElementById('activityTitle').textContent = 'Son Aktiviteler';
                 document.getElementById('jobsTitle').textContent = 'Önerilen İlanlar';
             }
+        }
+        
+        // Initialize charts
+        function initializeCharts() {
+            // Performance Chart
+            const ctx1 = document.getElementById('performanceChart').getContext('2d');
+            performanceChart = new Chart(ctx1, {
+                type: 'line',
+                data: {
+                    labels: chartDataSets['7'].labels,
+                    datasets: [{
+                        label: 'Görüntülenmeler',
+                        data: chartDataSets['7'].data,
+                        borderColor: '#0a66c2',
+                        backgroundColor: 'rgba(10, 102, 194, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: '#f1f5f9'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Category Chart
+            const ctx2 = document.getElementById('categoryChart').getContext('2d');
+            categoryChart = new Chart(ctx2, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Kuaför', 'Berber', 'Saç Uzmanı', 'Güzellik'],
+                    datasets: [{
+                        data: [45, 30, 15, 10],
+                        backgroundColor: [
+                            '#0a66c2',
+                            '#16a34a',
+                            '#9333ea',
+                            '#ea580c'
+                        ],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                padding: 20,
+                                usePointStyle: true
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Update chart data
+        function updateChartData(period) {
+            // Update active button
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            // Update chart
+            const newData = chartDataSets[period];
+            performanceChart.data.labels = newData.labels;
+            performanceChart.data.datasets[0].data = newData.data;
+            performanceChart.update('active');
+        }
+        
+        // Real-time updates
+        function updateRealTimeStats() {
+            const statValues = document.querySelectorAll('.stat-value');
+            statValues.forEach((stat, index) => {
+                if (!stat.textContent.includes('₺')) {
+                    const currentValue = parseInt(stat.textContent);
+                    const change = Math.floor(Math.random() * 5) - 2;
+                    if (change !== 0) {
+                        const newValue = Math.max(0, currentValue + change);
+                        stat.textContent = newValue;
+                        statsData[`stat${index + 1}`] = newValue;
+                        
+                        // Add animation
+                        stat.style.transform = 'scale(1.1)';
+                        stat.style.color = change > 0 ? '#16a34a' : '#dc2626';
+                        setTimeout(() => {
+                            stat.style.transform = 'scale(1)';
+                            stat.style.color = '#1e293b';
+                        }, 300);
+                    }
+                }
+            });
+            
+            // Update performance chart
+            if (performanceChart) {
+                const currentData = performanceChart.data.datasets[0].data;
+                const newData = currentData.map(val => 
+                    Math.max(0, val + Math.floor(Math.random() * 6) - 3)
+                );
+                performanceChart.data.datasets[0].data = newData;
+                performanceChart.update('none');
+            }
+        }
+        
+        // Export functions
+        function exportToPDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            
+            // Header
+            doc.setFontSize(20);
+            doc.setTextColor(10, 102, 194);
+            doc.text('📊 Dashboard Raporu', 20, 30);
+            
+            doc.setFontSize(12);
+            doc.setTextColor(0, 0, 0);
+            doc.text(`Tarih: ${new Date().toLocaleDateString('tr-TR')}`, 20, 45);
+            doc.text(`Saat: ${new Date().toLocaleTimeString('tr-TR')}`, 20, 55);
+            
+            // Stats
+            doc.setFontSize(14);
+            doc.setTextColor(30, 41, 59);
+            doc.text('İstatistikler:', 20, 75);
+            
+            const stats = document.querySelectorAll('.stat-card');
+            let yPos = 90;
+            stats.forEach((stat, index) => {
+                const title = stat.querySelector('.stat-title').textContent;
+                const value = stat.querySelector('.stat-value').textContent;
+                doc.setFontSize(10);
+                doc.text(`• ${title}: ${value}`, 25, yPos + (index * 10));
+            });
+            
+            // Activities
+            doc.setFontSize(14);
+            doc.setTextColor(30, 41, 59);
+            doc.text('Son Aktiviteler:', 20, yPos + 50);
+            
+            yPos += 65;
+            activitiesData.forEach((activity, index) => {
+                doc.setFontSize(10);
+                doc.text(`• ${activity.userName} ${activity.action}`, 25, yPos + (index * 10));
+            });
+            
+            doc.save(`dashboard-raporu-${new Date().toISOString().split('T')[0]}.pdf`);
+        }
+
+        function exportToExcel() {
+            const wb = XLSX.utils.book_new();
+            
+            // Stats data
+            const statsData = [];
+            document.querySelectorAll('.stat-card').forEach(card => {
+                const title = card.querySelector('.stat-title').textContent;
+                const value = card.querySelector('.stat-value').textContent;
+                const change = card.querySelector('.stat-change span:last-child').textContent;
+                statsData.push([title, value, change]);
+            });
+            
+            const ws1 = XLSX.utils.aoa_to_sheet([
+                ['İstatistik', 'Değer', 'Değişim'],
+                ...statsData
+            ]);
+            
+            // Activities data
+            const activitiesExport = activitiesData.map(activity => [
+                activity.userName,
+                activity.action,
+                activity.time,
+                activity.status === 'pending' ? 'Beklemede' : 
+                activity.status === 'success' ? 'Onaylandı' : 'Tamamlandı'
+            ]);
+            
+            const ws2 = XLSX.utils.aoa_to_sheet([
+                ['Kullanıcı', 'Aktivite', 'Zaman', 'Durum'],
+                ...activitiesExport
+            ]);
+            
+            // Jobs data
+            const jobsExport = jobsData.map(job => [
+                job.title,
+                job.location,
+                job.status === 'active' ? 'Aktif' :
+                job.status === 'pending' ? 'İnceleniyor' : 'Durum'
+            ]);
+            
+            const ws3 = XLSX.utils.aoa_to_sheet([
+                ['İlan', 'Konum', 'Durum'],
+                ...jobsExport
+            ]);
+            
+            XLSX.utils.book_append_sheet(wb, ws1, 'İstatistikler');
+            XLSX.utils.book_append_sheet(wb, ws2, 'Aktiviteler');
+            XLSX.utils.book_append_sheet(wb, ws3, 'İlanlar');
+            
+            XLSX.writeFile(wb, `dashboard-raporu-${new Date().toISOString().split('T')[0]}.xlsx`);
         }
         
         // Mobile menu toggle
@@ -838,14 +1129,13 @@
         window.addEventListener('resize', handleResize);
         handleResize();
         
-        document.querySelectorAll('.filter-btn').forEach(btn => {
-            btn.addEventListener('click', function() {
-                this.parentElement.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-                this.classList.add('active');
-            });
-        });
+        // Start real-time updates
+        setInterval(updateRealTimeStats, 8000); // Her 8 saniyede güncelle
         
-        document.addEventListener('DOMContentLoaded', initializeDashboard);
+        // Initialize dashboard when DOM is ready
+        document.addEventListener('DOMContentLoaded', () => {
+            initializeDashboard();
+        });
     </script>
 </body>
 </html>
