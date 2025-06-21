@@ -571,11 +571,31 @@
                 <div class="profile-header"></div>
                 <div class="profile-avatar"></div>
                 <div class="profile-info">
-                    <div class="profile-name">Hoş Geldiniz!</div>
-                    <div class="profile-title">Kuaför Profesyoneli</div>
+                    <div class="profile-name">
+                        {% if user.is_authenticated %}
+                            {{ user.first_name }} {{ user.last_name }}
+                        {% else %}
+                            Hoş Geldiniz!
+                        {% endif %}
+                    </div>
+                    <div class="profile-title">
+                        {% if user.is_authenticated %}
+                            {% if user.user_type == 'jobseeker' %}
+                                Kuaför Profesyoneli
+                            {% else %}
+                                İş Veren
+                            {% endif %}
+                        {% else %}
+                            Ziyaretçi
+                        {% endif %}
+                    </div>
                 </div>
                 <div class="profile-stats">
-                    <div>Profil görüntülenme sayısı: <strong>12</strong></div>
+                    {% if user.is_authenticated %}
+                        <div>Profil görüntülenme: <strong>12</strong></div>
+                    {% else %}
+                        <div><a href="/auth/login/">Giriş yapın</a></div>
+                    {% endif %}
                 </div>
             </div>
         </aside>
@@ -583,30 +603,44 @@
         <!-- Main Feed -->
         <main class="main-feed">
             <!-- Post Composer -->
-            <div class="post-composer fade-in">
-                <div class="composer-input">
-                    <div class="composer-avatar"></div>
-                    <textarea class="composer-textarea" placeholder="Bir gönderi başlat" rows="1"></textarea>
+            {% if user.is_authenticated %}
+                <div class="post-composer fade-in">
+                    <div class="composer-input">
+                        <div class="composer-avatar"></div>
+                        <textarea class="composer-textarea" placeholder="Bir gönderi başlat" rows="1"></textarea>
+                    </div>
+                    
+                    <div class="composer-actions">
+                        <div class="composer-options">
+                            <div class="composer-option media" onclick="openMedia()">
+                                <span>📷</span>
+                                <span>Medya</span>
+                            </div>
+                            <div class="composer-option event" onclick="createEvent()">
+                                <span>📅</span>
+                                <span>Etkinlik</span>
+                            </div>
+                            <div class="composer-option article" onclick="writeArticle()">
+                                <span>📝</span>
+                                <span>Makale yaz</span>
+                            </div>
+                        </div>
+                        <button class="post-btn" disabled onclick="publishPost()">Paylaş</button>
+                    </div>
                 </div>
-                
-                <div class="composer-actions">
-                    <div class="composer-options">
-                        <div class="composer-option media" onclick="openMedia()">
-                            <span>📷</span>
-                            <span>Medya</span>
-                        </div>
-                        <div class="composer-option event" onclick="createEvent()">
-                            <span>📅</span>
-                            <span>Etkinlik</span>
-                        </div>
-                        <div class="composer-option article" onclick="writeArticle()">
-                            <span>📝</span>
-                            <span>Makale yaz</span>
+            {% else %}
+                <!-- Welcome Message for Non-Authenticated Users -->
+                <div class="post-composer fade-in">
+                    <div style="text-align: center; padding: 20px;">
+                        <h2 style="color: #333; margin-bottom: 10px;">Kuaför İlan'a Hoş Geldiniz!</h2>
+                        <p style="color: #666; margin-bottom: 20px;">Kuaför sektöründe iş bulmak ve vermek için hemen kayıt olun.</p>
+                        <div style="display: flex; gap: 12px; justify-content: center;">
+                            <a href="/auth/register/" class="btn btn-primary">Hemen Kayıt Ol</a>
+                            <a href="/jobs/" class="btn btn-secondary">İş İlanlarını Gör</a>
                         </div>
                     </div>
-                    <button class="post-btn" disabled onclick="publishPost()">Paylaş</button>
                 </div>
-            </div>
+            {% endif %}
 
             <!-- Sample Posts -->
             <article class="post fade-in">
@@ -717,29 +751,31 @@
                 // Get page data
                 const page = this.dataset.page;
                 
-                // For now, just show an alert
+                // Show alert for pages that don't have links yet
                 if (page !== 'home' && page !== 'jobs' && page !== 'profile') {
                     alert(`${page} sayfası henüz hazırlanıyor...`);
                 }
             });
         });
 
-        // Composer functionality
+        // Composer functionality (only if user is authenticated)
         const textarea = document.querySelector('.composer-textarea');
         const postBtn = document.querySelector('.post-btn');
 
-        textarea.addEventListener('input', function() {
-            if (this.value.trim().length > 0) {
-                postBtn.disabled = false;
-            } else {
-                postBtn.disabled = true;
-            }
-        });
+        if (textarea && postBtn) {
+            textarea.addEventListener('input', function() {
+                if (this.value.trim().length > 0) {
+                    postBtn.disabled = false;
+                } else {
+                    postBtn.disabled = true;
+                }
+            });
 
-        textarea.addEventListener('focus', function() {
-            this.style.height = 'auto';
-            this.style.height = Math.max(48, this.scrollHeight) + 'px';
-        });
+            textarea.addEventListener('focus', function() {
+                this.style.height = 'auto';
+                this.style.height = Math.max(48, this.scrollHeight) + 'px';
+            });
+        }
 
         // Media access functions
         function openMedia() {
@@ -769,7 +805,7 @@
         }
 
         function publishPost() {
-            if (textarea.value.trim()) {
+            if (textarea && textarea.value.trim()) {
                 alert('Gönderiniz paylaşıldı!');
                 textarea.value = '';
                 postBtn.disabled = true;
