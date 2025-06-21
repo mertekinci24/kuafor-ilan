@@ -3,7 +3,8 @@
 import os
 import sys
 
-if __name__ == '__main__':
+
+def main():
     """Run administrative tasks."""
     os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'kuafor_ilan.settings')
     try:
@@ -15,4 +16,8 @@ if __name__ == '__main__':
             "forget to activate a virtual environment?"
         ) from exc
     execute_from_command_line(sys.argv)
-  
+
+
+if __name__ == '__main__':
+    main()
+    
