@@ -1,8 +1,9 @@
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import get_user_model
-from apps.jobs.models import Job
-from apps.profiles.models import Profile
+from django.utils import timezone
+from datetime import timedelta
+import random
 
 User = get_user_model()
 
@@ -10,35 +11,145 @@ User = get_user_model()
 def dashboard_view(request):
     user = request.user
     
-    # İstatistikler
-    if user.user_type == 'business':
-        total_jobs = Job.objects.filter(employer=user).count()
-        active_applications = Job.objects.filter(employer=user, applications__isnull=False).count()
+    # Kullanıcı tipine göre farklı istatistikler
+    if hasattr(user, 'user_type') and user.user_type == 'business':
         stats = {
-            'total_jobs': total_jobs,
-            'active_applications': active_applications,
-            'new_members': User.objects.filter(user_type='job_seeker').count(),
-            'total_revenue': 2450
+            'total_jobs': random.randint(10, 50),
+            'active_applications': random.randint(20, 100),
+            'new_members': random.randint(5, 25),
+            'total_revenue': random.randint(5000, 20000)
         }
+        
+        # İşveren aktiviteleri
+        recent_activities = [
+            {
+                'user_name': 'Ayşe Yılmaz',
+                'action': 'kuaför pozisyonuna başvurdu',
+                'time': '2 saat önce',
+                'status': 'pending',
+                'avatar': 'AY'
+            },
+            {
+                'user_name': 'Mehmet Kaya',
+                'action': 'berber pozisyonuna başvurdu', 
+                'time': '4 saat önce',
+                'status': 'success',
+                'avatar': 'MK'
+            },
+            {
+                'user_name': 'Elif Özkan',
+                'action': 'yeni profil oluşturdu',
+                'time': '6 saat önce', 
+                'status': 'success',
+                'avatar': 'EÖ'
+            }
+        ]
+        
+        recent_jobs = [
+            {
+                'title': 'Güzellik Salonu - Kuaför Aranıyor',
+                'location': 'İstanbul, Kadıköy',
+                'status': 'active',
+                'icon': '🏢'
+            },
+            {
+                'title': 'Modern Berber - Deneyimli Berber',
+                'location': 'Ankara, Çankaya',
+                'status': 'pending',
+                'icon': '💇'
+            },
+            {
+                'title': 'Hair Studio - Saç Uzmanı',
+                'location': 'İzmir, Konak',
+                'status': 'active',
+                'icon': '✨'
+            }
+        ]
+        
     else:
-        applied_jobs = user.applications.count() if hasattr(user, 'applications') else 0
+        # İş arayan istatistikleri
         stats = {
-            'applied_jobs': applied_jobs,
-            'profile_views': 89,
-            'saved_jobs': 12,
-            'messages': 5
+            'applied_jobs': random.randint(3, 15),
+            'profile_views': random.randint(50, 200),
+            'saved_jobs': random.randint(5, 30),
+            'messages': random.randint(1, 10)
         }
+        
+        # İş arayan aktiviteleri
+        recent_activities = [
+            {
+                'user_name': 'Güzel Saç Salonu',
+                'action': 'başvurunuzu inceledi',
+                'time': '1 saat önce',
+                'status': 'success',
+                'avatar': 'GS'
+            },
+            {
+                'user_name': 'Modern Kuaför',
+                'action': 'size mesaj gönderdi',
+                'time': '3 saat önce',
+                'status': 'pending',
+                'avatar': 'MK'
+            },
+            {
+                'user_name': 'Style Center',
+                'action': 'profilinizi görüntüledi',
+                'time': '5 saat önce',
+                'status': 'success',
+                'avatar': 'SC'
+            }
+        ]
+        
+        recent_jobs = [
+            {
+                'title': 'Deneyimli Kuaför Aranıyor',
+                'location': 'İstanbul, Şişli',
+                'status': 'new',
+                'icon': '💇‍♀️'
+            },
+            {
+                'title': 'Part-time Berber',
+                'location': 'Ankara, Kızılay',
+                'status': 'urgent',
+                'icon': '✂️'
+            },
+            {
+                'title': 'Saç Uzmanı - Tam Zamanlı',
+                'location': 'İzmir, Alsancak',
+                'status': 'new',
+                'icon': '💁‍♀️'
+            }
+        ]
     
-    # Son aktiviteler
-    recent_jobs = Job.objects.all()[:5]
-    recent_users = User.objects.all()[:5]
+    # Genel kullanıcı bilgileri
+    user_info = {
+        'name': f"{user.first_name} {user.last_name}" if hasattr(user, 'first_name') else user.email,
+        'email': user.email,
+        'avatar': user.first_name[0] if hasattr(user, 'first_name') and user.first_name else user.email[0].upper(),
+        'user_type': getattr(user, 'user_type', 'job_seeker')
+    }
+    
+    # Chart verileri (örnek)
+    chart_data = {
+        'daily_views': [12, 19, 8, 15, 22, 18, 25],
+        'applications': [5, 8, 12, 7, 15, 10, 18],
+        'categories': {
+            'Kuaför': 45,
+            'Berber': 30,
+            'Saç Uzmanı': 15,
+            'Güzellik': 10
+        }
+    }
     
     context = {
         'user': user,
+        'user_info': user_info,
         'stats': stats,
+        'recent_activities': recent_activities,
         'recent_jobs': recent_jobs,
-        'recent_users': recent_users
+        'chart_data': chart_data,
+        'current_time': timezone.now()
     }
     
     return render(request, 'dashboard/dashboard.html', context)
-  
+    
