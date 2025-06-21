@@ -77,7 +77,6 @@ def register_view(request):
             messages.error(request, f'Hesap oluşturulurken hata: {str(e)}')
     
     return render(request, 'auth/register.html')
-from django.contrib.auth import authenticate, login, logout
 @login_required
 def logout_view(request):
     """Logout view'ı"""
