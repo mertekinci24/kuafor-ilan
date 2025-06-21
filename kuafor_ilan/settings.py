@@ -70,7 +70,7 @@ if DATABASE_URL:
     }
 else:
     DATABASES = {
-        'default': {
+        'default': dj_database_url.parse(DATABASE_URL) if DATABASE_URL else {
             'ENGINE': 'django.db.backends.sqlite3',
             'NAME': BASE_DIR / 'db.sqlite3',
         }
@@ -78,7 +78,7 @@ else:
 
 # Custom User Model
 AUTH_USER_MODEL = 'authentication.CustomUser'
-
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # Authentication backends
 AUTHENTICATION_BACKENDS = [
     'apps.authentication.backends.EmailBackend',
