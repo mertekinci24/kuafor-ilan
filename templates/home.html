@@ -1,906 +1,724 @@
-<!DOCTYPE html>
-<html lang="tr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kuaför İlan - Ana Sayfa</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+{% extends 'base.html' %}
+
+{% block title %}Kuaför İlan - Türkiye'nin En Büyük Kuaför İş Platformu{% endblock %}
+
+{% block extra_css %}
+<style>
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+    
+    body {
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+        overflow-x: hidden;
+    }
+    
+    /* Header */
+    .header {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        z-index: 1000;
+        background: rgba(255,255,255,0.1);
+        backdrop-filter: blur(10px);
+        padding: 20px 0;
+    }
+    
+    .header-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0 20px;
+    }
+    
+    .logo-container {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        color: white;
+        text-decoration: none;
+    }
+    
+    .logo {
+        font-size: 32px;
+    }
+    
+    .logo-text {
+        font-size: 24px;
+        font-weight: 700;
+    }
+    
+    .nav-menu {
+        display: flex;
+        gap: 32px;
+    }
+    
+    .nav-link {
+        color: rgba(255,255,255,0.9);
+        text-decoration: none;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        padding: 8px 16px;
+        border-radius: 8px;
+    }
+    
+    .nav-link:hover {
+        background: rgba(255,255,255,0.1);
+        color: white;
+    }
+    
+    .auth-buttons {
+        display: flex;
+        gap: 12px;
+    }
+    
+    .btn-outline {
+        padding: 10px 20px;
+        border: 2px solid rgba(255,255,255,0.3);
+        background: transparent;
+        color: white;
+        text-decoration: none;
+        border-radius: 8px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-outline:hover {
+        background: rgba(255,255,255,0.1);
+        border-color: rgba(255,255,255,0.5);
+    }
+    
+    .btn-primary {
+        padding: 10px 20px;
+        background: rgba(255,255,255,0.2);
+        color: white;
+        text-decoration: none;
+        border-radius: 8px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        backdrop-filter: blur(10px);
+    }
+    
+    .btn-primary:hover {
+        background: rgba(255,255,255,0.3);
+        transform: translateY(-2px);
+    }
+    
+    /* Hero Section */
+    .hero {
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        padding: 120px 20px 60px;
+    }
+    
+    .hero-content {
+        max-width: 800px;
+        color: white;
+    }
+    
+    .hero-title {
+        font-size: clamp(32px, 5vw, 64px);
+        font-weight: 800;
+        margin-bottom: 24px;
+        line-height: 1.2;
+        animation: fadeInUp 0.8s ease-out;
+    }
+    
+    .hero-subtitle {
+        font-size: clamp(16px, 3vw, 24px);
+        margin-bottom: 40px;
+        opacity: 0.9;
+        line-height: 1.5;
+        animation: fadeInUp 0.8s ease-out 0.2s both;
+    }
+    
+    .hero-buttons {
+        display: flex;
+        gap: 20px;
+        justify-content: center;
+        flex-wrap: wrap;
+        animation: fadeInUp 0.8s ease-out 0.4s both;
+    }
+    
+    .hero-btn {
+        padding: 16px 32px;
+        font-size: 18px;
+        font-weight: 600;
+        border-radius: 12px;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        min-width: 200px;
+    }
+    
+    .hero-btn-primary {
+        background: rgba(255,255,255,0.9);
+        color: #4c1d95;
+        backdrop-filter: blur(10px);
+    }
+    
+    .hero-btn-primary:hover {
+        background: white;
+        transform: translateY(-3px);
+        box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    }
+    
+    .hero-btn-secondary {
+        background: transparent;
+        color: white;
+        border: 2px solid rgba(255,255,255,0.5);
+    }
+    
+    .hero-btn-secondary:hover {
+        background: rgba(255,255,255,0.1);
+        border-color: rgba(255,255,255,0.8);
+    }
+    
+    /* Features Section */
+    .features {
+        background: white;
+        padding: 100px 20px;
+    }
+    
+    .features-container {
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+    
+    .section-header {
+        text-align: center;
+        margin-bottom: 80px;
+    }
+    
+    .section-title {
+        font-size: clamp(28px, 4vw, 48px);
+        font-weight: 700;
+        color: #1e293b;
+        margin-bottom: 16px;
+    }
+    
+    .section-subtitle {
+        font-size: 18px;
+        color: #64748b;
+        max-width: 600px;
+        margin: 0 auto;
+        line-height: 1.6;
+    }
+    
+    .features-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 40px;
+    }
+    
+    .feature-card {
+        text-align: center;
+        padding: 40px 20px;
+        border-radius: 16px;
+        transition: all 0.3s ease;
+        border: 1px solid #f1f5f9;
+    }
+    
+    .feature-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        border-color: #e2e8f0;
+    }
+    
+    .feature-icon {
+        font-size: 48px;
+        margin-bottom: 24px;
+        display: block;
+    }
+    
+    .feature-title {
+        font-size: 24px;
+        font-weight: 700;
+        color: #1e293b;
+        margin-bottom: 16px;
+    }
+    
+    .feature-description {
+        color: #64748b;
+        line-height: 1.6;
+    }
+    
+    /* Stats Section */
+    .stats {
+        background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+        color: white;
+        padding: 80px 20px;
+    }
+    
+    .stats-container {
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+    
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 40px;
+    }
+    
+    .stat-item {
+        text-align: center;
+    }
+    
+    .stat-number {
+        font-size: 48px;
+        font-weight: 800;
+        margin-bottom: 8px;
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+    
+    .stat-label {
+        font-size: 16px;
+        opacity: 0.9;
+    }
+    
+    /* CTA Section */
+    .cta {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 100px 20px;
+        text-align: center;
+    }
+    
+    .cta-container {
+        max-width: 800px;
+        margin: 0 auto;
+    }
+    
+    .cta-title {
+        font-size: clamp(28px, 4vw, 48px);
+        font-weight: 700;
+        margin-bottom: 24px;
+    }
+    
+    .cta-subtitle {
+        font-size: 18px;
+        margin-bottom: 40px;
+        opacity: 0.9;
+        line-height: 1.6;
+    }
+    
+    /* Footer */
+    .footer {
+        background: #0f172a;
+        color: white;
+        padding: 60px 20px 20px;
+    }
+    
+    .footer-container {
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+    
+    .footer-content {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 40px;
+        margin-bottom: 40px;
+    }
+    
+    .footer-section h3 {
+        font-size: 18px;
+        font-weight: 700;
+        margin-bottom: 20px;
+    }
+    
+    .footer-section ul {
+        list-style: none;
+    }
+    
+    .footer-section ul li {
+        margin-bottom: 12px;
+    }
+    
+    .footer-section ul li a {
+        color: rgba(255,255,255,0.7);
+        text-decoration: none;
+        transition: color 0.3s ease;
+    }
+    
+    .footer-section ul li a:hover {
+        color: white;
+    }
+    
+    .footer-bottom {
+        border-top: 1px solid rgba(255,255,255,0.1);
+        padding-top: 20px;
+        text-align: center;
+        color: rgba(255,255,255,0.7);
+    }
+    
+    /* Mobile Menu */
+    .mobile-menu-toggle {
+        display: none;
+        background: none;
+        border: none;
+        color: white;
+        font-size: 24px;
+        cursor: pointer;
+        padding: 8px;
+        border-radius: 8px;
+        transition: background 0.3s ease;
+    }
+    
+    .mobile-menu-toggle:hover {
+        background: rgba(255,255,255,0.1);
+    }
+    
+    .mobile-menu {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(15, 23, 42, 0.95);
+        backdrop-filter: blur(10px);
+        z-index: 2000;
+        display: none;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        gap: 32px;
+    }
+    
+    .mobile-menu.open {
+        display: flex;
+    }
+    
+    .mobile-menu .nav-link {
+        font-size: 24px;
+        padding: 16px 32px;
+    }
+    
+    .mobile-close {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        background: none;
+        border: none;
+        color: white;
+        font-size: 32px;
+        cursor: pointer;
+    }
+    
+    /* Animations */
+    @keyframes fadeInUp {
+        from { 
+            opacity: 0; 
+            transform: translateY(30px); 
         }
-        
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background-color: #f3f2ef;
-            color: #000000e6;
-            line-height: 1.5;
+        to { 
+            opacity: 1; 
+            transform: translateY(0); 
         }
-        
-        /* Header Navigation */
-        .top-nav {
-            background-color: #fff;
-            border-bottom: 1px solid #00000024;
-            position: fixed;
-            top: 0;
-            width: 100%;
-            z-index: 1000;
-            box-shadow: 0 0 0 1px rgba(0,0,0,0.08), 0 2px 4px rgba(0,0,0,0.08);
-        }
-        
-        .nav-container {
-            max-width: 1128px;
-            margin: 0 auto;
-            padding: 0 24px;
-            display: flex;
-            align-items: center;
-            height: 52px;
-        }
-        
-        .search-box {
-            position: relative;
-            margin-left: 8px;
-            flex: 1;
-            max-width: 280px;
-        }
-        
-        .search-input {
-            width: 100%;
-            height: 34px;
-            border: none;
-            background-color: #eef3f8;
-            border-radius: 2px;
-            padding: 0 8px 0 40px;
-            font-size: 14px;
-        }
-        
-        .search-icon {
-            position: absolute;
-            left: 12px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: #666;
-        }
-        
+    }
+    
+    /* Responsive */
+    @media (max-width: 768px) {
         .nav-menu {
-            display: flex;
-            margin-left: auto;
+            display: none;
         }
         
-        .nav-item {
-            display: flex;
+        .mobile-menu-toggle {
+            display: block;
+        }
+        
+        .hero-buttons {
             flex-direction: column;
             align-items: center;
-            padding: 6px 12px;
-            text-decoration: none;
-            color: #666;
-            transition: color 0.15s ease;
-            position: relative;
-            cursor: pointer;
         }
         
-        .nav-item:hover,
-        .nav-item.active {
-            color: #0a66c2;
-        }
-        
-        .nav-item.active::after {
-            content: '';
-            position: absolute;
-            bottom: -1px;
-            left: 0;
-            right: 0;
-            height: 2px;
-            background-color: #0a66c2;
-        }
-        
-        .nav-icon {
-            font-size: 20px;
-            margin-bottom: 2px;
-        }
-        
-        .nav-text {
-            font-size: 12px;
-            font-weight: 400;
-        }
-        
-        .notification-badge {
-            background-color: #c37f00;
-            color: white;
-            font-size: 10px;
-            padding: 1px 5px;
-            border-radius: 10px;
-            position: absolute;
-            top: 2px;
-            right: 8px;
-            min-width: 16px;
-            text-align: center;
+        .hero-btn {
+            width: 100%;
+            max-width: 300px;
         }
         
         .auth-buttons {
-            display: flex;
-            gap: 12px;
-            margin-left: 20px;
-        }
-        
-        .btn {
-            padding: 8px 16px;
-            border-radius: 16px;
-            text-decoration: none;
-            font-size: 14px;
-            font-weight: 600;
-            transition: all 0.15s ease;
-            border: 1px solid #0a66c2;
-        }
-        
-        .btn-secondary {
-            background: transparent;
-            color: #0a66c2;
-        }
-        
-        .btn-secondary:hover {
-            background: #e8f4f8;
-        }
-        
-        .btn-primary {
-            background: #0a66c2;
-            color: white;
-        }
-        
-        .btn-primary:hover {
-            background: #004182;
-        }
-        
-        /* Debug Bar */
-        .debug-bar {
-            background: #dc3545;
-            color: white;
-            padding: 10px;
-            text-align: center;
-            position: fixed;
-            top: 52px;
-            width: 100%;
-            z-index: 999;
-            font-size: 12px;
-            font-family: monospace;
-        }
-        
-        /* Main Content */
-        .main-container {
-            max-width: 1128px;
-            margin: 100px auto 0;
-            padding: 24px;
-            display: grid;
-            grid-template-columns: 225px 1fr 300px;
-            gap: 24px;
-        }
-        
-        /* Left Sidebar */
-        .sidebar-left {
-            position: sticky;
-            top: 124px;
-            height: fit-content;
-        }
-        
-        .profile-card {
-            background: white;
-            border-radius: 8px;
-            border: 1px solid #00000024;
-            overflow: hidden;
-            margin-bottom: 16px;
-        }
-        
-        .profile-header {
-            height: 54px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            position: relative;
-        }
-        
-        .profile-avatar {
-            width: 72px;
-            height: 72px;
-            border-radius: 50%;
-            border: 2px solid white;
-            position: absolute;
-            bottom: -36px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: #ddd;
-            background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23666"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>');
-            background-size: 40px 40px;
-            background-repeat: no-repeat;
-            background-position: center;
-        }
-        
-        .profile-info {
-            text-align: center;
-            padding: 40px 12px 16px;
-        }
-        
-        .profile-name {
-            font-size: 16px;
-            font-weight: 600;
-            margin-bottom: 4px;
-        }
-        
-        .profile-title {
-            font-size: 12px;
-            color: #666;
-            margin-bottom: 12px;
-        }
-        
-        .profile-stats {
-            padding: 12px;
-            border-top: 1px solid #00000024;
-            font-size: 12px;
-            color: #666;
-        }
-        
-        /* Main Feed */
-        .main-feed {
-            background: transparent;
-        }
-        
-        .post-composer {
-            background: white;
-            border-radius: 8px;
-            border: 1px solid #00000024;
-            padding: 16px;
-            margin-bottom: 16px;
-        }
-        
-        .composer-input {
-            display: flex;
-            align-items: flex-start;
-            margin-bottom: 16px;
-        }
-        
-        .composer-avatar {
-            width: 48px;
-            height: 48px;
-            border-radius: 50%;
-            background: #ddd;
-            margin-right: 12px;
-            background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23666"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>');
-            background-size: 24px 24px;
-            background-repeat: no-repeat;
-            background-position: center;
-        }
-        
-        .composer-textarea {
-            flex: 1;
-            border: 1px solid #00000024;
-            border-radius: 25px;
-            padding: 14px 16px;
-            font-size: 14px;
-            resize: none;
-            min-height: 48px;
-            font-family: inherit;
-            background: #f3f2ef;
-        }
-        
-        .composer-textarea:focus {
-            outline: none;
-            border-color: #0a66c2;
-            background: white;
-        }
-        
-        .composer-actions {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        
-        .composer-options {
-            display: flex;
-            gap: 24px;
-        }
-        
-        .composer-option {
-            display: flex;
-            align-items: center;
+            flex-direction: column;
             gap: 8px;
-            color: #666;
-            cursor: pointer;
-            padding: 8px;
-            border-radius: 4px;
-            transition: background-color 0.15s ease;
-            font-size: 14px;
-            font-weight: 600;
         }
         
-        .composer-option:hover {
-            background-color: #00000014;
+        .features-grid {
+            grid-template-columns: 1fr;
         }
         
-        .composer-option.media { color: #378fe9; }
-        .composer-option.event { color: #c37f00; }
-        .composer-option.article { color: #e16745; }
-        
-        .post-btn {
-            background-color: #0a66c2;
-            color: white;
-            border: none;
-            border-radius: 16px;
-            padding: 8px 16px;
-            font-size: 14px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: background-color 0.15s ease;
+        .stats-grid {
+            grid-template-columns: repeat(2, 1fr);
         }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Header -->
+<header class="header">
+    <div class="header-container">
+        <a href="{% url 'home' %}" class="logo-container">
+            <span class="logo">💇‍♀️</span>
+            <span class="logo-text">Kuaför İlan</span>
+        </a>
         
-        .post-btn:hover {
-            background-color: #004182;
-        }
+        <nav class="nav-menu">
+            <a href="#features" class="nav-link">Özellikler</a>
+            <a href="#about" class="nav-link">Hakkımızda</a>
+            <a href="#contact" class="nav-link">İletişim</a>
+        </nav>
         
-        .post-btn:disabled {
-            background-color: #00000024;
-            cursor: not-allowed;
-        }
+        <div class="auth-buttons">
+            {% if user.is_authenticated %}
+                <a href="{% url 'dashboard:home' %}" class="btn-primary">Dashboard</a>
+                <a href="{% url 'authentication:logout' %}" class="btn-outline">Çıkış</a>
+            {% else %}
+                <a href="{% url 'authentication:login' %}" class="btn-outline">Giriş Yap</a>
+                <a href="{% url 'authentication:register' %}" class="btn-primary">Üye Ol</a>
+            {% endif %}
+        </div>
         
-        /* Posts */
-        .post {
-            background: white;
-            border-radius: 8px;
-            border: 1px solid #00000024;
-            margin-bottom: 16px;
-            overflow: hidden;
-        }
+        <button class="mobile-menu-toggle" onclick="toggleMobileMenu()">☰</button>
+    </div>
+</header>
+
+<!-- Mobile Menu -->
+<div class="mobile-menu" id="mobileMenu">
+    <button class="mobile-close" onclick="toggleMobileMenu()">×</button>
+    <a href="#features" class="nav-link" onclick="toggleMobileMenu()">Özellikler</a>
+    <a href="#about" class="nav-link" onclick="toggleMobileMenu()">Hakkımızda</a>
+    <a href="#contact" class="nav-link" onclick="toggleMobileMenu()">İletişim</a>
+    {% if user.is_authenticated %}
+        <a href="{% url 'dashboard:home' %}" class="nav-link">Dashboard</a>
+        <a href="{% url 'authentication:logout' %}" class="nav-link">Çıkış</a>
+    {% else %}
+        <a href="{% url 'authentication:login' %}" class="nav-link">Giriş Yap</a>
+        <a href="{% url 'authentication:register' %}" class="nav-link">Üye Ol</a>
+    {% endif %}
+</div>
+
+<!-- Hero Section -->
+<section class="hero">
+    <div class="hero-content">
+        <h1 class="hero-title">Kuaför Dünyasının Dijital Platformu</h1>
+        <p class="hero-subtitle">
+            Türkiye'nin en büyük kuaför ve berber iş platformunda 
+            kariyerinizi geliştirin veya ideal çalışanı bulun
+        </p>
+        <div class="hero-buttons">
+            <a href="{% url 'authentication:register' %}" class="hero-btn hero-btn-primary">
+                Hemen Başla
+            </a>
+            <a href="#features" class="hero-btn hero-btn-secondary">
+                Nasıl Çalışır?
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- Features Section -->
+<section class="features" id="features">
+    <div class="features-container">
+        <div class="section-header">
+            <h2 class="section-title">Neden Kuaför İlan?</h2>
+            <p class="section-subtitle">
+                Modern teknoloji ile kuaför sektörünü bir araya getiriyor, 
+                hem iş arayanlar hem de işverenler için en iyi deneyimi sunuyoruz
+            </p>
+        </div>
         
-        .post-header {
-            padding: 16px 16px 0;
-            display: flex;
-            align-items: flex-start;
-        }
-        
-        .post-avatar {
-            width: 48px;
-            height: 48px;
-            border-radius: 50%;
-            background: #ddd;
-            margin-right: 12px;
-            background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23666"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>');
-            background-size: 24px 24px;
-            background-repeat: no-repeat;
-            background-position: center;
-        }
-        
-        .post-info {
-            flex: 1;
-        }
-        
-        .post-author {
-            font-size: 14px;
-            font-weight: 600;
-            margin-bottom: 2px;
-        }
-        
-        .post-meta {
-            font-size: 12px;
-            color: #666;
-        }
-        
-        .post-content {
-            padding: 16px;
-            font-size: 14px;
-            line-height: 1.5;
-        }
-        
-        .post-actions {
-            padding: 8px 16px 16px;
-            display: flex;
-            justify-content: space-around;
-            border-top: 1px solid #00000014;
-        }
-        
-        .post-action {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            padding: 8px 16px;
-            border-radius: 4px;
-            cursor: pointer;
-            transition: background-color 0.15s ease;
-            color: #666;
-            font-size: 14px;
-            font-weight: 600;
-        }
-        
-        .post-action:hover {
-            background-color: #00000014;
-        }
-        
-        .post-action.liked {
-            color: #0a66c2;
-        }
-        
-        /* Right Sidebar */
-        .sidebar-right {
-            position: sticky;
-            top: 124px;
-            height: fit-content;
-        }
-        
-        .news-card {
-            background: white;
-            border-radius: 8px;
-            border: 1px solid #00000024;
-            padding: 16px;
-        }
-        
-        .news-title {
-            font-size: 16px;
-            font-weight: 600;
-            margin-bottom: 16px;
-        }
-        
-        .news-item {
-            padding: 8px 0;
-            cursor: pointer;
-        }
-        
-        .news-item:hover {
-            background-color: #00000014;
-            margin: 0 -8px;
-            padding: 8px;
-            border-radius: 4px;
-        }
-        
-        .news-headline {
-            font-size: 13px;
-            font-weight: 600;
-            margin-bottom: 4px;
-        }
-        
-        .news-meta {
-            font-size: 12px;
-            color: #666;
-        }
-        
-        /* Welcome Message */
-        .welcome-message {
-            text-align: center;
-            padding: 40px 20px;
-        }
-        
-        .welcome-message h2 {
-            color: #333;
-            margin-bottom: 10px;
-            font-size: 24px;
-        }
-        
-        .welcome-message p {
-            color: #666;
-            margin-bottom: 20px;
-            font-size: 16px;
-        }
-        
-        .welcome-actions {
-            display: flex;
-            gap: 12px;
-            justify-content: center;
-            flex-wrap: wrap;
-        }
-        
-        /* Responsive */
-        @media (max-width: 1200px) {
-            .main-container {
-                grid-template-columns: 1fr;
-                max-width: 540px;
-            }
-            
-            .sidebar-left,
-            .sidebar-right {
-                display: none;
-            }
-        }
-        
-        @media (max-width: 768px) {
-            .nav-container {
-                padding: 0 16px;
-            }
-            
-            .search-box {
-                max-width: 200px;
-            }
-            
-            .nav-text {
-                display: none;
-            }
-            
-            .main-container {
-                padding: 16px;
-                margin-top: 120px;
-            }
-            
-            .auth-buttons {
-                margin-left: 10px;
-            }
-            
-            .btn {
-                padding: 6px 12px;
-                font-size: 12px;
-            }
-            
-            .debug-bar {
-                font-size: 10px;
-                padding: 8px;
-            }
-            
-            .welcome-actions {
-                flex-direction: column;
-                align-items: center;
-            }
-        }
-        
-        /* Animations */
-        .fade-in {
-            animation: fadeIn 0.3s ease-in;
-        }
-        
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        
-        .pulse {
-            animation: pulse 2s infinite;
-        }
-        
-        @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-            100% { transform: scale(1); }
-        }
-    </style>
-</head>
-<body>
-    <!-- Top Navigation -->
-    <nav class="top-nav">
-        <div class="nav-container">
-            <div class="logo" style="font-size: 24px; font-weight: bold; color: #0a66c2; margin-right: 8px;">
-                💇‍♀️
+        <div class="features-grid">
+            <div class="feature-card">
+                <span class="feature-icon">🎯</span>
+                <h3 class="feature-title">Hedefli Eşleştirme</h3>
+                <p class="feature-description">
+                    Yapay zeka destekli algoritmamız ile en uygun iş fırsatları 
+                    ve adayları bulun
+                </p>
             </div>
             
-            <div class="search-box">
-                <input type="text" class="search-input" placeholder="Arama yap">
-                <div class="search-icon">🔍</div>
+            <div class="feature-card">
+                <span class="feature-icon">📱</span>
+                <h3 class="feature-title">Mobil Uyumlu</h3>
+                <p class="feature-description">
+                    Her cihazdan erişebileceğiniz responsive tasarım ve 
+                    yakında gelecek mobil uygulama
+                </p>
             </div>
             
-            <div class="nav-menu">
-                <a href="/" class="nav-item active" data-page="home">
-                    <div class="nav-icon">🏠</div>
-                    <div class="nav-text">Ana Sayfa</div>
-                </a>
-                
-                <a href="#" class="nav-item" data-page="network">
-                    <div class="nav-icon">👥</div>
-                    <div class="nav-text">Ağım</div>
-                </a>
-                
-                <a href="/jobs/" class="nav-item" data-page="jobs">
-                    <div class="nav-icon">💼</div>
-                    <div class="nav-text">İş İlanları</div>
-                </a>
-                
-                <a href="#" class="nav-item" data-page="messaging">
-                    <div class="nav-icon">💬</div>
-                    <div class="nav-text">Mesajlaşma</div>
-                </a>
-                
-                <a href="#" class="nav-item" data-page="notifications">
-                    <div class="nav-icon">🔔</div>
-                    <div class="nav-text">Bildirimler</div>
-                    <div class="notification-badge">15</div>
-                </a>
-                
-                <a href="/profile/" class="nav-item" data-page="profile">
-                    <div class="nav-icon">👤</div>
-                    <div class="nav-text">Ben</div>
-                </a>
+            <div class="feature-card">
+                <span class="feature-icon">🔒</span>
+                <h3 class="feature-title">Güvenli Platform</h3>
+                <p class="feature-description">
+                    SSL şifreleme ve doğrulanmış işveren sistemi ile 
+                    güvenli iş arama deneyimi
+                </p>
             </div>
             
-            <div class="auth-buttons">
-                {% if user.is_authenticated %}
-                    <a href="/profile/" class="btn btn-secondary">Profilim</a>
-                    <a href="/auth/logout/" class="btn btn-primary">Çıkış</a>
-                {% else %}
-                    <a href="/auth/login/" class="btn btn-secondary">Giriş Yap</a>
-                    <a href="/auth/register/" class="btn btn-primary">Kayıt Ol</a>
-                {% endif %}
+            <div class="feature-card">
+                <span class="feature-icon">💼</span>
+                <h3 class="feature-title">Kapsamlı Profil</h3>
+                <p class="feature-description">
+                    Detaylı profil sistemi ile yeteneklerinizi sergileyeçin 
+                    ve doğru fırsatları yakalayın
+                </p>
+            </div>
+            
+            <div class="feature-card">
+                <span class="feature-icon">📊</span>
+                <h3 class="feature-title">Analitik Raporlar</h3>
+                <p class="feature-description">
+                    Başvuru performansınızı takip edin ve 
+                    gelişim alanlarınızı keşfedin
+                </p>
+            </div>
+            
+            <div class="feature-card">
+                <span class="feature-icon">🚀</span>
+                <h3 class="feature-title">Hızlı Başlama</h3>
+                <p class="feature-description">
+                    Dakikalar içinde hesap oluşturun ve 
+                    hemen iş aramaya başlayın
+                </p>
             </div>
         </div>
-    </nav>
-
-    <!-- DEBUG INFO - GEÇİCİ -->
-    <div class="debug-bar">
-        🐛 DEBUG: user.is_authenticated = {{ user.is_authenticated }} | 
-        user.username = "{{ user.username }}" | 
-        user.email = "{{ user.email }}" |
-        user.id = {{ user.id|default:"None" }} |
-        user.user_type = "{{ user.user_type|default:"None" }}"
     </div>
+</section>
 
-    <!-- Main Container -->
-    <div class="main-container">
-        <!-- Left Sidebar -->
-        <aside class="sidebar-left">
-            <div class="profile-card fade-in">
-                <div class="profile-header"></div>
-                <div class="profile-avatar"></div>
-                <div class="profile-info">
-                    <div class="profile-name">
-                        {% if user.is_authenticated %}
-                            {{ user.first_name }} {{ user.last_name }}
-                        {% else %}
-                            Hoş Geldiniz!
-                        {% endif %}
-                    </div>
-                    <div class="profile-title">
-                        {% if user.is_authenticated %}
-                            {% if user.user_type == 'jobseeker' %}
-                                Kuaför Profesyoneli
-                            {% else %}
-                                İş Veren
-                            {% endif %}
-                        {% else %}
-                            Ziyaretçi
-                        {% endif %}
-                    </div>
-                </div>
-                <div class="profile-stats">
-                    {% if user.is_authenticated %}
-                        <div>Profil görüntülenme: <strong>12</strong></div>
-                    {% else %}
-                        <div><a href="/auth/login/">Giriş yapın</a></div>
-                    {% endif %}
-                </div>
+<!-- Stats Section -->
+<section class="stats">
+    <div class="stats-container">
+        <div class="stats-grid">
+            <div class="stat-item">
+                <div class="stat-number">1.250+</div>
+                <div class="stat-label">Aktif İş İlanı</div>
             </div>
-        </aside>
-
-        <!-- Main Feed -->
-        <main class="main-feed">
-            <!-- Post Composer -->
-            {% if user.is_authenticated %}
-                <div class="post-composer fade-in">
-                    <div class="composer-input">
-                        <div class="composer-avatar"></div>
-                        <textarea class="composer-textarea" placeholder="Bir gönderi başlat" rows="1"></textarea>
-                    </div>
-                    
-                    <div class="composer-actions">
-                        <div class="composer-options">
-                            <div class="composer-option media" onclick="openMedia()">
-                                <span>📷</span>
-                                <span>Medya</span>
-                            </div>
-                            <div class="composer-option event" onclick="createEvent()">
-                                <span>📅</span>
-                                <span>Etkinlik</span>
-                            </div>
-                            <div class="composer-option article" onclick="writeArticle()">
-                                <span>📝</span>
-                                <span>Makale yaz</span>
-                            </div>
-                        </div>
-                        <button class="post-btn" disabled onclick="publishPost()">Paylaş</button>
-                    </div>
-                </div>
-            {% else %}
-                <!-- Welcome Message for Non-Authenticated Users -->
-                <div class="post-composer fade-in">
-                    <div class="welcome-message">
-                        <h2>Kuaför İlan'a Hoş Geldiniz!</h2>
-                        <p>Kuaför sektöründe iş bulmak ve vermek için hemen kayıt olun.</p>
-                        <div class="welcome-actions">
-                            <a href="/auth/register/" class="btn btn-primary">Hemen Kayıt Ol</a>
-                            <a href="/jobs/" class="btn btn-secondary">İş İlanlarını Gör</a>
-                        </div>
-                    </div>
-                </div>
-            {% endif %}
-
-            <!-- Sample Posts -->
-            <article class="post fade-in">
-                <div class="post-header">
-                    <div class="post-avatar"></div>
-                    <div class="post-info">
-                        <div class="post-author">Ayşe Kuaför</div>
-                        <div class="post-meta">Saç Stilisti • 2 saat önce</div>
-                    </div>
-                </div>
-                <div class="post-content">
-                    Bugün müşterimin saçlarını yepyeni bir tarzda kestim! 💇‍♀️ Modern bob kesim teknikleri gerçekten harika sonuçlar veriyor. #kuaforsanatı #sacmodelleri
-                </div>
-                <div class="post-actions">
-                    <div class="post-action" onclick="toggleLike(this)">
-                        <span>👍</span>
-                        <span>Beğen</span>
-                    </div>
-                    <div class="post-action" onclick="toggleComment(this)">
-                        <span>💬</span>
-                        <span>Yorum</span>
-                    </div>
-                    <div class="post-action" onclick="sharePost(this)">
-                        <span>🔄</span>
-                        <span>Paylaş</span>
-                    </div>
-                </div>
-            </article>
-
-            <article class="post fade-in">
-                <div class="post-header">
-                    <div class="post-avatar"></div>
-                    <div class="post-info">
-                        <div class="post-author">Mehmet Berber</div>
-                        <div class="post-meta">Berber • 5 saat önce</div>
-                    </div>
-                </div>
-                <div class="post-content">
-                    Salonum için yeni ekip üyesi arıyorum! Deneyimli kuaför arkadaşlar başvurabilir. İyi çalışma koşulları ve rekabetçi maaş garantisi. 💼
-                </div>
-                <div class="post-actions">
-                    <div class="post-action" onclick="toggleLike(this)">
-                        <span>👍</span>
-                        <span>Beğen</span>
-                    </div>
-                    <div class="post-action" onclick="toggleComment(this)">
-                        <span>💬</span>
-                        <span>Yorum</span>
-                    </div>
-                    <div class="post-action" onclick="sharePost(this)">
-                        <span>🔄</span>
-                        <span>Paylaş</span>
-                    </div>
-                </div>
-            </article>
-        </main>
-
-        <!-- Right Sidebar -->
-        <aside class="sidebar-right">
-            <div class="news-card fade-in">
-                <div class="news-title">Kuaför Dünyasından Haberler</div>
-                
-                <div class="news-item">
-                    <div class="news-headline">2025 Saç Trendleri</div>
-                    <div class="news-meta">1,234 okuyucu • 2 saat önce</div>
-                </div>
-                
-                <div class="news-item">
-                    <div class="news-headline">Yeni Açılan Salonlar</div>
-                    <div class="news-meta">856 okuyucu • 4 saat önce</div>
-                </div>
-                
-                <div class="news-item">
-                    <div class="news-headline">Kuaför Eğitim Programları</div>
-                    <div class="news-meta">623 okuyucu • 6 saat önce</div>
-                </div>
-                
-                <div class="news-item">
-                    <div class="news-headline">Sektör İstatistikleri</div>
-                    <div class="news-meta">445 okuyucu • 1 gün önce</div>
-                </div>
-                
-                <div class="news-item">
-                    <div class="news-headline">Organik Ürün Trendleri</div>
-                    <div class="news-meta">378 okuyucu • 1 gün önce</div>
-                </div>
+            <div class="stat-item">
+                <div class="stat-number">15.000+</div>
+                <div class="stat-label">Kayıtlı Kullanıcı</div>
             </div>
-        </aside>
+            <div class="stat-item">
+                <div class="stat-number">850+</div>
+                <div class="stat-label">İşveren Üyesi</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number">95%</div>
+                <div class="stat-label">Başarılı Eşleşme</div>
+            </div>
+        </div>
     </div>
+</section>
 
-    <script>
-        // Navigation functionality
-        document.querySelectorAll('.nav-item').forEach(item => {
-            item.addEventListener('click', function(e) {
-                // Don't prevent default for actual links
-                if (this.href && this.href !== '#') {
-                    return; // Let the browser handle the navigation
-                }
-                
-                e.preventDefault();
-                
-                // Remove active class from all items
-                document.querySelectorAll('.nav-item').forEach(nav => nav.classList.remove('active'));
-                
-                // Add active class to clicked item
-                this.classList.add('active');
-                
-                // Get page data
-                const page = this.dataset.page;
-                
-                // Show alert for pages that don't have links yet
-                if (page !== 'home' && page !== 'jobs' && page !== 'profile') {
-                    alert(`${page} sayfası henüz hazırlanıyor...`);
-                }
-            });
-        });
+<!-- CTA Section -->
+<section class="cta">
+    <div class="cta-container">
+        <h2 class="cta-title">Kariyerinize Yön Vermeye Hazır Mısınız?</h2>
+        <p class="cta-subtitle">
+            Binlerce iş fırsatına erişim sağlayın ve profesyonel ağınızı genişletin. 
+            Ücretsiz hesabınızı oluşturun!
+        </p>
+        <div class="hero-buttons">
+            <a href="{% url 'authentication:register' %}" class="hero-btn hero-btn-primary">
+                Ücretsiz Başla
+            </a>
+        </div>
+    </div>
+</section>
 
-        // Composer functionality (only if user is authenticated)
-        const textarea = document.querySelector('.composer-textarea');
-        const postBtn = document.querySelector('.post-btn');
+<!-- Footer -->
+<footer class="footer">
+    <div class="footer-container">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>Kuaför İlan</h3>
+                <ul>
+                    <li><a href="#about">Hakkımızda</a></li>
+                    <li><a href="#careers">Kariyer</a></li>
+                    <li><a href="#press">Basın</a></li>
+                    <li><a href="#blog">Blog</a></li>
+                </ul>
+            </div>
+            
+            <div class="footer-section">
+                <h3>Hizmetler</h3>
+                <ul>
+                    <li><a href="#">İş İlanları</a></li>
+                    <li><a href="#">Şirket Profilleri</a></li>
+                    <li><a href="#">Kariyer Rehberi</a></li>
+                    <li><a href="#">Maaş Rehberi</a></li>
+                </ul>
+            </div>
+            
+            <div class="footer-section">
+                <h3>Destek</h3>
+                <ul>
+                    <li><a href="#help">Yardım Merkezi</a></li>
+                    <li><a href="#contact">İletişim</a></li>
+                    <li><a href="#privacy">Gizlilik</a></li>
+                    <li><a href="#terms">Kullanım Koşulları</a></li>
+                </ul>
+            </div>
+            
+            <div class="footer-section">
+                <h3>Takip Edin</h3>
+                <ul>
+                    <li><a href="#linkedin">LinkedIn</a></li>
+                    <li><a href="#instagram">Instagram</a></li>
+                    <li><a href="#twitter">Twitter</a></li>
+                    <li><a href="#facebook">Facebook</a></li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="footer-bottom">
+            <p>&copy; 2024 Kuaför İlan. Tüm hakları saklıdır.</p>
+        </div>
+    </div>
+</footer>
+{% endblock %}
 
-        if (textarea && postBtn) {
-            textarea.addEventListener('input', function() {
-                if (this.value.trim().length > 0) {
-                    postBtn.disabled = false;
-                } else {
-                    postBtn.disabled = true;
-                }
-            });
-
-            textarea.addEventListener('focus', function() {
-                this.style.height = 'auto';
-                this.style.height = Math.max(48, this.scrollHeight) + 'px';
-            });
-        }
-
-        // Media access functions
-        function openMedia() {
-            if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-                navigator.mediaDevices.getUserMedia({ 
-                    video: true, 
-                    audio: true 
-                })
-                .then(function(stream) {
-                    alert('Kamera ve mikrofon erişimi sağlandı! Medya paylaşım özelliği aktif.');
-                    // Here you would open media capture interface
-                })
-                .catch(function(err) {
-                    alert('Kamera/mikrofon erişimi reddedildi veya kullanılamıyor.');
+{% block extra_js %}
+<script>
+    function toggleMobileMenu() {
+        const mobileMenu = document.getElementById('mobileMenu');
+        mobileMenu.classList.toggle('open');
+    }
+    
+    // Smooth scrolling for anchor links
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function (e) {
+            e.preventDefault();
+            const target = document.querySelector(this.getAttribute('href'));
+            if (target) {
+                target.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'start'
                 });
-            } else {
-                alert('Tarayıcınız medya erişimini desteklemiyor.');
             }
+        });
+    });
+    
+    // Header background on scroll
+    window.addEventListener('scroll', function() {
+        const header = document.querySelector('.header');
+        if (window.scrollY > 100) {
+            header.style.background = 'rgba(15, 23, 42, 0.9)';
+        } else {
+            header.style.background = 'rgba(255,255,255,0.1)';
         }
-
-        function createEvent() {
-            alert('Etkinlik oluşturma özelliği yakında eklenecek!');
-        }
-
-        function writeArticle() {
-            alert('Makale yazma editörü yakında eklenecek!');
-        }
-
-        function publishPost() {
-            if (textarea && textarea.value.trim()) {
-                alert('Gönderiniz paylaşıldı!');
-                textarea.value = '';
-                postBtn.disabled = true;
-                textarea.style.height = '48px';
-            }
-        }
-
-        // Post interaction functions
-        function toggleLike(element) {
-            element.classList.toggle('liked');
-            const span = element.querySelector('span:last-child');
-            if (element.classList.contains('liked')) {
-                span.textContent = 'Beğenildi';
-            } else {
-                span.textContent = 'Beğen';
-            }
-        }
-
-        function toggleComment(element) {
-            alert('Yorum özelliği yakında eklenecek!');
-        }
-
-        function sharePost(element) {
-            alert('Paylaşım özelliği yakında eklenecek!');
-        }
-
-        // Add fade-in animation to new posts
-        function addFadeIn() {
-            const posts = document.querySelectorAll('.post, .post-composer, .profile-card, .news-card');
-            posts.forEach((post, index) => {
-                post.style.animationDelay = `${index * 0.1}s`;
-            });
-        }
-
-        // Initialize animations
-        document.addEventListener('DOMContentLoaded', addFadeIn);
-    </script>
-</body>
-</html>
+    });
+</script>
+{% endblock %}
