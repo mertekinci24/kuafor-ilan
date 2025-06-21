@@ -24,8 +24,8 @@ INSTALLED_APPS = [
     'rest_framework',
     'apps.core',
     'apps.authentication',
-    # Custom user model
-AUTH_USER_MODEL = 'authentication.CustomUser'
+    'apps.profiles',
+    'apps.jobs',
 ]
 
 MIDDLEWARE = [
@@ -76,6 +76,8 @@ else:
     }
 
 # Custom User Model
+AUTH_USER_MODEL = 'authentication.CustomUser'
+
 # REST Framework
 REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
