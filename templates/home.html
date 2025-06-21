@@ -152,10 +152,24 @@
             background: #004182;
         }
         
+        /* Debug Bar */
+        .debug-bar {
+            background: #dc3545;
+            color: white;
+            padding: 10px;
+            text-align: center;
+            position: fixed;
+            top: 52px;
+            width: 100%;
+            z-index: 999;
+            font-size: 12px;
+            font-family: monospace;
+        }
+        
         /* Main Content */
         .main-container {
             max-width: 1128px;
-            margin: 52px auto 0;
+            margin: 100px auto 0;
             padding: 24px;
             display: grid;
             grid-template-columns: 225px 1fr 300px;
@@ -165,7 +179,7 @@
         /* Left Sidebar */
         .sidebar-left {
             position: sticky;
-            top: 76px;
+            top: 124px;
             height: fit-content;
         }
         
@@ -404,7 +418,7 @@
         /* Right Sidebar */
         .sidebar-right {
             position: sticky;
-            top: 76px;
+            top: 124px;
             height: fit-content;
         }
         
@@ -444,6 +458,31 @@
             color: #666;
         }
         
+        /* Welcome Message */
+        .welcome-message {
+            text-align: center;
+            padding: 40px 20px;
+        }
+        
+        .welcome-message h2 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 24px;
+        }
+        
+        .welcome-message p {
+            color: #666;
+            margin-bottom: 20px;
+            font-size: 16px;
+        }
+        
+        .welcome-actions {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
         /* Responsive */
         @media (max-width: 1200px) {
             .main-container {
@@ -472,6 +511,7 @@
             
             .main-container {
                 padding: 16px;
+                margin-top: 120px;
             }
             
             .auth-buttons {
@@ -481,6 +521,16 @@
             .btn {
                 padding: 6px 12px;
                 font-size: 12px;
+            }
+            
+            .debug-bar {
+                font-size: 10px;
+                padding: 8px;
+            }
+            
+            .welcome-actions {
+                flex-direction: column;
+                align-items: center;
             }
         }
         
@@ -563,6 +613,15 @@
         </div>
     </nav>
 
+    <!-- DEBUG INFO - GEÇİCİ -->
+    <div class="debug-bar">
+        🐛 DEBUG: user.is_authenticated = {{ user.is_authenticated }} | 
+        user.username = "{{ user.username }}" | 
+        user.email = "{{ user.email }}" |
+        user.id = {{ user.id|default:"None" }} |
+        user.user_type = "{{ user.user_type|default:"None" }}"
+    </div>
+
     <!-- Main Container -->
     <div class="main-container">
         <!-- Left Sidebar -->
@@ -631,10 +690,10 @@
             {% else %}
                 <!-- Welcome Message for Non-Authenticated Users -->
                 <div class="post-composer fade-in">
-                    <div style="text-align: center; padding: 20px;">
-                        <h2 style="color: #333; margin-bottom: 10px;">Kuaför İlan'a Hoş Geldiniz!</h2>
-                        <p style="color: #666; margin-bottom: 20px;">Kuaför sektöründe iş bulmak ve vermek için hemen kayıt olun.</p>
-                        <div style="display: flex; gap: 12px; justify-content: center;">
+                    <div class="welcome-message">
+                        <h2>Kuaför İlan'a Hoş Geldiniz!</h2>
+                        <p>Kuaför sektöründe iş bulmak ve vermek için hemen kayıt olun.</p>
+                        <div class="welcome-actions">
                             <a href="/auth/register/" class="btn btn-primary">Hemen Kayıt Ol</a>
                             <a href="/jobs/" class="btn btn-secondary">İş İlanlarını Gör</a>
                         </div>
