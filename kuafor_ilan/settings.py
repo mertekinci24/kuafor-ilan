@@ -13,7 +13,7 @@ DEBUG = os.environ.get('DEBUG', 'True') == 'True'
 # Allowed hosts
 ALLOWED_HOSTS = ['*']
 
-# Application definition - Basitleştirilmiş
+# Application definition
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -23,11 +23,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'apps.core',
+    'apps.authentication',
     'apps.dashboard',
-    # Authentication apps geçici olarak kapatıldı
-    # 'apps.authentication',
-    # 'apps.profiles',
-    # 'apps.jobs',
 ]
 
 MIDDLEWARE = [
@@ -77,18 +74,18 @@ else:
         }
     }
 
-# Custom User Model - Geçici olarak kapatıldı
-# AUTH_USER_MODEL = 'authentication.CustomUser'
+# Custom User Model
+AUTH_USER_MODEL = 'authentication.CustomUser'
 
-# Authentication backends - Geçici olarak kapatıldı
-# AUTHENTICATION_BACKENDS = [
-#     'apps.authentication.backends.EmailBackend',
-#     'django.contrib.auth.backends.ModelBackend',
-# ]
+# Authentication backends
+AUTHENTICATION_BACKENDS = [
+    'apps.authentication.backends.EmailBackend',
+    'django.contrib.auth.backends.ModelBackend',
+]
 
 # Login URLs
-LOGIN_URL = '/admin/login/'
-LOGIN_REDIRECT_URL = '/'
+LOGIN_URL = '/auth/login/'
+LOGIN_REDIRECT_URL = '/dashboard/'
 LOGOUT_REDIRECT_URL = '/'
 
 # REST Framework
