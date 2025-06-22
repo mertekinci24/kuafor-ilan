@@ -15,11 +15,11 @@ urlpatterns = [
     # Ana sayfa
     path('', home_view, name='home'),
     
-    # Authentication URL'leri
-    path('auth/', include('apps.authentication.urls')),
-    
     # Dashboard URL'leri
     path('dashboard/', include('apps.dashboard.urls')),
+    
+    # Authentication geçici kapalı - migration sorunu
+    # path('auth/', include('apps.authentication.urls')),
 ]
 
 # Development için media files
