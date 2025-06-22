@@ -2,6 +2,7 @@ from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.utils import timezone
 
+
 class CustomUser(AbstractUser):
     """Özel kullanıcı modeli - JobSeeker ve Business için"""
     
@@ -38,7 +39,6 @@ class CustomUser(AbstractUser):
     
     # Profil durumu
     is_verified = models.BooleanField(default=False, verbose_name='Doğrulanmış')
-    is_active = models.BooleanField(default=True, verbose_name='Aktif')
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='Oluşturma Tarihi')
     updated_at = models.DateTimeField(auto_now=True, verbose_name='Güncelleme Tarihi')
     
@@ -52,7 +52,6 @@ class CustomUser(AbstractUser):
     class Meta:
         verbose_name = 'Kullanıcı'
         verbose_name_plural = 'Kullanıcılar'
-        db_table = 'auth_users'
     
     def __str__(self):
         return f"{self.get_full_name()} ({self.email})"
@@ -82,7 +81,7 @@ class JobSeekerProfile(models.Model):
     
     # Kişisel bilgiler
     birth_date = models.DateField(null=True, blank=True, verbose_name='Doğum Tarihi')
-    city = models.CharField(max_length=50, verbose_name='Şehir')
+    city = models.CharField(max_length=50, blank=True, verbose_name='Şehir')
     district = models.CharField(max_length=50, blank=True, verbose_name='İlçe')
     address = models.TextField(blank=True, verbose_name='Adres')
     
@@ -111,7 +110,6 @@ class JobSeekerProfile(models.Model):
     class Meta:
         verbose_name = 'İş Arayan Profili'
         verbose_name_plural = 'İş Arayan Profilleri'
-        db_table = 'jobseeker_profiles'
     
     def __str__(self):
         return f"{self.user.get_full_name()} - İş Arayan"
@@ -136,19 +134,20 @@ class BusinessProfile(models.Model):
     company_size = models.CharField(
         max_length=20,
         choices=COMPANY_SIZE_CHOICES,
+        default='1-5',
         verbose_name='Şirket Büyüklüğü'
     )
-    establishment_year = models.IntegerField(verbose_name='Kuruluş Yılı')
+    establishment_year = models.IntegerField(default=2024, verbose_name='Kuruluş Yılı')
     
     # İletişim bilgileri
-    city = models.CharField(max_length=50, verbose_name='Şehir')
+    city = models.CharField(max_length=50, blank=True, verbose_name='Şehir')
     district = models.CharField(max_length=50, blank=True, verbose_name='İlçe')
-    address = models.TextField(verbose_name='Adres')
+    address = models.TextField(blank=True, verbose_name='Adres')
     website = models.URLField(blank=True, verbose_name='Web Sitesi')
     
     # Yetkili kişi
-    contact_person = models.CharField(max_length=100, verbose_name='Yetkili Kişi')
-    contact_phone = models.CharField(max_length=15, verbose_name='Yetkili Telefon')
+    contact_person = models.CharField(max_length=100, blank=True, verbose_name='Yetkili Kişi')
+    contact_phone = models.CharField(max_length=15, blank=True, verbose_name='Yetkili Telefon')
     
     # İstatistikler
     total_job_posts = models.IntegerField(default=0, verbose_name='Toplam İlan')
@@ -165,7 +164,6 @@ class BusinessProfile(models.Model):
     class Meta:
         verbose_name = 'İş Veren Profili'
         verbose_name_plural = 'İş Veren Profilleri'
-        db_table = 'business_profiles'
     
     def __str__(self):
         return f"{self.company_name} - {self.contact_person}"
