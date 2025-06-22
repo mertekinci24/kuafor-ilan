@@ -1,241 +1,478 @@
-<!DOCTYPE html>
-<html lang="tr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Giriş Yap - Kuaför İlan</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+{% extends 'base.html' %}
+
+{% block title %}Giriş Yap - Kuaför İlan{% endblock %}
+
+{% block extra_css %}
+<style>
+    body {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+    }
+
+    .auth-container {
+        width: 100%;
+        max-width: 450px;
+        margin: 0 auto;
+    }
+
+    .auth-header {
+        text-align: center;
+        margin-bottom: 2rem;
+        color: white;
+    }
+
+    .auth-logo {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 12px;
+        margin-bottom: 1rem;
+        text-decoration: none;
+        color: white;
+    }
+
+    .auth-logo-icon {
+        font-size: 2.5rem;
+    }
+
+    .auth-logo-text {
+        font-size: 1.5rem;
+        font-weight: 700;
+    }
+
+    .auth-title {
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+    }
+
+    .auth-subtitle {
+        font-size: 1rem;
+        opacity: 0.9;
+        margin-bottom: 0;
+    }
+
+    .auth-card {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(20px);
+        border-radius: 20px;
+        padding: 2.5rem;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        margin-bottom: 1.5rem;
+    }
+
+    .form-group {
+        position: relative;
+        margin-bottom: 1.5rem;
+    }
+
+    .form-control {
+        padding: 16px 20px 16px 50px;
+        border: 2px solid #e2e8f0;
+        border-radius: 12px;
+        font-size: 16px;
+        transition: all 0.3s ease;
+        background: rgba(255, 255, 255, 0.9);
+        height: 56px;
+    }
+
+    .form-control:focus {
+        border-color: var(--primary-color);
+        background: white;
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(10, 102, 194, 0.15);
+    }
+
+    .form-icon {
+        position: absolute;
+        left: 18px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #64748b;
+        font-size: 18px;
+        z-index: 10;
+        transition: color 0.3s ease;
+    }
+
+    .form-group:focus-within .form-icon {
+        color: var(--primary-color);
+    }
+
+    .password-toggle {
+        position: absolute;
+        right: 18px;
+        top: 50%;
+        transform: translateY(-50%);
+        background: none;
+        border: none;
+        color: #64748b;
+        cursor: pointer;
+        font-size: 18px;
+        z-index: 10;
+        transition: color 0.3s ease;
+    }
+
+    .password-toggle:hover {
+        color: var(--primary-color);
+    }
+
+    .form-options {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+
+    .remember-me {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .custom-checkbox {
+        position: relative;
+        display: inline-block;
+        width: 20px;
+        height: 20px;
+    }
+
+    .custom-checkbox input {
+        opacity: 0;
+        width: 100%;
+        height: 100%;
+        margin: 0;
+        cursor: pointer;
+    }
+
+    .custom-checkbox .checkmark {
+        position: absolute;
+        top: 0;
+        left: 0;
+        height: 20px;
+        width: 20px;
+        background: white;
+        border: 2px solid #e2e8f0;
+        border-radius: 4px;
+        transition: all 0.3s ease;
+    }
+
+    .custom-checkbox input:checked ~ .checkmark {
+        background: var(--primary-color);
+        border-color: var(--primary-color);
+    }
+
+    .custom-checkbox .checkmark:after {
+        content: "";
+        position: absolute;
+        display: none;
+        left: 6px;
+        top: 2px;
+        width: 6px;
+        height: 10px;
+        border: solid white;
+        border-width: 0 2px 2px 0;
+        transform: rotate(45deg);
+    }
+
+    .custom-checkbox input:checked ~ .checkmark:after {
+        display: block;
+    }
+
+    .forgot-password {
+        color: var(--primary-color);
+        text-decoration: none;
+        font-weight: 600;
+        font-size: 14px;
+        transition: color 0.3s ease;
+    }
+
+    .forgot-password:hover {
+        color: var(--primary-dark);
+        text-decoration: underline;
+    }
+
+    .login-btn {
+        width: 100%;
+        height: 56px;
+        font-size: 16px;
+        font-weight: 600;
+        border-radius: 12px;
+        margin-bottom: 1.5rem;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .login-btn:before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+        transition: left 0.5s;
+    }
+
+    .login-btn:hover:before {
+        left: 100%;
+    }
+
+    .divider {
+        text-align: center;
+        margin: 1.5rem 0;
+        position: relative;
+        color: #64748b;
+        font-size: 14px;
+    }
+
+    .divider:before {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 0;
+        right: 0;
+        height: 1px;
+        background: #e2e8f0;
+        z-index: 1;
+    }
+
+    .divider span {
+        background: rgba(255, 255, 255, 0.95);
+        padding: 0 1rem;
+        position: relative;
+        z-index: 2;
+    }
+
+    .social-login {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .social-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        padding: 12px;
+        border: 2px solid #e2e8f0;
+        border-radius: 12px;
+        background: white;
+        color: #374151;
+        text-decoration: none;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+
+    .social-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+        border-color: #d1d5db;
+    }
+
+    .auth-footer {
+        text-align: center;
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(20px);
+        border-radius: 16px;
+        padding: 1.5rem;
+        color: white;
+    }
+
+    .auth-footer a {
+        color: white;
+        text-decoration: none;
+        font-weight: 600;
+        border-bottom: 2px solid transparent;
+        transition: border-color 0.3s ease;
+    }
+
+    .auth-footer a:hover {
+        border-bottom-color: white;
+    }
+
+    @keyframes shake {
+        0%, 100% { transform: translateX(0); }
+        25% { transform: translateX(-5px); }
+        75% { transform: translateX(5px); }
+    }
+
+    .form-control.error {
+        animation: shake 0.5s ease-in-out;
+        border-color: var(--danger-color);
+    }
+
+    @media (max-width: 480px) {
+        .auth-card {
+            padding: 2rem 1.5rem;
+            margin: 0 10px;
         }
-        
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
+        .social-login {
+            grid-template-columns: 1fr;
         }
-        
-        .auth-container {
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
-            overflow: hidden;
-            width: 100%;
-            max-width: 400px;
-            position: relative;
+        .form-options {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 0.5rem;
         }
-        
-        .auth-header {
-            text-align: center;
-            padding: 40px 40px 20px;
-            background: linear-gradient(135deg, #f8f9ff 0%, #ffffff 100%);
-        }
-        
-        .logo {
-            font-size: 48px;
-            margin-bottom: 10px;
-        }
-        
-        .auth-title {
-            font-size: 28px;
-            font-weight: 700;
-            color: #333;
-            margin-bottom: 8px;
-        }
-        
-        .auth-subtitle {
-            color: #666;
-            font-size: 14px;
-            line-height: 1.5;
-        }
-        
-        .auth-form {
-            padding: 20px 40px 40px;
-        }
-        
-        .form-group {
-            margin-bottom: 20px;
-        }
-        
-        .form-label {
-            display: block;
-            font-size: 14px;
-            font-weight: 600;
-            color: #333;
-            margin-bottom: 8px;
-        }
-        
-        .form-input {
-            width: 100%;
-            height: 48px;
-            border: 2px solid #e1e5e9;
-            border-radius: 8px;
-            padding: 0 16px;
-            font-size: 16px;
-            transition: all 0.3s ease;
-            background: #fafbfc;
-        }
-        
-        .form-input:focus {
-            outline: none;
-            border-color: #0a66c2;
-            background: white;
-            box-shadow: 0 0 0 3px rgba(10, 102, 194, 0.1);
-        }
-        
-        .auth-button {
-            width: 100%;
-            height: 48px;
-            background: linear-gradient(135deg, #0a66c2 0%, #004182 100%);
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-        
-        .auth-button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(10, 102, 194, 0.3);
-        }
-        
-        .remember-forgot {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin: 20px 0;
-            font-size: 14px;
-        }
-        
-        .remember-me {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        
-        .auth-footer {
-            text-align: center;
-            font-size: 14px;
-            color: #666;
-            margin-top: 20px;
-        }
-        
-        .auth-footer a {
-            color: #0a66c2;
-            text-decoration: none;
-            font-weight: 600;
-        }
-        
-        .back-home {
-            position: absolute;
-            top: 20px;
-            left: 20px;
-            color: white;
-            text-decoration: none;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-weight: 600;
-        }
-        
-        .error-messages {
-            background: #fee;
-            border: 1px solid #fcc;
-            color: #c33;
-            padding: 10px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            font-size: 14px;
-            display: none;
-        }
-        
-        .error-messages.show {
-            display: block;
-        }
-        
-        @media (max-width: 480px) {
-            .auth-container {
-                margin: 10px;
-            }
-        }
-    </style>
-</head>
-<body>
-    <a href="/" class="back-home">
-        <span>←</span>
-        <span>Ana Sayfa</span>
-    </a>
-    
-    <div class="auth-container">
-        <div class="auth-header">
-            <div class="logo">💇‍♀️</div>
-            <h1 class="auth-title">Giriş Yap</h1>
-            <p class="auth-subtitle">Kuaför dünyasındaki ağınıza erişin</p>
-        </div>
-        
-        <form class="auth-form" method="post">
-            <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
-            
-            <div class="error-messages" id="errorMessages">
-                Giriş bilgilerinizi kontrol edin ve tekrar deneyin.
-            </div>
-            
-            <div class="form-group">
-                <label class="form-label" for="id_username">E-posta veya Telefon</label>
-                <input type="text" 
-                       id="id_username" 
-                       name="username" 
-                       class="form-input" 
-                       required 
-                       autocomplete="username"
-                       placeholder="E-posta veya telefon numarası">
-            </div>
-            
-            <div class="form-group">
-                <label class="form-label" for="id_password">Şifre</label>
-                <input type="password" 
-                       id="id_password" 
-                       name="password" 
-                       class="form-input" 
-                       required 
-                       autocomplete="current-password"
-                       placeholder="Şifre">
-            </div>
-            
-            <div class="remember-forgot">
-                <label class="remember-me">
-                    <input type="checkbox" name="remember_me">
-                    <span>Beni hatırla</span>
-                </label>
-                <a href="#">Şifremi unuttum</a>
-            </div>
-            
-            <button type="submit" class="auth-button">Giriş Yap</button>
-            
-            <div class="auth-footer">
-                Kuaför İlan'da yeni misiniz? 
-                <a href="/auth/register/">Üyelik oluşturun</a>
-            </div>
-        </form>
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="auth-container">
+    <div class="auth-header">
+        <a href="{% url 'home' %}" class="auth-logo">
+            <span class="auth-logo-icon">💇‍♀️</span>
+            <span class="auth-logo-text">Kuaför İlan</span>
+        </a>
+        <h1 class="auth-title">Hoş Geldiniz</h1>
+        <p class="auth-subtitle">Hesabınıza giriş yapın ve kariyerinize devam edin</p>
     </div>
 
-    <script>
-        // Show error message if there are form errors
-        const urlParams = new URLSearchParams(window.location.search);
-        if (urlParams.get('error') === '1' || document.referrer.includes('login')) {
-            const errorDiv = document.getElementById('errorMessages');
-            if (errorDiv) {
-                errorDiv.classList.add('show');
-            }
+    <div class="auth-card">
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} fade-in">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        <form method="post" id="loginForm" novalidate>
+            {% csrf_token %}
+            
+            <div class="form-group">
+                <i class="fas fa-envelope form-icon"></i>
+                <input 
+                    type="email" 
+                    name="username" 
+                    id="email"
+                    class="form-control" 
+                    placeholder="E-posta adresiniz"
+                    required
+                >
+                <div class="invalid-feedback"></div>
+            </div>
+
+            <div class="form-group">
+                <i class="fas fa-lock form-icon"></i>
+                <input 
+                    type="password" 
+                    name="password" 
+                    id="password"
+                    class="form-control" 
+                    placeholder="Şifreniz"
+                    required
+                >
+                <button type="button" class="password-toggle" onclick="togglePassword()">
+                    <i class="fas fa-eye" id="passwordIcon"></i>
+                </button>
+                <div class="invalid-feedback"></div>
+            </div>
+
+            <div class="form-options">
+                <div class="remember-me">
+                    <div class="custom-checkbox">
+                        <input type="checkbox" name="remember_me" id="rememberMe">
+                        <span class="checkmark"></span>
+                    </div>
+                    <label for="rememberMe">Beni hatırla</label>
+                </div>
+                <a href="#" class="forgot-password">Şifremi unuttum</a>
+            </div>
+
+            <button type="submit" class="btn btn-primary login-btn">
+                <span class="btn-text">Giriş Yap</span>
+                <div class="loading-spinner">
+                    <div class="loading"></div>
+                </div>
+            </button>
+        </form>
+
+        <div class="divider">
+            <span>veya</span>
+        </div>
+
+        <div class="social-login">
+            <a href="#" class="social-btn">
+                <i class="fab fa-google"></i>
+                Google
+            </a>
+            <a href="#" class="social-btn">
+                <i class="fab fa-linkedin"></i>
+                LinkedIn
+            </a>
+        </div>
+    </div>
+
+    <div class="auth-footer">
+        <p>
+            Hesabınız yok mu? 
+            <a href="{% url 'authentication:register' %}">Hemen üye olun</a>
+        </p>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function togglePassword() {
+        const passwordInput = document.getElementById('password');
+        const passwordIcon = document.getElementById('passwordIcon');
+        
+        if (passwordInput.type === 'password') {
+            passwordInput.type = 'text';
+            passwordIcon.className = 'fas fa-eye-slash';
+        } else {
+            passwordInput.type = 'password';
+            passwordIcon.className = 'fas fa-eye';
         }
-    </script>
-</body>
-</html>
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.getElementById('loginForm');
+        const emailInput = document.getElementById('email');
+        const passwordInput = document.getElementById('password');
+
+        form.addEventListener('submit', function(e) {
+            let isValid = true;
+
+            if (!emailInput.value.trim()) {
+                emailInput.classList.add('is-invalid');
+                isValid = false;
+            } else {
+                emailInput.classList.remove('is-invalid');
+                emailInput.classList.add('is-valid');
+            }
+
+            if (!passwordInput.value.trim()) {
+                passwordInput.classList.add('is-invalid');
+                isValid = false;
+            } else {
+                passwordInput.classList.remove('is-invalid');
+                passwordInput.classList.add('is-valid');
+            }
+
+            if (!isValid) {
+                e.preventDefault();
+                emailInput.classList.add('error');
+                passwordInput.classList.add('error');
+                
+                setTimeout(() => {
+                    emailInput.classList.remove('error');
+                    passwordInput.classList.remove('error');
+                }, 500);
+            }
+        });
+    });
+</script>
+{% endblock %}
