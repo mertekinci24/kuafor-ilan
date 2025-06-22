@@ -23,8 +23,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'apps.core',
-    'apps.authentication',
     'apps.dashboard',
+    # 'apps.authentication',  # Geçici kapalı - migration sorunu
 ]
 
 MIDDLEWARE = [
@@ -74,17 +74,17 @@ else:
         }
     }
 
-# Custom User Model
-AUTH_USER_MODEL = 'authentication.CustomUser'
+# Custom User Model - Geçici kapalı migration sorunu için
+# AUTH_USER_MODEL = 'authentication.CustomUser'
 
-# Authentication backends
-AUTHENTICATION_BACKENDS = [
-    'apps.authentication.backends.EmailBackend',
-    'django.contrib.auth.backends.ModelBackend',
-]
+# Authentication backends - Geçici kapalı
+# AUTHENTICATION_BACKENDS = [
+#     'apps.authentication.backends.EmailBackend',
+#     'django.contrib.auth.backends.ModelBackend',
+# ]
 
 # Login URLs
-LOGIN_URL = '/auth/login/'
+LOGIN_URL = '/admin/login/'
 LOGIN_REDIRECT_URL = '/dashboard/'
 LOGOUT_REDIRECT_URL = '/'
 
