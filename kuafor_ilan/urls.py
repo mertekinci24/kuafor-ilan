@@ -6,7 +6,7 @@ from django.shortcuts import render
 from django.http import HttpResponseNotFound
 
 def home_view(request):
-    """Ana sayfa view'ı"""
+    """Ana sayfa view'ı - Giriş yapmış kullanıcılar da anasayfayı görebilir"""
     return render(request, 'home.html')
 
 def block_bots(request):
