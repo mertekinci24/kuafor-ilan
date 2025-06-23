@@ -3,7 +3,10 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_protect
+from django.views.decorators.http import require_http_methods
 from django.contrib.auth import get_user_model
+from django.http import JsonResponse
+import json
 
 User = get_user_model()
 
@@ -84,4 +87,88 @@ def logout_view(request):
 def profile_view(request):
     """Profil sayfası"""
     return render(request, 'auth/profile.html', {'user': request.user})
-    
+
+
+@require_http_methods(["POST"])
+def check_email_exists(request):
+    """E-posta adresinin kullanılıp kullanılmadığını kontrol et"""
+    try:
+        data = json.loads(request.body)
+        email = data.get('email', '').strip().lower()
+        
+        if not email:
+            return JsonResponse({'error': 'E-posta adresi gereklidir.'}, status=400)
+        
+        exists = User.objects.filter(email=email).exists()
+        
+        return JsonResponse({
+            'exists': exists,
+            'message': 'Bu e-posta adresi zaten kullanılıyor.' if exists else 'E-posta adresi kullanılabilir.'
+        })
+        
+    except json.JSONDecodeError:
+        return JsonResponse({'error': 'Geçersiz JSON verisi.'}, status=400)
+    except Exception as e:
+        return JsonResponse({'error': 'Bir hata oluştu.'}, status=500)
+
+
+@login_required
+@require_http_methods(["POST"])
+def update_profile_api(request):
+    """Profil bilgilerini güncelle - API"""
+    try:
+        data = json.loads(request.body)
+        user = request.user
+        
+        # Güncellenebilir alanlar
+        updatable_fields = ['first_name', 'last_name', 'phone']
+        updated_fields = []
+        
+        for field in updatable_fields:
+            if field in data:
+                value = data[field].strip() if isinstance(data[field], str) else data[field]
+                if hasattr(user, field):
+                    setattr(user, field, value)
+                    updated_fields.append(field)
+        
+        # E-posta güncelleme (özel kontrol)
+        if 'email' in data:
+            new_email = data['email'].strip().lower()
+            if new_email != user.email:
+                # E-posta kullanımda mı kontrol et
+                if User.objects.filter(email=new_email).exclude(id=user.id).exists():
+                    return JsonResponse({
+                        'success': False,
+                        'error': 'Bu e-posta adresi zaten kullanılıyor.'
+                    }, status=400)
+                
+                user.email = new_email
+                user.username = new_email  # Username da email olduğu için güncelle
+                updated_fields.extend(['email', 'username'])
+        
+        if updated_fields:
+            user.save(update_fields=updated_fields + ['updated_at'])
+            
+            return JsonResponse({
+                'success': True,
+                'message': 'Profil bilgileriniz başarıyla güncellendi.',
+                'updated_fields': updated_fields,
+                'updated_name': user.get_full_name()
+            })
+        else:
+            return JsonResponse({
+                'success': False,
+                'message': 'Güncellenecek bilgi bulunamadı.'
+            }, status=400)
+            
+    except json.JSONDecodeError:
+        return JsonResponse({
+            'success': False,
+            'error': 'Geçersiz JSON verisi.'
+        }, status=400)
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'error': f'Profil güncellenirken bir hata oluştu: {str(e)}'
+        }, status=500)
+        
