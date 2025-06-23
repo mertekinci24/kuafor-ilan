@@ -55,4 +55,30 @@ class JobApplication(TimeStampedModel):
     
     class Meta:
         unique_together = ('job', 'applicant')
-      
+
+
+class SavedJob(TimeStampedModel):
+    """Kaydedilen iş ilanları"""
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    job = models.ForeignKey(JobListing, on_delete=models.CASCADE)
+    
+    def __str__(self):
+        return f"{self.user.email} -> {self.job.title}"
+    
+    class Meta:
+        unique_together = ('user', 'job')
+        ordering = ['-created_at']
+
+
+class JobView(TimeStampedModel):
+    """İş ilanı görüntülenme takibi"""
+    job = models.ForeignKey(JobListing, on_delete=models.CASCADE)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True, blank=True)
+    ip_address = models.GenericIPAddressField()
+    
+    def __str__(self):
+        return f"{self.job.title} - {self.ip_address}"
+    
+    class Meta:
+        ordering = ['-created_at']
+        
