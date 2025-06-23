@@ -53,7 +53,6 @@
     .auth-subtitle {
         font-size: 1rem;
         opacity: 0.9;
-        margin-bottom: 0;
     }
 
     .auth-card {
@@ -64,6 +63,46 @@
         box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
         border: 1px solid rgba(255, 255, 255, 0.2);
         margin-bottom: 1.5rem;
+    }
+
+    /* Login Method Tabs */
+    .login-methods {
+        display: flex;
+        background: #f8fafc;
+        border-radius: 12px;
+        padding: 4px;
+        margin-bottom: 2rem;
+    }
+
+    .method-tab {
+        flex: 1;
+        padding: 12px;
+        text-align: center;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-weight: 600;
+        font-size: 14px;
+        color: #64748b;
+    }
+
+    .method-tab.active {
+        background: white;
+        color: var(--primary-color);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .method-tab:hover:not(.active) {
+        color: var(--primary-color);
+    }
+
+    /* Form Styles */
+    .login-form {
+        display: none;
+    }
+
+    .login-form.active {
+        display: block;
     }
 
     .form-group {
@@ -103,7 +142,7 @@
         color: var(--primary-color);
     }
 
-    .password-toggle {
+    .password-toggle, .phone-toggle {
         position: absolute;
         right: 18px;
         top: 50%;
@@ -117,10 +156,185 @@
         transition: color 0.3s ease;
     }
 
-    .password-toggle:hover {
+    .password-toggle:hover, .phone-toggle:hover {
         color: var(--primary-color);
     }
 
+    /* OTP Input */
+    .otp-container {
+        display: flex;
+        gap: 0.75rem;
+        justify-content: center;
+        margin: 1.5rem 0;
+    }
+
+    .otp-input {
+        width: 48px;
+        height: 56px;
+        text-align: center;
+        border: 2px solid #e2e8f0;
+        border-radius: 8px;
+        font-size: 20px;
+        font-weight: 700;
+        transition: all 0.3s ease;
+    }
+
+    .otp-input:focus {
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 3px rgba(10, 102, 194, 0.1);
+        transform: scale(1.05);
+    }
+
+    .otp-input.filled {
+        background: rgba(10, 102, 194, 0.1);
+        border-color: var(--primary-color);
+    }
+
+    /* Phone Number Formatting */
+    .phone-preview {
+        font-size: 12px;
+        color: var(--text-muted);
+        margin-top: 0.25rem;
+        text-align: center;
+    }
+
+    /* Buttons */
+    .btn-login {
+        width: 100%;
+        height: 56px;
+        font-size: 16px;
+        font-weight: 600;
+        border-radius: 12px;
+        margin-bottom: 1.5rem;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .btn-login:before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+        transition: left 0.5s;
+    }
+
+    .btn-login:hover:before {
+        left: 100%;
+    }
+
+    .btn-send-otp {
+        background: var(--success-color);
+        color: white;
+        border: none;
+        padding: 12px 24px;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        width: 100%;
+        margin-bottom: 1rem;
+    }
+
+    .btn-send-otp:hover {
+        background: #15803d;
+        transform: translateY(-1px);
+    }
+
+    .btn-send-otp:disabled {
+        background: #9ca3af;
+        cursor: not-allowed;
+        transform: none;
+    }
+
+    /* OTP Timer */
+    .otp-timer {
+        text-align: center;
+        margin: 1rem 0;
+        font-size: 14px;
+        color: var(--text-muted);
+    }
+
+    .timer-active {
+        color: var(--warning-color);
+        font-weight: 600;
+    }
+
+    .resend-link {
+        color: var(--primary-color);
+        cursor: pointer;
+        text-decoration: underline;
+    }
+
+    /* Social Login */
+    .divider {
+        text-align: center;
+        margin: 1.5rem 0;
+        position: relative;
+        color: #64748b;
+        font-size: 14px;
+    }
+
+    .divider:before {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 0;
+        right: 0;
+        height: 1px;
+        background: #e2e8f0;
+        z-index: 1;
+    }
+
+    .divider span {
+        background: rgba(255, 255, 255, 0.95);
+        padding: 0 1rem;
+        position: relative;
+        z-index: 2;
+    }
+
+    .social-login {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .social-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.75rem;
+        padding: 14px 12px;
+        border: 2px solid #e2e8f0;
+        border-radius: 12px;
+        background: white;
+        color: #374151;
+        text-decoration: none;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        font-size: 14px;
+    }
+
+    .social-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+        border-color: #d1d5db;
+    }
+
+    .social-btn.google:hover {
+        border-color: #4285f4;
+        color: #4285f4;
+    }
+
+    .social-btn.linkedin:hover {
+        border-color: #0077b5;
+        color: #0077b5;
+    }
+
+    /* Form Options */
     .form-options {
         display: flex;
         justify-content: space-between;
@@ -198,86 +412,6 @@
         text-decoration: underline;
     }
 
-    .login-btn {
-        width: 100%;
-        height: 56px;
-        font-size: 16px;
-        font-weight: 600;
-        border-radius: 12px;
-        margin-bottom: 1.5rem;
-        position: relative;
-        overflow: hidden;
-    }
-
-    .login-btn:before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: -100%;
-        width: 100%;
-        height: 100%;
-        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
-        transition: left 0.5s;
-    }
-
-    .login-btn:hover:before {
-        left: 100%;
-    }
-
-    .divider {
-        text-align: center;
-        margin: 1.5rem 0;
-        position: relative;
-        color: #64748b;
-        font-size: 14px;
-    }
-
-    .divider:before {
-        content: '';
-        position: absolute;
-        top: 50%;
-        left: 0;
-        right: 0;
-        height: 1px;
-        background: #e2e8f0;
-        z-index: 1;
-    }
-
-    .divider span {
-        background: rgba(255, 255, 255, 0.95);
-        padding: 0 1rem;
-        position: relative;
-        z-index: 2;
-    }
-
-    .social-login {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 1rem;
-        margin-bottom: 1.5rem;
-    }
-
-    .social-btn {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 0.5rem;
-        padding: 12px;
-        border: 2px solid #e2e8f0;
-        border-radius: 12px;
-        background: white;
-        color: #374151;
-        text-decoration: none;
-        font-weight: 600;
-        transition: all 0.3s ease;
-    }
-
-    .social-btn:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
-        border-color: #d1d5db;
-    }
-
     .auth-footer {
         text-align: center;
         background: rgba(255, 255, 255, 0.1);
@@ -299,6 +433,7 @@
         border-bottom-color: white;
     }
 
+    /* Animations */
     @keyframes shake {
         0%, 100% { transform: translateX(0); }
         25% { transform: translateX(-5px); }
@@ -310,18 +445,42 @@
         border-color: var(--danger-color);
     }
 
+    @keyframes pulse {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.05); }
+        100% { transform: scale(1); }
+    }
+
+    .form-control.success {
+        animation: pulse 0.3s ease-in-out;
+        border-color: var(--success-color);
+    }
+
+    /* Responsive */
     @media (max-width: 480px) {
         .auth-card {
             padding: 2rem 1.5rem;
             margin: 0 10px;
         }
+
         .social-login {
             grid-template-columns: 1fr;
         }
+
         .form-options {
             flex-direction: column;
             align-items: flex-start;
             gap: 0.5rem;
+        }
+
+        .otp-container {
+            gap: 0.5rem;
+        }
+
+        .otp-input {
+            width: 40px;
+            height: 48px;
+            font-size: 18px;
         }
     }
 </style>
@@ -329,6 +488,7 @@
 
 {% block content %}
 <div class="auth-container">
+    <!-- Header -->
     <div class="auth-header">
         <a href="{% url 'home' %}" class="auth-logo">
             <span class="auth-logo-icon">💇‍♀️</span>
@@ -338,6 +498,7 @@
         <p class="auth-subtitle">Hesabınıza giriş yapın ve kariyerinize devam edin</p>
     </div>
 
+    <!-- Login Card -->
     <div class="auth-card">
         {% if messages %}
             {% for message in messages %}
@@ -347,8 +508,20 @@
             {% endfor %}
         {% endif %}
 
-        <form method="post" id="loginForm" novalidate>
+        <!-- Login Method Tabs -->
+        <div class="login-methods">
+            <div class="method-tab active" onclick="switchLoginMethod('email')">
+                <i class="fas fa-envelope"></i> E-posta
+            </div>
+            <div class="method-tab" onclick="switchLoginMethod('phone')">
+                <i class="fas fa-mobile-alt"></i> Telefon
+            </div>
+        </div>
+
+        <!-- Email Login Form -->
+        <form method="post" id="emailLoginForm" class="login-form active" novalidate>
             {% csrf_token %}
+            <input type="hidden" name="login_method" value="email">
             
             <div class="form-group">
                 <i class="fas fa-envelope form-icon"></i>
@@ -359,6 +532,8 @@
                     class="form-control" 
                     placeholder="E-posta adresiniz"
                     required
+                    autocomplete="email"
+                    autofocus
                 >
                 <div class="invalid-feedback"></div>
             </div>
@@ -372,8 +547,10 @@
                     class="form-control" 
                     placeholder="Şifreniz"
                     required
+                    autocomplete="current-password"
+                    minlength="8"
                 >
-                <button type="button" class="password-toggle" onclick="togglePassword()">
+                <button type="button" class="password-toggle" onclick="togglePassword('password')">
                     <i class="fas fa-eye" id="passwordIcon"></i>
                 </button>
                 <div class="invalid-feedback"></div>
@@ -390,7 +567,7 @@
                 <a href="#" class="forgot-password">Şifremi unuttum</a>
             </div>
 
-            <button type="submit" class="btn btn-primary login-btn">
+            <button type="submit" class="btn btn-primary btn-login">
                 <span class="btn-text">Giriş Yap</span>
                 <div class="loading-spinner">
                     <div class="loading"></div>
@@ -398,22 +575,84 @@
             </button>
         </form>
 
+        <!-- Phone OTP Login Form -->
+        <div id="phoneLoginForm" class="login-form">
+            <!-- Phone Number Input -->
+            <div id="phoneNumberStep">
+                <div class="form-group">
+                    <i class="fas fa-mobile-alt form-icon"></i>
+                    <input 
+                        type="tel" 
+                        id="phoneNumber"
+                        class="form-control" 
+                        placeholder="05XX XXX XX XX"
+                        maxlength="14"
+                    >
+                    <div class="invalid-feedback"></div>
+                </div>
+                <div class="phone-preview" id="phonePreview">+90 555 123 45 67 formatında giriniz</div>
+                
+                <button type="button" class="btn-send-otp" onclick="sendOTP()">
+                    <i class="fas fa-paper-plane"></i>
+                    OTP Kodu Gönder
+                </button>
+            </div>
+
+            <!-- OTP Verification -->
+            <div id="otpVerificationStep" style="display: none;">
+                <div class="text-center mb-3">
+                    <h5>Doğrulama Kodu</h5>
+                    <p class="text-muted">
+                        <span id="sentPhoneNumber"></span> numarasına gönderilen 6 haneli kodu girin
+                    </p>
+                </div>
+
+                <div class="otp-container">
+                    <input type="text" class="otp-input" maxlength="1" id="otp1">
+                    <input type="text" class="otp-input" maxlength="1" id="otp2">
+                    <input type="text" class="otp-input" maxlength="1" id="otp3">
+                    <input type="text" class="otp-input" maxlength="1" id="otp4">
+                    <input type="text" class="otp-input" maxlength="1" id="otp5">
+                    <input type="text" class="otp-input" maxlength="1" id="otp6">
+                </div>
+
+                <div class="otp-timer" id="otpTimer">
+                    Kod 5:00 dakika içinde geçerlidir
+                </div>
+
+                <button type="button" class="btn btn-primary btn-login" onclick="verifyOTP()">
+                    <span class="btn-text">Doğrula ve Giriş Yap</span>
+                    <div class="loading-spinner">
+                        <div class="loading"></div>
+                    </div>
+                </button>
+
+                <div class="text-center">
+                    <span class="resend-link" onclick="resendOTP()" style="display: none;" id="resendLink">
+                        Kodu tekrar gönder
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Social Login -->
         <div class="divider">
             <span>veya</span>
         </div>
 
         <div class="social-login">
-            <a href="#" class="social-btn">
+            <a href="#" class="social-btn google" onclick="socialLogin('google')">
                 <i class="fab fa-google"></i>
                 Google
             </a>
-            <a href="#" class="social-btn">
+            <a href="#" class="social-btn linkedin" onclick="socialLogin('linkedin')">
                 <i class="fab fa-linkedin"></i>
                 LinkedIn
             </a>
         </div>
     </div>
 
+    <!-- Footer -->
     <div class="auth-footer">
         <p>
             Hesabınız yok mu? 
@@ -425,8 +664,233 @@
 
 {% block extra_js %}
 <script>
-    function togglePassword() {
-        const passwordInput = document.getElementById('password');
+    let currentLoginMethod = 'email';
+    let otpTimer = null;
+    let otpCountdown = 300; // 5 minutes
+
+    // Switch login methods
+    function switchLoginMethod(method) {
+        currentLoginMethod = method;
+        
+        // Update tabs
+        document.querySelectorAll('.method-tab').forEach(tab => tab.classList.remove('active'));
+        event.target.classList.add('active');
+        
+        // Update forms
+        document.querySelectorAll('.login-form').forEach(form => form.classList.remove('active'));
+        
+        if (method === 'email') {
+            document.getElementById('emailLoginForm').classList.add('active');
+        } else {
+            document.getElementById('phoneLoginForm').classList.add('active');
+        }
+    }
+
+    // Phone number formatting
+    document.getElementById('phoneNumber').addEventListener('input', function() {
+        let value = this.value.replace(/\D/g, '');
+        
+        // Format: 05XX XXX XX XX
+        if (value.length > 0) {
+            if (value.length <= 4) {
+                value = value;
+            } else if (value.length <= 7) {
+                value = value.substring(0, 4) + ' ' + value.substring(4);
+            } else if (value.length <= 9) {
+                value = value.substring(0, 4) + ' ' + value.substring(4, 7) + ' ' + value.substring(7);
+            } else {
+                value = value.substring(0, 4) + ' ' + value.substring(4, 7) + ' ' + value.substring(7, 9) + ' ' + value.substring(9, 11);
+            }
+        }
+        
+        this.value = value;
+        
+        // Update preview
+        const preview = document.getElementById('phonePreview');
+        if (value.length >= 11) {
+            const formatted = '+90 ' + value.replace(/\s/g, '').substring(1);
+            const finalFormat = '+90 ' + formatted.substring(3, 6) + ' ' + formatted.substring(6, 9) + ' ' + formatted.substring(9, 11) + ' ' + formatted.substring(11, 13);
+            preview.textContent = finalFormat;
+        } else {
+            preview.textContent = '+90 555 123 45 67 formatında giriniz';
+        }
+    });
+
+    // Send OTP
+    async function sendOTP() {
+        const phoneInput = document.getElementById('phoneNumber');
+        const phone = phoneInput.value.replace(/\s/g, '');
+        
+        if (phone.length < 11) {
+            showError(phoneInput, 'Geçerli bir telefon numarası girin');
+            return;
+        }
+
+        const btn = event.target;
+        btn.disabled = true;
+        btn.innerHTML = '<div class="loading"></div> Gönderiliyor...';
+
+        try {
+            const response = await fetch('/auth/api/send-otp/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': App.getCsrfToken(),
+                },
+                body: JSON.stringify({
+                    phone_number: '+90' + phone.substring(1),
+                    otp_type: 'login'
+                })
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                // Show OTP step
+                document.getElementById('phoneNumberStep').style.display = 'none';
+                document.getElementById('otpVerificationStep').style.display = 'block';
+                document.getElementById('sentPhoneNumber').textContent = '+90 ' + phone.substring(1);
+                
+                // Start timer
+                startOTPTimer();
+                
+                // Focus first OTP input
+                document.getElementById('otp1').focus();
+                
+                App.showToast('OTP kodu gönderildi', 'success');
+            } else {
+                App.showToast(data.message || 'OTP gönderilemedi', 'danger');
+            }
+        } catch (error) {
+            console.error('OTP send error:', error);
+            App.showToast('OTP gönderilirken hata oluştu', 'danger');
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-paper-plane"></i> OTP Kodu Gönder';
+        }
+    }
+
+    // OTP input handling
+    document.querySelectorAll('.otp-input').forEach((input, index) => {
+        input.addEventListener('input', function() {
+            if (this.value.length === 1) {
+                this.classList.add('filled');
+                
+                // Move to next input
+                if (index < 5) {
+                    document.getElementById(`otp${index + 2}`).focus();
+                }
+                
+                // Auto verify if all filled
+                if (index === 5) {
+                    setTimeout(verifyOTP, 500);
+                }
+            } else {
+                this.classList.remove('filled');
+            }
+        });
+
+        input.addEventListener('keydown', function(e) {
+            // Move to previous input on backspace
+            if (e.key === 'Backspace' && this.value === '' && index > 0) {
+                document.getElementById(`otp${index}`).focus();
+            }
+        });
+
+        // Only allow numbers
+        input.addEventListener('keypress', function(e) {
+            if (!/\d/.test(e.key) && !['Backspace', 'Delete', 'Tab'].includes(e.key)) {
+                e.preventDefault();
+            }
+        });
+    });
+
+    // Verify OTP
+    async function verifyOTP() {
+        const otpInputs = document.querySelectorAll('.otp-input');
+        const otp = Array.from(otpInputs).map(input => input.value).join('');
+        
+        if (otp.length !== 6) {
+            App.showToast('Lütfen 6 haneli kodu tamamen girin', 'warning');
+            return;
+        }
+
+        const btn = event.target;
+        btn.disabled = true;
+        btn.innerHTML = '<div class="loading"></div> Doğrulanıyor...';
+
+        try {
+            const phoneNumber = document.getElementById('sentPhoneNumber').textContent;
+            
+            const response = await fetch('/auth/api/verify-otp/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': App.getCsrfToken(),
+                },
+                body: JSON.stringify({
+                    phone_number: phoneNumber,
+                    otp_code: otp,
+                    otp_type: 'login'
+                })
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                App.showToast('Giriş başarılı! Yönlendiriliyorsunuz...', 'success');
+                setTimeout(() => {
+                    window.location.href = '/dashboard/';
+                }, 1000);
+            } else {
+                App.showToast(data.message || 'OTP doğrulanamadı', 'danger');
+                
+                // Shake animation for wrong OTP
+                otpInputs.forEach(input => {
+                    input.classList.add('error');
+                    setTimeout(() => input.classList.remove('error'), 500);
+                });
+            }
+        } catch (error) {
+            console.error('OTP verify error:', error);
+            App.showToast('OTP doğrulanırken hata oluştu', 'danger');
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = '<span class="btn-text">Doğrula ve Giriş Yap</span>';
+        }
+    }
+
+    // OTP Timer
+    function startOTPTimer() {
+        otpCountdown = 300; // 5 minutes
+        const timerElement = document.getElementById('otpTimer');
+        const resendLink = document.getElementById('resendLink');
+        
+        otpTimer = setInterval(() => {
+            const minutes = Math.floor(otpCountdown / 60);
+            const seconds = otpCountdown % 60;
+            
+            timerElement.innerHTML = `Kod <span class="timer-active">${minutes}:${seconds.toString().padStart(2, '0')}</span> dakika içinde geçerlidir`;
+            
+            otpCountdown--;
+            
+            if (otpCountdown < 0) {
+                clearInterval(otpTimer);
+                timerElement.innerHTML = 'Kod süresi doldu';
+                resendLink.style.display = 'inline';
+            }
+        }, 1000);
+    }
+
+    // Resend OTP
+    function resendOTP() {
+        document.getElementById('resendLink').style.display = 'none';
+        sendOTP();
+    }
+
+    // Password toggle
+    function togglePassword(fieldId) {
+        const passwordInput = document.getElementById(fieldId);
         const passwordIcon = document.getElementById('passwordIcon');
         
         if (passwordInput.type === 'password') {
@@ -438,40 +902,82 @@
         }
     }
 
-    document.addEventListener('DOMContentLoaded', function() {
-        const form = document.getElementById('loginForm');
+    // Social login
+    function socialLogin(provider) {
+        App.showToast(`${provider} ile giriş özelliği yakında eklenecek!`, 'info');
+        // TODO: Implement social login
+    }
+
+    // Form validation
+    function showError(input, message) {
+        input.classList.add('is-invalid');
+        const feedback = input.parentNode.querySelector('.invalid-feedback');
+        if (feedback) {
+            feedback.textContent = message;
+        }
+        
+        setTimeout(() => {
+            input.classList.remove('is-invalid');
+        }, 3000);
+    }
+
+    // Email form submission
+    document.getElementById('emailLoginForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
         const emailInput = document.getElementById('email');
         const passwordInput = document.getElementById('password');
+        const submitBtn = this.querySelector('.btn-login');
+        
+        // Basic validation
+        let isValid = true;
+        
+        if (!emailInput.value.trim()) {
+            showError(emailInput, 'E-posta adresi gereklidir');
+            isValid = false;
+        }
+        
+        if (!passwordInput.value.trim()) {
+            showError(passwordInput, 'Şifre gereklidir');
+            isValid = false;
+        }
+        
+        if (!isValid) return;
 
-        form.addEventListener('submit', function(e) {
-            let isValid = true;
+        // Submit form
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<div class="loading"></div> Giriş yapılıyor...';
 
-            if (!emailInput.value.trim()) {
-                emailInput.classList.add('is-invalid');
-                isValid = false;
-            } else {
-                emailInput.classList.remove('is-invalid');
-                emailInput.classList.add('is-valid');
+        const formData = new FormData(this);
+
+        fetch(this.action || window.location.pathname, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-CSRFToken': App.getCsrfToken(),
+            },
+        })
+        .then(response => {
+            if (response.redirected) {
+                window.location.href = response.url;
+                return;
             }
-
-            if (!passwordInput.value.trim()) {
-                passwordInput.classList.add('is-invalid');
-                isValid = false;
-            } else {
-                passwordInput.classList.remove('is-invalid');
-                passwordInput.classList.add('is-valid');
+            return response.text();
+        })
+        .then(html => {
+            if (html) {
+                document.open();
+                document.write(html);
+                document.close();
             }
-
-            if (!isValid) {
-                e.preventDefault();
-                emailInput.classList.add('error');
-                passwordInput.classList.add('error');
-                
-                setTimeout(() => {
-                    emailInput.classList.remove('error');
-                    passwordInput.classList.remove('error');
-                }, 500);
-            }
+        })
+        .catch(error => {
+            console.error('Login error:', error);
+            App.showToast('Giriş sırasında bir hata oluştu', 'danger');
+        })
+        .finally(() => {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = '<span class="btn-text">Giriş Yap</span>';
         });
     });
 </script>
