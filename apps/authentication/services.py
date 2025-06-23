@@ -156,13 +156,13 @@ class SMSService:
         try:
             # SMS mesajını hazırla
             if otp_type == 'login':
-                message = f"Kuaför İlan giriş kodunuz: {otp_code}. Bu kodu kimseyle paylaşmayın."
+                message = f"Kuafor İlan giriş kodunuz: {otp_code}. Bu kodu kimseyle paylaşmayın."
             elif otp_type == 'register':
-                message = f"Kuaför İlan kayıt onay kodunuz: {otp_code}. Hoş geldiniz!"
+                message = f"Kuafor İlan kayıt onay kodunuz: {otp_code}. Hoş geldiniz!"
             elif otp_type == 'password_reset':
-                message = f"Kuaför İlan şifre sıfırlama kodunuz: {otp_code}."
+                message = f"Kuafor İlan şifre sıfırlama kodunuz: {otp_code}."
             else:
-                message = f"Kuaför İlan doğrulama kodunuz: {otp_code}."
+                message = f"Kuafor İlan doğrulama kodunuz: {otp_code}."
             
             # Development modunda console'a yazdır
             if settings.DEBUG:
@@ -241,16 +241,12 @@ class EmailService:
             # Email konusu ve içeriği
             if otp_type == 'login':
                 subject = "Kuaför İlan - Giriş Doğrulama Kodu"
-                template = 'auth/emails/otp_login.html'
             elif otp_type == 'register':
                 subject = "Kuaför İlan - Kayıt Doğrulama Kodu"
-                template = 'auth/emails/otp_register.html'
             elif otp_type == 'password_reset':
                 subject = "Kuaför İlan - Şifre Sıfırlama Kodu"
-                template = 'auth/emails/otp_password_reset.html'
             else:
                 subject = "Kuaför İlan - Doğrulama Kodu"
-                template = 'auth/emails/otp_default.html'
             
             # Development modunda console'a yazdır
             if settings.DEBUG:
@@ -262,23 +258,26 @@ class EmailService:
                 print("=" * 40)
                 return True
             
-            # HTML içerik
-            context = {
-                'otp_code': otp_code,
-                'email': email_address,
-                'site_name': 'Kuaför İlan',
-                'site_url': 'https://kuaforilan.com'
-            }
-            
-            html_message = render_to_string(template, context)
+            # Simple email message
+            message = f"""
+Merhaba,
+
+{subject}
+
+Doğrulama kodunuz: {otp_code}
+
+Bu kod 5 dakika geçerlidir.
+
+Kuaför İlan Ekibi
+https://kuaforilan.com
+            """
             
             # Email gönder
             send_mail(
                 subject=subject,
-                message=f"Doğrulama kodunuz: {otp_code}",
+                message=message,
                 from_email=settings.DEFAULT_FROM_EMAIL,
                 recipient_list=[email_address],
-                html_message=html_message,
                 fail_silently=False
             )
             
@@ -334,4 +333,4 @@ class SocialAuthService:
         except Exception as e:
             logger.error(f"Social auth user creation failed: {str(e)}")
             return None, f"Kullanıcı oluşturma hatası: {str(e)}"
-          
+            
