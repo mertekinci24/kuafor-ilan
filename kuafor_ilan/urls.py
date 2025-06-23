@@ -1,12 +1,17 @@
 from django.contrib import admin
-from django.urls import path, include
+from django.urls import path, include, re_path
 from django.conf import settings
 from django.conf.urls.static import static
 from django.shortcuts import render
+from django.http import HttpResponseNotFound
 
 def home_view(request):
     """Ana sayfa view'ı"""
     return render(request, 'home.html')
+
+def block_bots(request):
+    """Bot isteklerini engelle"""
+    return HttpResponseNotFound("Not Found")
 
 urlpatterns = [
     # Admin panel
@@ -20,6 +25,24 @@ urlpatterns = [
     
     # Dashboard URL'leri
     path('dashboard/', include('apps.dashboard.urls')),
+    
+    # Jobs URL'leri
+    path('jobs/', include('apps.jobs.urls')),
+    
+    # WordPress bot koruması
+    re_path(r'^wp-.*', block_bots),
+    re_path(r'^wordpress.*', block_bots),
+    re_path(r'^.*wp-admin.*', block_bots),
+    re_path(r'^.*wp-login.*', block_bots),
+    re_path(r'^.*wp-content.*', block_bots),
+    re_path(r'^.*wp-includes.*', block_bots),
+    re_path(r'^xmlrpc\.php$', block_bots),
+    re_path(r'^.*\.php$', block_bots),
+    re_path(r'^phpmyadmin.*', block_bots),
+    re_path(r'^admin\.php$', block_bots),
+    re_path(r'^administrator.*', block_bots),
+    re_path(r'^.*\.asp$', block_bots),
+    re_path(r'^.*\.aspx$', block_bots),
 ]
 
 # Development için media files
