@@ -4,24 +4,26 @@ from . import views
 app_name = 'authentication'
 
 urlpatterns = [
-    # Ana authentication URL'leri
+    # Authentication Pages
     path('login/', views.login_view, name='login'),
     path('register/', views.register_view, name='register'),
     path('logout/', views.logout_view, name='logout'),
     
-    # Profil URL'leri
-    path('profile/', views.profile_view, name='profile'),
+    # Password Reset
+    path('password-reset/', views.password_reset_request, name='password_reset_request'),
+    path('password-reset/verify/', views.password_reset_verify, name='password_reset_verify'),
     
-    # API URL'leri - Mevcut
-    path('api/check-email/', views.check_email_exists, name='check_email'),
-    path('api/update-profile/', views.update_profile_api, name='update_profile_api'),
+    # OTP API Endpoints
+    path('api/send-otp/', views.send_otp_api, name='send_otp_api'),
+    path('api/verify-otp/', views.verify_otp_api, name='verify_otp_api'),
     
-    # OTP API URL'leri - YENİ
-    path('api/send-otp/', views.send_otp_api, name='send_otp'),
-    path('api/verify-otp/', views.verify_otp_api, name='verify_otp'),
-    path('api/check-phone/', views.check_phone_exists, name='check_phone'),
+    # Social Authentication
+    path('google/', views.google_auth, name='google_auth'),
+    path('linkedin/', views.linkedin_auth, name='linkedin_auth'),
+    path('google/callback/', views.google_callback, name='google_callback'),
+    path('linkedin/callback/', views.linkedin_callback, name='linkedin_callback'),
     
-    # Sosyal medya URL'leri - YENİ
-    path('google/', views.google_login, name='google_login'),
-    path('linkedin/', views.linkedin_login, name='linkedin_login'),
+    # Redirects
+    path('profile/', views.profile_redirect, name='profile_redirect'),
+    path('dashboard/', views.dashboard_redirect, name='dashboard_redirect'),
 ]
