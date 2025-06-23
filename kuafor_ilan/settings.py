@@ -23,8 +23,9 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'apps.core',
-    'apps.authentication',  # Authentication aktif
+    'apps.authentication',
     'apps.dashboard',
+    'apps.jobs',
 ]
 
 MIDDLEWARE = [
@@ -179,4 +180,25 @@ if not DEBUG:
     SECURE_REDIRECT_EXEMPT = []
     SECURE_SSL_REDIRECT = True
     SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
-    
+
+# SMS ve Email ayarları
+NETGSM_USERNAME = os.environ.get('NETGSM_USERNAME', '')
+NETGSM_PASSWORD = os.environ.get('NETGSM_PASSWORD', '')
+NETGSM_HEADER = os.environ.get('NETGSM_HEADER', 'KUAFORILAN')
+
+# Email ayarları
+DEFAULT_FROM_EMAIL = 'noreply@kuaforilan.com'
+
+# OTP ayarları
+OTP_EXPIRY_MINUTES = 5
+OTP_MAX_ATTEMPTS = 3
+
+# Sosyal medya authentication ayarları (gelecek için)
+GOOGLE_OAUTH2_CLIENT_ID = os.environ.get('GOOGLE_OAUTH2_CLIENT_ID', '')
+GOOGLE_OAUTH2_CLIENT_SECRET = os.environ.get('GOOGLE_OAUTH2_CLIENT_SECRET', '')
+LINKEDIN_CLIENT_ID = os.environ.get('LINKEDIN_CLIENT_ID', '')
+LINKEDIN_CLIENT_SECRET = os.environ.get('LINKEDIN_CLIENT_SECRET', '')
+
+# Rate limiting ayarları (güvenlik için)
+LOGIN_ATTEMPT_LIMIT = 5
+LOGIN_ATTEMPT_TIMEOUT = 300  # 5 dakika
