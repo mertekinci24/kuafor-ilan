@@ -1,0 +1,936 @@
+<!-- my_applications.html -->
+{% extends 'base.html' %}
+
+{% block title %}Başvurularım - Kuaför İlan{% endblock %}
+
+{% block extra_css %}
+<style>
+    .applications-container {
+        max-width: 1000px;
+        margin: 2rem auto;
+        padding: 0 1rem;
+    }
+
+    .page-header {
+        background: white;
+        border-radius: 12px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        box-shadow: var(--shadow-sm);
+    }
+
+    .page-title {
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--text-color);
+        margin-bottom: 0.5rem;
+    }
+
+    .page-subtitle {
+        color: var(--text-muted);
+        font-size: 1rem;
+    }
+
+    .filters-bar {
+        background: white;
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+        box-shadow: var(--shadow-sm);
+    }
+
+    .filters-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr auto;
+        gap: 1rem;
+        align-items: end;
+    }
+
+    .application-card {
+        background: white;
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin-bottom: 1rem;
+        box-shadow: var(--shadow-sm);
+        border: 1px solid var(--border-color);
+        transition: all 0.3s ease;
+    }
+
+    .application-card:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-md);
+    }
+
+    .application-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 1rem;
+    }
+
+    .job-info h3 {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: var(--primary-color);
+        margin-bottom: 0.5rem;
+    }
+
+    .job-info h3 a {
+        color: inherit;
+        text-decoration: none;
+    }
+
+    .job-info h3 a:hover {
+        text-decoration: underline;
+    }
+
+    .company-name {
+        font-size: 1rem;
+        color: var(--text-muted);
+        margin-bottom: 0.5rem;
+    }
+
+    .job-location {
+        font-size: 0.875rem;
+        color: var(--text-muted);
+    }
+
+    .status-badge {
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        font-size: 0.875rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .status-pending {
+        background: rgba(217, 119, 6, 0.1);
+        color: var(--warning-color);
+    }
+
+    .status-reviewed {
+        background: rgba(10, 102, 194, 0.1);
+        color: var(--primary-color);
+    }
+
+    .status-accepted {
+        background: rgba(22, 163, 74, 0.1);
+        color: var(--success-color);
+    }
+
+    .status-rejected {
+        background: rgba(220, 38, 38, 0.1);
+        color: var(--danger-color);
+    }
+
+    .application-meta {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 1rem;
+        padding-top: 1rem;
+        border-top: 1px solid var(--border-color);
+        font-size: 0.875rem;
+        color: var(--text-muted);
+    }
+
+    .application-date {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .view-job-btn {
+        color: var(--primary-color);
+        text-decoration: none;
+        font-weight: 600;
+        transition: color 0.3s ease;
+    }
+
+    .view-job-btn:hover {
+        color: var(--primary-dark);
+        text-decoration: underline;
+    }
+
+    .no-applications {
+        text-align: center;
+        background: white;
+        border-radius: 12px;
+        padding: 3rem 2rem;
+        box-shadow: var(--shadow-sm);
+    }
+
+    .no-applications-icon {
+        font-size: 4rem;
+        color: var(--text-muted);
+        margin-bottom: 1rem;
+    }
+
+    .no-applications h3 {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--text-color);
+        margin-bottom: 0.5rem;
+    }
+
+    .no-applications p {
+        color: var(--text-muted);
+        margin-bottom: 2rem;
+    }
+
+    @media (max-width: 768px) {
+        .filters-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .application-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 1rem;
+        }
+        
+        .application-meta {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 0.5rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="applications-container">
+    <!-- Page Header -->
+    <div class="page-header">
+        <h1 class="page-title">Başvurularım</h1>
+        <p class="page-subtitle">Yaptığınız iş başvurularını takip edin</p>
+    </div>
+
+    <!-- Filters -->
+    <div class="filters-bar">
+        <form method="get" class="filters-grid">
+            <div class="form-group">
+                <label class="form-label">Durum</label>
+                <select name="status" class="form-control form-select">
+                    <option value="">Tüm Durumlar</option>
+                    {% for value, display in status_choices %}
+                        <option value="{{ value }}" {% if status_filter == value %}selected{% endif %}>
+                            {{ display }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Arama</label>
+                <input type="text" name="search" class="form-control" 
+                       placeholder="İş başlığı veya şirket ara..."
+                       value="{{ search_query }}">
+            </div>
+            
+            <div class="form-group">
+                <button type="submit" class="btn btn-primary">Filtrele</button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Applications List -->
+    {% if page_obj %}
+        {% for application in page_obj %}
+            <div class="application-card">
+                <div class="application-header">
+                    <div class="job-info">
+                        <h3><a href="{% url 'jobs:detail' application.job.id %}">{{ application.job.title }}</a></h3>
+                        <div class="company-name">{{ application.job.business.get_full_name }}</div>
+                        <div class="job-location">📍 {{ application.job.city }}</div>
+                    </div>
+                    <div class="status-badge status-{{ application.status }}">
+                        {% if application.status == 'pending' %}Beklemede
+                        {% elif application.status == 'reviewed' %}İncelendi
+                        {% elif application.status == 'accepted' %}Kabul Edildi
+                        {% elif application.status == 'rejected' %}Reddedildi
+                        {% endif %}
+                    </div>
+                </div>
+                
+                {% if application.cover_letter %}
+                    <div class="cover-letter">
+                        <strong>Ön Yazı:</strong>
+                        <p>{{ application.cover_letter|truncatewords:20 }}</p>
+                    </div>
+                {% endif %}
+                
+                <div class="application-meta">
+                    <div class="application-date">
+                        <i class="fas fa-calendar"></i>
+                        {{ application.created_at|date:"d F Y, H:i" }}
+                    </div>
+                    <a href="{% url 'jobs:detail' application.job.id %}" class="view-job-btn">
+                        İlanı Görüntüle →
+                    </a>
+                </div>
+            </div>
+        {% endfor %}
+
+        <!-- Pagination -->
+        {% if page_obj.has_other_pages %}
+            <div class="pagination">
+                {% if page_obj.has_previous %}
+                    <a href="?page=1&status={{ status_filter }}&search={{ search_query }}">« İlk</a>
+                    <a href="?page={{ page_obj.previous_page_number }}&status={{ status_filter }}&search={{ search_query }}">‹ Önceki</a>
+                {% endif %}
+                
+                {% for num in page_obj.paginator.page_range %}
+                    {% if page_obj.number == num %}
+                        <span class="current">{{ num }}</span>
+                    {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                        <a href="?page={{ num }}&status={{ status_filter }}&search={{ search_query }}">{{ num }}</a>
+                    {% endif %}
+                {% endfor %}
+                
+                {% if page_obj.has_next %}
+                    <a href="?page={{ page_obj.next_page_number }}&status={{ status_filter }}&search={{ search_query }}">Sonraki ›</a>
+                    <a href="?page={{ page_obj.paginator.num_pages }}&status={{ status_filter }}&search={{ search_query }}">Son »</a>
+                {% endif %}
+            </div>
+        {% endif %}
+    {% else %}
+        <div class="no-applications">
+            <div class="no-applications-icon">📋</div>
+            <h3>Henüz başvuru yapmadınız</h3>
+            <p>İş aramaya başlamak için iş ilanlarını inceleyin</p>
+            <a href="{% url 'jobs:list' %}" class="btn btn-primary">İş İlanlarını Gör</a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+<!-- my_jobs.html -->
+{% extends 'base.html' %}
+
+{% block title %}İlanlarım - Kuaför İlan{% endblock %}
+
+{% block extra_css %}
+<style>
+    .jobs-container {
+        max-width: 1000px;
+        margin: 2rem auto;
+        padding: 0 1rem;
+    }
+
+    .page-header {
+        background: white;
+        border-radius: 12px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        box-shadow: var(--shadow-sm);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .page-title {
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--text-color);
+        margin-bottom: 0.5rem;
+    }
+
+    .page-subtitle {
+        color: var(--text-muted);
+        font-size: 1rem;
+    }
+
+    .add-job-btn {
+        background: var(--gradient-primary);
+        color: white;
+        padding: 12px 24px;
+        border-radius: 8px;
+        text-decoration: none;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+
+    .add-job-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-md);
+    }
+
+    .job-card {
+        background: white;
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin-bottom: 1rem;
+        box-shadow: var(--shadow-sm);
+        border: 1px solid var(--border-color);
+        transition: all 0.3s ease;
+    }
+
+    .job-card:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-md);
+    }
+
+    .job-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 1rem;
+    }
+
+    .job-title {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: var(--text-color);
+        margin-bottom: 0.5rem;
+    }
+
+    .job-meta {
+        display: flex;
+        gap: 1rem;
+        margin-bottom: 1rem;
+        flex-wrap: wrap;
+    }
+
+    .job-meta-item {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.875rem;
+        color: var(--text-muted);
+    }
+
+    .job-stats {
+        display: flex;
+        gap: 2rem;
+        margin: 1rem 0;
+        padding: 1rem;
+        background: var(--light-color);
+        border-radius: 8px;
+    }
+
+    .stat-item {
+        text-align: center;
+    }
+
+    .stat-number {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--primary-color);
+        display: block;
+    }
+
+    .stat-label {
+        font-size: 0.875rem;
+        color: var(--text-muted);
+    }
+
+    .job-actions {
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+    }
+
+    .action-btn {
+        padding: 0.5rem 1rem;
+        border-radius: 6px;
+        text-decoration: none;
+        font-size: 0.875rem;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        border: none;
+        cursor: pointer;
+    }
+
+    .action-btn.primary {
+        background: var(--primary-color);
+        color: white;
+    }
+
+    .action-btn.secondary {
+        background: var(--secondary-color);
+        color: white;
+    }
+
+    .action-btn.danger {
+        background: var(--danger-color);
+        color: white;
+    }
+
+    .action-btn:hover {
+        transform: translateY(-1px);
+        box-shadow: var(--shadow-sm);
+    }
+
+    @media (max-width: 768px) {
+        .page-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 1rem;
+        }
+        
+        .job-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 1rem;
+        }
+        
+        .job-stats {
+            flex-direction: column;
+            gap: 1rem;
+        }
+        
+        .job-actions {
+            width: 100%;
+        }
+        
+        .action-btn {
+            flex: 1;
+            text-align: center;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="jobs-container">
+    <!-- Page Header -->
+    <div class="page-header">
+        <div>
+            <h1 class="page-title">İlanlarım</h1>
+            <p class="page-subtitle">Yayınladığınız iş ilanlarını yönetin</p>
+        </div>
+        <a href="#" class="add-job-btn">
+            <i class="fas fa-plus"></i> Yeni İlan Ekle
+        </a>
+    </div>
+
+    <!-- Jobs List -->
+    {% if page_obj %}
+        {% for job in page_obj %}
+            <div class="job-card">
+                <div class="job-header">
+                    <div>
+                        <h3 class="job-title">{{ job.title }}</h3>
+                        <div class="job-meta">
+                            <div class="job-meta-item">
+                                <i class="fas fa-map-marker-alt"></i>
+                                {{ job.city }}
+                            </div>
+                            <div class="job-meta-item">
+                                <i class="fas fa-tag"></i>
+                                {{ job.category.name }}
+                            </div>
+                            <div class="job-meta-item">
+                                <i class="fas fa-calendar"></i>
+                                {{ job.created_at|date:"d F Y" }}
+                            </div>
+                            {% if job.is_urgent %}
+                                <div class="job-meta-item" style="color: var(--danger-color);">
+                                    <i class="fas fa-exclamation-triangle"></i>
+                                    Acil
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="status-badge status-{{ job.status }}">
+                        {% if job.status == 'active' %}Aktif
+                        {% elif job.status == 'closed' %}Kapalı
+                        {% elif job.status == 'paused' %}Duraklatıldı
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="job-description">
+                    {{ job.description|truncatewords:25 }}
+                </div>
+
+                <div class="job-stats">
+                    <div class="stat-item">
+                        <span class="stat-number">{{ job.views_count }}</span>
+                        <span class="stat-label">Görüntülenme</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-number">0</span>
+                        <span class="stat-label">Başvuru</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-number">
+                            {% if job.salary_min and job.salary_max %}
+                                ₺{{ job.salary_min }}-{{ job.salary_max }}
+                            {% elif job.salary_min %}
+                                ₺{{ job.salary_min }}+
+                            {% else %}
+                                Görüşülür
+                            {% endif %}
+                        </span>
+                        <span class="stat-label">Maaş</span>
+                    </div>
+                </div>
+
+                <div class="job-actions">
+                    <a href="{% url 'jobs:detail' job.id %}" class="action-btn primary">
+                        <i class="fas fa-eye"></i> Görüntüle
+                    </a>
+                    <a href="#" class="action-btn secondary">
+                        <i class="fas fa-edit"></i> Düzenle
+                    </a>
+                    {% if job.status == 'active' %}
+                        <button class="action-btn secondary" onclick="pauseJob({{ job.id }})">
+                            <i class="fas fa-pause"></i> Duraklat
+                        </button>
+                    {% else %}
+                        <button class="action-btn primary" onclick="activateJob({{ job.id }})">
+                            <i class="fas fa-play"></i> Aktifleştir
+                        </button>
+                    {% endif %}
+                    <button class="action-btn danger" onclick="deleteJob({{ job.id }})">
+                        <i class="fas fa-trash"></i> Sil
+                    </button>
+                </div>
+            </div>
+        {% endfor %}
+    {% else %}
+        <div class="no-applications">
+            <div class="no-applications-icon">📢</div>
+            <h3>Henüz ilan yayınlamadınız</h3>
+            <p>İlk iş ilanınızı oluşturun ve nitelikli adayları bulun</p>
+            <a href="#" class="btn btn-primary">İlk İlanımı Oluştur</a>
+        </div>
+    {% endif %}
+</div>
+
+<script>
+    function pauseJob(jobId) {
+        if (confirm('Bu ilanı duraklatmak istediğinizden emin misiniz?')) {
+            // TODO: Implement pause job functionality
+            App.showToast('İlan duraklatıldı!', 'success');
+        }
+    }
+
+    function activateJob(jobId) {
+        if (confirm('Bu ilanı aktifleştirmek istediğinizden emin misiniz?')) {
+            // TODO: Implement activate job functionality
+            App.showToast('İlan aktifleştirildi!', 'success');
+        }
+    }
+
+    function deleteJob(jobId) {
+        if (confirm('Bu ilanı silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.')) {
+            // TODO: Implement delete job functionality
+            App.showToast('İlan silindi!', 'success');
+        }
+    }
+</script>
+{% endblock %}
+
+<!-- settings.html -->
+{% extends 'base.html' %}
+
+{% block title %}Ayarlar - Kuaför İlan{% endblock %}
+
+{% block extra_css %}
+<style>
+    .settings-container {
+        max-width: 800px;
+        margin: 2rem auto;
+        padding: 0 1rem;
+    }
+
+    .settings-nav {
+        background: white;
+        border-radius: 12px;
+        padding: 1rem;
+        margin-bottom: 2rem;
+        box-shadow: var(--shadow-sm);
+    }
+
+    .nav-tabs {
+        display: flex;
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        gap: 1rem;
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    .nav-tab {
+        padding: 0;
+    }
+
+    .nav-link {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 1rem 1.5rem;
+        color: var(--text-muted);
+        text-decoration: none;
+        font-weight: 600;
+        border-bottom: 3px solid transparent;
+        transition: all 0.3s ease;
+    }
+
+    .nav-link:hover,
+    .nav-link.active {
+        color: var(--primary-color);
+        border-bottom-color: var(--primary-color);
+    }
+
+    .settings-card {
+        background: white;
+        border-radius: 12px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        box-shadow: var(--shadow-sm);
+    }
+
+    .card-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--text-color);
+        margin-bottom: 1rem;
+    }
+
+    .setting-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1rem 0;
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    .setting-item:last-child {
+        border-bottom: none;
+    }
+
+    .setting-info h4 {
+        font-size: 1rem;
+        font-weight: 600;
+        color: var(--text-color);
+        margin-bottom: 0.25rem;
+    }
+
+    .setting-info p {
+        font-size: 0.875rem;
+        color: var(--text-muted);
+        margin: 0;
+    }
+
+    .toggle-switch {
+        position: relative;
+        display: inline-block;
+        width: 50px;
+        height: 24px;
+    }
+
+    .toggle-switch input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+    }
+
+    .slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #ccc;
+        transition: .4s;
+        border-radius: 24px;
+    }
+
+    .slider:before {
+        position: absolute;
+        content: "";
+        height: 18px;
+        width: 18px;
+        left: 3px;
+        bottom: 3px;
+        background-color: white;
+        transition: .4s;
+        border-radius: 50%;
+    }
+
+    input:checked + .slider {
+        background-color: var(--primary-color);
+    }
+
+    input:checked + .slider:before {
+        transform: translateX(26px);
+    }
+
+    .danger-zone {
+        background: #fef2f2;
+        border: 1px solid #fecaca;
+        border-radius: 8px;
+        padding: 1.5rem;
+        margin-top: 2rem;
+    }
+
+    .danger-zone h3 {
+        color: var(--danger-color);
+        margin-bottom: 1rem;
+    }
+
+    .danger-zone p {
+        color: var(--text-muted);
+        margin-bottom: 1rem;
+    }
+
+    @media (max-width: 768px) {
+        .nav-tabs {
+            flex-direction: column;
+        }
+        
+        .setting-item {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 1rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="settings-container">
+    <!-- Settings Navigation -->
+    <div class="settings-nav">
+        <ul class="nav-tabs">
+            <li class="nav-tab">
+                <a href="#notifications" class="nav-link active">
+                    <i class="fas fa-bell"></i>
+                    Bildirimler
+                </a>
+            </li>
+            <li class="nav-tab">
+                <a href="#privacy" class="nav-link">
+                    <i class="fas fa-shield-alt"></i>
+                    Gizlilik
+                </a>
+            </li>
+            <li class="nav-tab">
+                <a href="#account" class="nav-link">
+                    <i class="fas fa-user-cog"></i>
+                    Hesap
+                </a>
+            </li>
+        </ul>
+    </div>
+
+    <!-- Notifications Settings -->
+    <div class="settings-card">
+        <h2 class="card-title">Bildirim Ayarları</h2>
+        
+        <form method="post">
+            {% csrf_token %}
+            
+            <div class="setting-item">
+                <div class="setting-info">
+                    <h4>E-posta Bildirimleri</h4>
+                    <p>Yeni iş ilanları ve başvuru durumu hakkında e-posta alın</p>
+                </div>
+                <label class="toggle-switch">
+                    <input type="checkbox" name="email_notifications" 
+                           {% if user.email_notifications %}checked{% endif %}>
+                    <span class="slider"></span>
+                </label>
+            </div>
+
+            <div class="setting-item">
+                <div class="setting-info">
+                    <h4>SMS Bildirimleri</h4>
+                    <p>Önemli güncellemeler için SMS bildirimi alın</p>
+                </div>
+                <label class="toggle-switch">
+                    <input type="checkbox" name="sms_notifications" 
+                           {% if user.sms_notifications %}checked{% endif %}>
+                    <span class="slider"></span>
+                </label>
+            </div>
+
+            <div class="setting-item">
+                <div class="setting-info">
+                    <h4>Pazarlama E-postaları</h4>
+                    <p>Platformdaki yeni özellikler ve kampanyalar hakkında bilgi alın</p>
+                </div>
+                <label class="toggle-switch">
+                    <input type="checkbox" name="marketing_emails" 
+                           {% if user.marketing_emails %}checked{% endif %}>
+                    <span class="slider"></span>
+                </label>
+            </div>
+
+            <div class="form-actions mt-4">
+                <button type="submit" class="btn btn-primary">Ayarları Kaydet</button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Privacy Settings -->
+    <div class="settings-card">
+        <h2 class="card-title">Gizlilik Ayarları</h2>
+        
+        <div class="setting-item">
+            <div class="setting-info">
+                <h4>Profil Görünürlüğü</h4>
+                <p>Profilinizin diğer kullanıcılar tarafından görülme durumu</p>
+            </div>
+            <select class="form-control" style="width: auto;">
+                <option>Herkese Açık</option>
+                <option>Sadece İş Verenler</option>
+                <option>Gizli</option>
+            </select>
+        </div>
+
+        <div class="setting-item">
+            <div class="setting-info">
+                <h4>İletişim Bilgileri</h4>
+                <p>Telefon ve e-posta bilgilerinizin görünürlüğü</p>
+            </div>
+            <select class="form-control" style="width: auto;">
+                <option>Başvuru Sonrası</option>
+                <option>Herkese Görünür</option>
+                <option>Gizli</option>
+            </select>
+        </div>
+    </div>
+
+    <!-- Account Settings -->
+    <div class="settings-card">
+        <h2 class="card-title">Hesap Ayarları</h2>
+        
+        <div class="setting-item">
+            <div class="setting-info">
+                <h4>Verilerimi İndir</h4>
+                <p>Tüm hesap verilerinizi JSON formatında indirin</p>
+            </div>
+            <a href="{% url 'profiles:export_data' %}" class="btn btn-secondary">
+                <i class="fas fa-download"></i> İndir
+            </a>
+        </div>
+
+        <div class="setting-item">
+            <div class="setting-info">
+                <h4>Şifre Değiştir</h4>
+                <p>Hesap güvenliğiniz için düzenli olarak şifrenizi değiştirin</p>
+            </div>
+            <a href="{% url 'authentication:password_reset_request' %}" class="btn btn-secondary">
+                Şifre Değiştir
+            </a>
+        </div>
+    </div>
+
+    <!-- Danger Zone -->
+    <div class="danger-zone">
+        <h3><i class="fas fa-exclamation-triangle"></i> Tehlikeli İşlemler</h3>
+        <p>Bu işlemler geri alınamaz. Lütfen dikkatli olun.</p>
+        
+        <a href="{% url 'profiles:delete_account' %}" class="btn btn-danger">
+            <i class="fas fa-trash"></i> Hesabımı Sil
+        </a>
+    </div>
+</div>
+{% endblock %}
