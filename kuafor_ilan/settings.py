@@ -87,7 +87,7 @@ AUTHENTICATION_BACKENDS = [
 
 # Login URLs
 LOGIN_URL = '/auth/login/'
-LOGIN_REDIRECT_URL = '/dashboard/'
+LOGIN_REDIRECT_URL = '/'  # Giriş sonrası anasayfaya yönlendir
 LOGOUT_REDIRECT_URL = '/'
 
 # REST Framework
