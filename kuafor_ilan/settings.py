@@ -37,6 +37,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'apps.core.middleware.WordPressProtectionMiddleware',  # WordPress bot koruması
 ]
 
 ROOT_URLCONF = 'kuafor_ilan.urls'
@@ -143,13 +144,19 @@ CSRF_TRUSTED_ORIGINS = [
 # Email (basic)
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
-# Logging for debugging
+# Logging for debugging - WordPress bot koruması ile
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
+    'filters': {
+        'ignore_bots': {
+            '()': 'apps.core.logging_filters.IgnoreBotsFilter',
+        },
+    },
     'handlers': {
         'console': {
             'class': 'logging.StreamHandler',
+            'filters': ['ignore_bots'],
         },
     },
     'root': {
@@ -161,6 +168,13 @@ LOGGING = {
             'handlers': ['console'],
             'level': 'INFO',
             'propagate': False,
+            'filters': ['ignore_bots'],
+        },
+        'django.request': {
+            'handlers': ['console'],
+            'level': 'ERROR',
+            'propagate': False,
+            'filters': ['ignore_bots'],
         },
     },
 }
