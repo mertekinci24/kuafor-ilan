@@ -1,58 +1,71 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.utils import timezone
+from django.core.validators import RegexValidator
+from apps.core.models import TimeStampedModel
 import random
 import string
 
 
 class CustomUser(AbstractUser):
-    """Özel kullanıcı modeli - JobSeeker ve Business için"""
+    """Özelleştirilmiş kullanıcı modeli"""
     
-    USER_TYPE_CHOICES = [
+    USER_TYPE_CHOICES = (
         ('jobseeker', 'İş Arayan'),
         ('business', 'İş Veren'),
-    ]
+        ('admin', 'Yönetici'),
+    )
     
-    PLAN_CHOICES = [
+    PLAN_CHOICES = (
         ('free', 'Ücretsiz'),
-        ('pro', 'Pro'),
-        ('business', 'İşletme'),
-    ]
+        ('basic', 'Temel'),
+        ('premium', 'Premium'),
+        ('enterprise', 'Kurumsal'),
+    )
     
-    # Temel bilgiler
+    # Basic Info
     email = models.EmailField(unique=True, verbose_name='E-posta')
-    phone = models.CharField(max_length=17, blank=True, unique=True, null=True, verbose_name='Telefon')  # +905551234567 formatı için
+    phone_regex = RegexValidator(
+        regex=r'^\+?1?\d{9,15}$',
+        message="Telefon numarası +905551234567 formatında olmalıdır."
+    )
+    phone = models.CharField(
+        validators=[phone_regex], 
+        max_length=17, 
+        blank=True, 
+        null=True,
+        verbose_name='Telefon'
+    )
+    
+    # User Type & Plan
     user_type = models.CharField(
         max_length=20, 
         choices=USER_TYPE_CHOICES, 
         default='jobseeker',
         verbose_name='Kullanıcı Tipi'
     )
-    
-    # Plan bilgileri
     current_plan = models.CharField(
-        max_length=20,
-        choices=PLAN_CHOICES,
+        max_length=20, 
+        choices=PLAN_CHOICES, 
         default='free',
         verbose_name='Mevcut Plan'
     )
-    plan_start_date = models.DateTimeField(default=timezone.now, verbose_name='Plan Başlangıç')
-    plan_end_date = models.DateTimeField(null=True, blank=True, verbose_name='Plan Bitiş')
+    plan_start_date = models.DateTimeField(null=True, blank=True)
+    plan_end_date = models.DateTimeField(null=True, blank=True)
     
-    # Profil durumu
+    # Verification Status
     is_verified = models.BooleanField(default=False, verbose_name='Doğrulanmış')
-    phone_verified = models.BooleanField(default=False, verbose_name='Telefon Doğrulanmış')
-    email_verified = models.BooleanField(default=False, verbose_name='Email Doğrulanmış')
-    created_at = models.DateTimeField(auto_now_add=True, verbose_name='Oluşturma Tarihi')
-    updated_at = models.DateTimeField(auto_now=True, verbose_name='Güncelleme Tarihi')
+    email_verified = models.BooleanField(default=False)
+    phone_verified = models.BooleanField(default=False)
     
-    # Sosyal medya bilgileri
-    google_id = models.CharField(max_length=100, blank=True, null=True, verbose_name='Google ID')
-    linkedin_id = models.CharField(max_length=100, blank=True, null=True, verbose_name='LinkedIn ID')
+    # Statistics
+    profile_views = models.PositiveIntegerField(default=0)
+    last_login_ip = models.GenericIPAddressField(null=True, blank=True)
     
-    # İstatistikler
-    profile_views = models.IntegerField(default=0, verbose_name='Profil Görüntülenme')
-    last_login_ip = models.GenericIPAddressField(null=True, blank=True, verbose_name='Son Giriş IP')
+    # Settings
+    email_notifications = models.BooleanField(default=True)
+    sms_notifications = models.BooleanField(default=True)
+    marketing_emails = models.BooleanField(default=False)
     
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['username', 'first_name', 'last_name']
@@ -60,6 +73,7 @@ class CustomUser(AbstractUser):
     class Meta:
         verbose_name = 'Kullanıcı'
         verbose_name_plural = 'Kullanıcılar'
+        ordering = ['-date_joined']
     
     def __str__(self):
         return f"{self.get_full_name()} ({self.email})"
@@ -67,188 +81,79 @@ class CustomUser(AbstractUser):
     def get_full_name(self):
         return f"{self.first_name} {self.last_name}".strip()
     
-    def is_plan_active(self):
-        """Plan aktif mi kontrol et"""
-        if self.current_plan == 'free':
-            return True
-        return self.plan_end_date and self.plan_end_date > timezone.now()
+    def get_short_name(self):
+        return self.first_name
     
-    def format_phone(self):
-        """Telefon numarasını formatla"""
-        if self.phone:
-            # +90 555 123 45 67 formatında döndür
-            phone = self.phone.replace('+90', '').replace(' ', '')
-            if len(phone) == 10:
-                return f"+90 {phone[:3]} {phone[3:6]} {phone[6:8]} {phone[8:]}"
-        return self.phone
+    def get_avatar_initial(self):
+        """Avatar için baş harf"""
+        if self.first_name:
+            return self.first_name[0].upper()
+        return self.email[0].upper()
+    
+    def is_premium_user(self):
+        """Premium kullanıcı kontrolü"""
+        return self.current_plan in ['premium', 'enterprise']
+    
+    def days_until_plan_expires(self):
+        """Plan bitimine kalan gün"""
+        if self.plan_end_date:
+            days = (self.plan_end_date - timezone.now()).days
+            return max(0, days)
+        return None
 
 
-class OTPVerification(models.Model):
-    """OTP doğrulama modeli"""
+class JobSeekerProfile(TimeStampedModel):
+    """İş arayan profili"""
     
-    OTP_TYPE_CHOICES = [
-        ('login', 'Giriş'),
-        ('register', 'Kayıt'),
-        ('password_reset', 'Şifre Sıfırlama'),
-        ('phone_verify', 'Telefon Doğrulama'),
-        ('email_verify', 'Email Doğrulama'),
-    ]
-    
-    DELIVERY_METHOD_CHOICES = [
-        ('sms', 'SMS'),
-        ('email', 'Email'),
-    ]
-    
-    # İlişkiler
-    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, null=True, blank=True)
-    
-    # OTP bilgileri
-    otp_code = models.CharField(max_length=6, verbose_name='OTP Kodu')
-    otp_type = models.CharField(max_length=20, choices=OTP_TYPE_CHOICES, verbose_name='OTP Tipi')
-    delivery_method = models.CharField(max_length=10, choices=DELIVERY_METHOD_CHOICES, verbose_name='Gönderim Yöntemi')
-    
-    # İletişim bilgileri
-    phone_number = models.CharField(max_length=17, blank=True, verbose_name='Telefon Numarası')
-    email_address = models.EmailField(blank=True, verbose_name='Email Adresi')
-    
-    # Durum bilgileri
-    is_used = models.BooleanField(default=False, verbose_name='Kullanıldı')
-    is_verified = models.BooleanField(default=False, verbose_name='Doğrulandı')
-    attempts = models.IntegerField(default=0, verbose_name='Deneme Sayısı')
-    max_attempts = models.IntegerField(default=3, verbose_name='Maksimum Deneme')
-    
-    # Zaman bilgileri
-    created_at = models.DateTimeField(auto_now_add=True, verbose_name='Oluşturma Tarihi')
-    expires_at = models.DateTimeField(verbose_name='Son Geçerlilik')
-    verified_at = models.DateTimeField(null=True, blank=True, verbose_name='Doğrulama Tarihi')
-    
-    # Güvenlik
-    ip_address = models.GenericIPAddressField(null=True, blank=True, verbose_name='IP Adresi')
-    user_agent = models.TextField(blank=True, verbose_name='User Agent')
-    
-    class Meta:
-        verbose_name = 'OTP Doğrulama'
-        verbose_name_plural = 'OTP Doğrulamaları'
-        ordering = ['-created_at']
-    
-    def __str__(self):
-        target = self.phone_number or self.email_address
-        return f"{self.otp_type} - {target} - {self.otp_code}"
-    
-    @classmethod
-    def generate_otp(cls):
-        """6 haneli OTP kodu üret"""
-        return ''.join(random.choices(string.digits, k=6))
-    
-    def is_expired(self):
-        """OTP süresi doldu mu?"""
-        return timezone.now() > self.expires_at
-    
-    def is_valid(self):
-        """OTP geçerli mi?"""
-        return not self.is_used and not self.is_expired() and self.attempts < self.max_attempts
-    
-    def verify(self, entered_code):
-        """OTP doğrula"""
-        self.attempts += 1
-        
-        if self.attempts >= self.max_attempts:
-            self.save()
-            return False, "Maksimum deneme sayısına ulaştınız."
-        
-        if self.is_expired():
-            self.save()
-            return False, "OTP süresi doldu."
-        
-        if self.is_used:
-            self.save()
-            return False, "Bu OTP zaten kullanıldı."
-        
-        if entered_code == self.otp_code:
-            self.is_used = True
-            self.is_verified = True
-            self.verified_at = timezone.now()
-            self.save()
-            return True, "OTP başarıyla doğrulandı."
-        else:
-            self.save()
-            return False, f"Yanlış OTP kodu. Kalan deneme: {self.max_attempts - self.attempts}"
-
-
-class SocialAuthProvider(models.Model):
-    """Sosyal medya sağlayıcı bilgileri"""
-    
-    PROVIDER_CHOICES = [
-        ('google', 'Google'),
-        ('linkedin', 'LinkedIn'),
-        ('facebook', 'Facebook'),
-        ('apple', 'Apple'),
-    ]
-    
-    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='social_providers')
-    provider = models.CharField(max_length=20, choices=PROVIDER_CHOICES, verbose_name='Sağlayıcı')
-    provider_id = models.CharField(max_length=100, verbose_name='Sağlayıcı ID')
-    provider_email = models.EmailField(blank=True, verbose_name='Sağlayıcı Email')
-    
-    # Ek bilgiler
-    access_token = models.TextField(blank=True, verbose_name='Access Token')
-    refresh_token = models.TextField(blank=True, verbose_name='Refresh Token')
-    token_expires_at = models.DateTimeField(null=True, blank=True, verbose_name='Token Süresi')
-    
-    # Meta bilgiler
-    profile_data = models.JSONField(default=dict, verbose_name='Profil Verisi')
-    created_at = models.DateTimeField(auto_now_add=True, verbose_name='Bağlama Tarihi')
-    updated_at = models.DateTimeField(auto_now=True, verbose_name='Güncelleme Tarihi')
-    
-    class Meta:
-        verbose_name = 'Sosyal Medya Sağlayıcı'
-        verbose_name_plural = 'Sosyal Medya Sağlayıcıları'
-        unique_together = ('user', 'provider')
-    
-    def __str__(self):
-        return f"{self.user.email} - {self.provider}"
-
-
-class JobSeekerProfile(models.Model):
-    """İş arayan profil detayları"""
-    
-    EXPERIENCE_CHOICES = [
-        ('beginner', 'Yeni başlayan'),
-        ('1-2', '1-2 yıl'),
-        ('3-5', '3-5 yıl'),
-        ('6-10', '6-10 yıl'),
-        ('10+', '10+ yıl'),
-    ]
+    EXPERIENCE_CHOICES = (
+        (0, 'Yeni başlayan'),
+        (1, '1 yıl'),
+        (2, '2 yıl'),
+        (3, '3 yıl'),
+        (4, '4 yıl'),
+        (5, '5 yıl'),
+        (6, '6-10 yıl'),
+        (10, '10+ yıl'),
+    )
     
     user = models.OneToOneField(CustomUser, on_delete=models.CASCADE, related_name='jobseeker_profile')
     
-    # Kişisel bilgiler
+    # Personal Info
     birth_date = models.DateField(null=True, blank=True, verbose_name='Doğum Tarihi')
-    city = models.CharField(max_length=50, blank=True, verbose_name='Şehir')
+    bio = models.TextField(blank=True, verbose_name='Hakkımda')
+    
+    # Location
+    city = models.CharField(max_length=50, verbose_name='Şehir')
     district = models.CharField(max_length=50, blank=True, verbose_name='İlçe')
     address = models.TextField(blank=True, verbose_name='Adres')
     
-    # Profesyonel bilgiler
-    experience_years = models.CharField(
-        max_length=20,
-        choices=EXPERIENCE_CHOICES,
-        default='beginner',
+    # Professional Info
+    experience_years = models.PositiveIntegerField(
+        choices=EXPERIENCE_CHOICES, 
+        default=0, 
         verbose_name='Deneyim'
     )
-    skills = models.JSONField(default=list, verbose_name='Yetenekler')
-    bio = models.TextField(blank=True, verbose_name='Hakkında')
-    portfolio_url = models.URLField(blank=True, verbose_name='Portföy URL')
+    skills = models.TextField(
+        blank=True, 
+        help_text='Virgül ile ayırarak yazın',
+        verbose_name='Yetenekler'
+    )
+    portfolio_url = models.URLField(blank=True, verbose_name='Portfolio')
+    linkedin_url = models.URLField(blank=True, verbose_name='LinkedIn')
     
-    # CV ve belgeler
-    cv_file = models.FileField(upload_to='cvs/', blank=True, verbose_name='CV Dosyası')
-    certificates = models.JSONField(default=list, verbose_name='Sertifikalar')
+    # Files
+    cv_file = models.FileField(upload_to='cvs/', blank=True, verbose_name='CV')
+    profile_image = models.ImageField(upload_to='profiles/', blank=True, verbose_name='Profil Fotoğrafı')
+    certificates = models.FileField(upload_to='certificates/', blank=True, verbose_name='Sertifikalar')
     
-    # İstatistikler
-    total_applications = models.IntegerField(default=0, verbose_name='Toplam Başvuru')
-    successful_applications = models.IntegerField(default=0, verbose_name='Başarılı Başvuru')
+    # Status
+    is_available = models.BooleanField(default=True, verbose_name='İş Arıyor')
+    expected_salary_min = models.PositiveIntegerField(null=True, blank=True, verbose_name='Beklenen Maaş (Min)')
+    expected_salary_max = models.PositiveIntegerField(null=True, blank=True, verbose_name='Beklenen Maaş (Max)')
     
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
+    # Statistics
+    total_applications = models.PositiveIntegerField(default=0)
+    successful_applications = models.PositiveIntegerField(default=0)
     
     class Meta:
         verbose_name = 'İş Arayan Profili'
@@ -256,58 +161,214 @@ class JobSeekerProfile(models.Model):
     
     def __str__(self):
         return f"{self.user.get_full_name()} - İş Arayan"
-
-
-class BusinessProfile(models.Model):
-    """İş veren profil detayları"""
     
-    COMPANY_SIZE_CHOICES = [
-        ('1-5', '1-5 kişi'),
-        ('6-20', '6-20 kişi'),
-        ('21-50', '21-50 kişi'),
-        ('51-100', '51-100 kişi'),
-        ('100+', '100+ kişi'),
-    ]
+    def get_skills_list(self):
+        """Yetenekleri liste olarak döndür"""
+        if self.skills:
+            return [skill.strip() for skill in self.skills.split(',') if skill.strip()]
+        return []
+    
+    def get_experience_display_text(self):
+        """Deneyimi text olarak döndür"""
+        exp_dict = dict(self.EXPERIENCE_CHOICES)
+        return exp_dict.get(self.experience_years, 'Belirtilmemiş')
+
+
+class BusinessProfile(TimeStampedModel):
+    """İş veren profili"""
+    
+    COMPANY_SIZE_CHOICES = (
+        ('1-10', '1-10 çalışan'),
+        ('11-50', '11-50 çalışan'),
+        ('51-200', '51-200 çalışan'),
+        ('201-500', '201-500 çalışan'),
+        ('500+', '500+ çalışan'),
+    )
     
     user = models.OneToOneField(CustomUser, on_delete=models.CASCADE, related_name='business_profile')
     
-    # Şirket bilgileri
-    company_name = models.CharField(max_length=200, verbose_name='Şirket Adı')
+    # Company Info
+    company_name = models.CharField(max_length=100, verbose_name='Şirket Adı')
     company_description = models.TextField(blank=True, verbose_name='Şirket Açıklaması')
     company_size = models.CharField(
-        max_length=20,
-        choices=COMPANY_SIZE_CHOICES,
-        default='1-5',
+        max_length=20, 
+        choices=COMPANY_SIZE_CHOICES, 
+        blank=True,
         verbose_name='Şirket Büyüklüğü'
     )
-    establishment_year = models.IntegerField(default=2024, verbose_name='Kuruluş Yılı')
+    establishment_year = models.PositiveIntegerField(null=True, blank=True, verbose_name='Kuruluş Yılı')
     
-    # İletişim bilgileri
-    city = models.CharField(max_length=50, blank=True, verbose_name='Şehir')
+    # Contact Info
+    city = models.CharField(max_length=50, verbose_name='Şehir')
     district = models.CharField(max_length=50, blank=True, verbose_name='İlçe')
-    address = models.TextField(blank=True, verbose_name='Adres')
-    website = models.URLField(blank=True, verbose_name='Web Sitesi')
+    address = models.TextField(verbose_name='Adres')
+    website = models.URLField(blank=True, verbose_name='Website')
     
-    # Yetkili kişi
-    contact_person = models.CharField(max_length=100, blank=True, verbose_name='Yetkili Kişi')
-    contact_phone = models.CharField(max_length=15, blank=True, verbose_name='Yetkili Telefon')
+    # Contact Person
+    contact_person = models.CharField(max_length=100, blank=True, verbose_name='İletişim Kişisi')
+    contact_phone = models.CharField(max_length=20, blank=True, verbose_name='İletişim Telefonu')
     
-    # İstatistikler
-    total_job_posts = models.IntegerField(default=0, verbose_name='Toplam İlan')
-    active_job_posts = models.IntegerField(default=0, verbose_name='Aktif İlan')
-    total_applications_received = models.IntegerField(default=0, verbose_name='Alınan Başvuru')
-    
-    # Doğrulama
+    # Verification
     is_verified = models.BooleanField(default=False, verbose_name='Doğrulanmış Şirket')
-    verification_documents = models.JSONField(default=list, verbose_name='Doğrulama Belgeleri')
+    verification_documents = models.FileField(
+        upload_to='verifications/', 
+        blank=True, 
+        verbose_name='Doğrulama Belgeleri'
+    )
     
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
+    # Images
+    logo = models.ImageField(upload_to='company_logos/', blank=True, verbose_name='Logo')
+    cover_image = models.ImageField(upload_to='company_covers/', blank=True, verbose_name='Kapak Fotoğrafı')
+    
+    # Statistics
+    total_job_posts = models.PositiveIntegerField(default=0)
+    active_job_posts = models.PositiveIntegerField(default=0)
+    total_applications_received = models.PositiveIntegerField(default=0)
     
     class Meta:
         verbose_name = 'İş Veren Profili'
         verbose_name_plural = 'İş Veren Profilleri'
     
     def __str__(self):
-        return f"{self.company_name} - {self.contact_person}"
+        return f"{self.company_name} - {self.user.get_full_name()}"
+
+
+class OTPVerification(TimeStampedModel):
+    """OTP doğrulama sistemi"""
+    
+    OTP_TYPE_CHOICES = (
+        ('login', 'Giriş'),
+        ('register', 'Kayıt'),
+        ('password_reset', 'Şifre Sıfırlama'),
+        ('phone_verify', 'Telefon Doğrulama'),
+        ('email_verify', 'Email Doğrulama'),
+    )
+    
+    DELIVERY_METHOD_CHOICES = (
+        ('sms', 'SMS'),
+        ('email', 'Email'),
+    )
+    
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, null=True, blank=True)
+    otp_code = models.CharField(max_length=6)
+    otp_type = models.CharField(max_length=20, choices=OTP_TYPE_CHOICES)
+    delivery_method = models.CharField(max_length=10, choices=DELIVERY_METHOD_CHOICES)
+    
+    # Contact Info
+    phone_number = models.CharField(max_length=20, blank=True, null=True)
+    email_address = models.EmailField(blank=True, null=True)
+    
+    # Status
+    is_used = models.BooleanField(default=False)
+    is_expired = models.BooleanField(default=False)
+    expires_at = models.DateTimeField()
+    verified_at = models.DateTimeField(null=True, blank=True)
+    
+    # Security
+    attempts = models.PositiveIntegerField(default=0)
+    max_attempts = models.PositiveIntegerField(default=3)
+    ip_address = models.GenericIPAddressField(null=True, blank=True)
+    user_agent = models.TextField(blank=True)
+    
+    class Meta:
+        verbose_name = 'OTP Doğrulama'
+        verbose_name_plural = 'OTP Doğrulamalar'
+        ordering = ['-created_at']
+    
+    def __str__(self):
+        return f"OTP {self.otp_code} - {self.get_otp_type_display()}"
+    
+    @staticmethod
+    def generate_otp():
+        """6 haneli OTP üret"""
+        return ''.join(random.choices(string.digits, k=6))
+    
+    def is_valid(self):
+        """OTP geçerli mi?"""
+        return not self.is_used and not self.is_expired and timezone.now() < self.expires_at
+    
+    def verify(self, provided_otp):
+        """OTP doğrula"""
+        self.attempts += 1
+        self.save()
+        
+        if self.attempts > self.max_attempts:
+            self.is_expired = True
+            self.save()
+            return False, "Çok fazla hatalı deneme. OTP geçersiz."
+        
+        if not self.is_valid():
+            return False, "OTP süresi dolmuş veya kullanılmış."
+        
+        if self.otp_code != provided_otp:
+            return False, "OTP kodu hatalı."
+        
+        # Başarılı doğrulama
+        self.is_used = True
+        self.verified_at = timezone.now()
+        self.save()
+        
+        return True, "OTP başarıyla doğrulandı."
+    
+    def mark_expired(self):
+        """OTP'yi süresi dolmuş olarak işaretle"""
+        self.is_expired = True
+        self.save()
+
+
+class SocialAuthProvider(TimeStampedModel):
+    """Sosyal medya authentication sağlayıcıları"""
+    
+    PROVIDER_CHOICES = (
+        ('google', 'Google'),
+        ('linkedin', 'LinkedIn'),
+        ('facebook', 'Facebook'),
+        ('twitter', 'Twitter'),
+    )
+    
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='social_providers')
+    provider = models.CharField(max_length=20, choices=PROVIDER_CHOICES)
+    provider_id = models.CharField(max_length=100)
+    provider_email = models.EmailField(blank=True)
+    access_token = models.TextField(blank=True)
+    refresh_token = models.TextField(blank=True)
+    profile_data = models.JSONField(default=dict, blank=True)
+    
+    class Meta:
+        verbose_name = 'Sosyal Medya Bağlantısı'
+        verbose_name_plural = 'Sosyal Medya Bağlantıları'
+        unique_together = ('user', 'provider')
+    
+    def __str__(self):
+        return f"{self.user.email} - {self.get_provider_display()}"
+
+
+class LoginHistory(TimeStampedModel):
+    """Giriş geçmişi"""
+    
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='login_history')
+    ip_address = models.GenericIPAddressField()
+    user_agent = models.TextField(blank=True)
+    is_successful = models.BooleanField(default=True)
+    login_method = models.CharField(
+        max_length=20,
+        choices=[
+            ('password', 'Şifre'),
+            ('otp_sms', 'OTP SMS'),
+            ('otp_email', 'OTP Email'),
+            ('google', 'Google'),
+            ('linkedin', 'LinkedIn'),
+        ],
+        default='password'
+    )
+    location = models.CharField(max_length=100, blank=True)  # IP'den çözümlenecek
+    device_info = models.CharField(max_length=200, blank=True)
+    
+    class Meta:
+        verbose_name = 'Giriş Geçmişi'
+        verbose_name_plural = 'Giriş Geçmişi'
+        ordering = ['-created_at']
+    
+    def __str__(self):
+        return f"{self.user.email} - {self.created_at}"
         
