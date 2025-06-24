@@ -29,6 +29,9 @@ urlpatterns = [
     # Jobs URL'leri
     path('jobs/', include('apps.jobs.urls')),
     
+    # Profiles URL'leri - BU SATIRI EKLEYİN
+    path('profiles/', include('apps.profiles.urls')),
+    
     # WordPress bot koruması
     re_path(r'^wp-.*', block_bots),
     re_path(r'^wordpress.*', block_bots),
