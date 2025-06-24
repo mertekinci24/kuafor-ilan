@@ -2,109 +2,150 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.http import JsonResponse
-from django.contrib.auth import get_user_model
-from django.core.paginator import Paginator
-from django.db.models import Q
-from django.urls import reverse
 from django.views.decorators.http import require_http_methods
-from django.core.files.storage import default_storage
-from django.core.files.base import ContentFile
+from django.conf import settings
+from django.contrib.auth import get_user_model
+from apps.jobs.models import JobListing, JobApplication, SavedJob
+from apps.authentication.models import JobSeekerProfile, BusinessProfile
 import json
-import logging
-
-from .models import JobSeekerProfile, BusinessProfile
-from apps.jobs.models import JobApplication, JobListing, SavedJob
 
 User = get_user_model()
-logger = logging.getLogger(__name__)
 
 
 @login_required
 def profile_view(request, user_id=None):
-    """Profil görüntüleme sayfası"""
+    """Profil görüntüleme - kendi profili veya başka kullanıcı profili"""
     
-    # Eğer user_id verilmemişse, kendi profilini göster
-    if user_id is None:
-        user = request.user
+    if user_id:
+        # Başka kullanıcının profili
+        profile_user = get_object_or_404(User, id=user_id)
+        is_own_profile = False
     else:
-        user = get_object_or_404(User, id=user_id)
-        # Profil görüntülenme sayısını artır (başkasının profilini görürse)
-        if user != request.user:
-            user.profile_views += 1
-            user.save()
+        # Kendi profili
+        profile_user = request.user
+        is_own_profile = True
     
-    # Profil tipine göre profil verisini al
-    profile = None
-    profile_type = user.user_type
+    # Profil tipine göre veri hazırla
+    profile_data = None
+    user_stats = {
+        'total_views': profile_user.profile_views,
+        'join_date': profile_user.date_joined,
+        'is_verified': getattr(profile_user, 'is_verified', False),
+        'last_active': profile_user.last_login,
+    }
     
-    if profile_type == 'jobseeker':
+    if profile_user.user_type == 'jobseeker':
         try:
-            profile = user.jobseeker_profile
+            jobseeker_profile = profile_user.jobseeker_profile
+            profile_data = {
+                'type': 'jobseeker',
+                'full_name': getattr(jobseeker_profile, 'full_name', profile_user.get_full_name()),
+                'bio': getattr(jobseeker_profile, 'bio', ''),
+                'city': getattr(jobseeker_profile, 'city', ''),
+                'district': getattr(jobseeker_profile, 'district', ''),
+                'experience_years': getattr(jobseeker_profile, 'experience_years', 0),
+                'skills': getattr(jobseeker_profile, 'skills', ''),
+                'is_available': getattr(jobseeker_profile, 'is_available', True),
+                'portfolio_images': getattr(jobseeker_profile, 'portfolio_images', ''),
+            }
+            
+            if is_own_profile:
+                user_stats.update({
+                    'total_applications': getattr(jobseeker_profile, 'total_applications', 0),
+                    'successful_applications': getattr(jobseeker_profile, 'successful_applications', 0),
+                })
+                
         except:
-            # Profil yoksa oluştur
-            profile = JobSeekerProfile.objects.create(
-                user=user,
-                city="İstanbul"  # Varsayılan
-            )
+            # Profil yoksa boş profil oluştur
+            profile_data = {
+                'type': 'jobseeker',
+                'full_name': profile_user.get_full_name(),
+                'bio': '',
+                'city': '',
+                'district': '',
+                'experience_years': 0,
+                'skills': '',
+                'is_available': True,
+                'portfolio_images': '',
+            }
     
-    elif profile_type == 'business':
+    elif profile_user.user_type == 'business':
         try:
-            profile = user.business_profile
+            business_profile = profile_user.business_profile
+            profile_data = {
+                'type': 'business',
+                'business_name': getattr(business_profile, 'business_name', ''),
+                'description': getattr(business_profile, 'description', ''),
+                'city': getattr(business_profile, 'city', ''),
+                'district': getattr(business_profile, 'district', ''),
+                'address': getattr(business_profile, 'address', ''),
+                'phone': getattr(business_profile, 'phone', ''),
+                'website': getattr(business_profile, 'website', ''),
+                'contact_person': getattr(business_profile, 'contact_person', ''),
+                'is_verified': getattr(business_profile, 'is_verified', False),
+            }
+            
+            if is_own_profile:
+                user_stats.update({
+                    'total_job_posts': getattr(business_profile, 'total_job_posts', 0),
+                    'active_job_posts': getattr(business_profile, 'active_job_posts', 0),
+                    'total_applications_received': getattr(business_profile, 'total_applications_received', 0),
+                })
+                
         except:
-            # Profil yoksa oluştur
-            profile = BusinessProfile.objects.create(
-                user=user,
-                company_name=f"{user.first_name} {user.last_name}",
-                city="İstanbul",
-                contact_phone=user.phone or "",
-                address="Belirtilmemiş"
-            )
+            # Profil yoksa boş profil oluştur
+            profile_data = {
+                'type': 'business',
+                'business_name': '',
+                'description': '',
+                'city': '',
+                'district': '',
+                'address': '',
+                'phone': '',
+                'website': '',
+                'contact_person': '',
+                'is_verified': False,
+            }
     
-    # İstatistikler
-    stats = {}
+    # Eğer kendi profili ise son aktiviteleri getir
     recent_activities = []
-    
-    if profile_type == 'jobseeker':
-        # İş arayan istatistikleri
-        applications = JobApplication.objects.filter(applicant=user)
-        saved_jobs = SavedJob.objects.filter(user=user)
+    if is_own_profile:
+        if profile_user.user_type == 'jobseeker':
+            # Son başvurular
+            applications = JobApplication.objects.filter(
+                applicant=profile_user
+            ).select_related('job')[:5]
+            
+            for app in applications:
+                recent_activities.append({
+                    'type': 'application',
+                    'title': f"{app.job.title} pozisyonuna başvuru",
+                    'company': app.job.business.get_full_name(),
+                    'date': app.created_at,
+                    'status': app.status
+                })
         
-        stats = {
-            'total_applications': applications.count(),
-            'pending_applications': applications.filter(status='pending').count(),
-            'accepted_applications': applications.filter(status='accepted').count(),
-            'rejected_applications': applications.filter(status='rejected').count(),
-            'saved_jobs': saved_jobs.count(),
-            'profile_views': user.profile_views,
-        }
-        
-        # Son başvurular
-        recent_activities = applications.order_by('-created_at')[:5]
-        
-    elif profile_type == 'business':
-        # İş veren istatistikleri
-        job_listings = JobListing.objects.filter(business=user)
-        all_applications = JobApplication.objects.filter(job__business=user)
-        
-        stats = {
-            'total_jobs': job_listings.count(),
-            'active_jobs': job_listings.filter(status='active').count(),
-            'closed_jobs': job_listings.filter(status='closed').count(),
-            'total_applications': all_applications.count(),
-            'pending_applications': all_applications.filter(status='pending').count(),
-            'profile_views': user.profile_views,
-        }
-        
-        # Son ilanlar
-        recent_activities = job_listings.order_by('-created_at')[:5]
+        elif profile_user.user_type == 'business':
+            # Son ilanlar
+            jobs = JobListing.objects.filter(
+                business=profile_user
+            )[:5]
+            
+            for job in jobs:
+                recent_activities.append({
+                    'type': 'job_post',
+                    'title': f"{job.title} ilanı",
+                    'location': f"{job.city}, {job.district}",
+                    'date': job.created_at,
+                    'status': job.status
+                })
     
     context = {
-        'profile_user': user,
-        'profile': profile,
-        'profile_type': profile_type,
-        'stats': stats,
+        'profile_user': profile_user,
+        'profile_data': profile_data,
+        'user_stats': user_stats,
+        'is_own_profile': is_own_profile,
         'recent_activities': recent_activities,
-        'is_own_profile': user == request.user,
     }
     
     return render(request, 'profiles/profile.html', context)
@@ -112,384 +153,55 @@ def profile_view(request, user_id=None):
 
 @login_required
 def profile_edit_view(request):
-    """Profil düzenleme sayfası"""
-    
-    # Kullanıcının profil tipine göre profil objesini al veya oluştur
-    profile = None
-    profile_type = request.user.user_type
-    
-    if profile_type == 'jobseeker':
-        profile, created = JobSeekerProfile.objects.get_or_create(
-            user=request.user,
-            defaults={'city': 'İstanbul'}
-        )
-    elif profile_type == 'business':
-        profile, created = BusinessProfile.objects.get_or_create(
-            user=request.user,
-            defaults={
-                'company_name': f"{request.user.first_name} {request.user.last_name}",
-                'city': 'İstanbul',
-                'contact_phone': request.user.phone or "",
-                'address': 'Belirtilmemiş'
-            }
-        )
+    """Profil düzenleme"""
+    user = request.user
     
     if request.method == 'POST':
         try:
-            # Temel kullanıcı bilgileri güncelleme
-            request.user.first_name = request.POST.get('first_name', '').strip()
-            request.user.last_name = request.POST.get('last_name', '').strip()
+            # Temel kullanıcı bilgileri güncelle
+            user.first_name = request.POST.get('first_name', '')
+            user.last_name = request.POST.get('last_name', '')
+            user.save()
             
-            # Email güncellemesi (benzersizlik kontrolü)
-            new_email = request.POST.get('email', '').strip()
-            if new_email != request.user.email:
-                if User.objects.filter(email=new_email).exclude(id=request.user.id).exists():
-                    messages.error(request, 'Bu e-posta adresi zaten kullanımda.')
-                    return render(request, 'profiles/profile_edit.html', {
-                        'profile': profile,
-                        'profile_type': profile_type,
-                    })
-                request.user.email = new_email
-                request.user.email_verified = False  # Yeni email doğrulanmalı
-            
-            request.user.phone = request.POST.get('phone', '').strip()
-            request.user.save()
-            
-            # Profil tipine göre özel alanları güncelle
-            if profile_type == 'jobseeker':
-                profile.bio = request.POST.get('bio', '').strip()
-                profile.experience_years = int(request.POST.get('experience_years', 0) or 0)
-                profile.skills = request.POST.get('skills', '').strip()
-                profile.city = request.POST.get('city', '').strip()
-                profile.district = request.POST.get('district', '').strip()
-                profile.address = request.POST.get('address', '').strip()
-                profile.portfolio_url = request.POST.get('portfolio_url', '').strip()
-                profile.linkedin_url = request.POST.get('linkedin_url', '').strip()
+            if user.user_type == 'jobseeker':
+                # İş arayan profili güncelle
+                profile, created = JobSeekerProfile.objects.get_or_create(user=user)
+                profile.full_name = request.POST.get('full_name', user.get_full_name())
+                profile.bio = request.POST.get('bio', '')
+                profile.city = request.POST.get('city', '')
+                profile.district = request.POST.get('district', '')
+                profile.experience_years = int(request.POST.get('experience_years', 0))
+                profile.skills = request.POST.get('skills', '')
                 profile.is_available = request.POST.get('is_available') == 'on'
+                profile.save()
                 
-                # Maaş beklentisi
-                expected_salary_min = request.POST.get('expected_salary_min', '').strip()
-                expected_salary_max = request.POST.get('expected_salary_max', '').strip()
-                profile.expected_salary_min = int(expected_salary_min) if expected_salary_min else None
-                profile.expected_salary_max = int(expected_salary_max) if expected_salary_max else None
-                
-            elif profile_type == 'business':
-                profile.company_name = request.POST.get('company_name', '').strip()
-                profile.company_description = request.POST.get('company_description', '').strip()
-                profile.company_size = request.POST.get('company_size', '')
-                profile.establishment_year = request.POST.get('establishment_year', '')
-                profile.establishment_year = int(profile.establishment_year) if profile.establishment_year else None
-                
-                profile.city = request.POST.get('city', '').strip()
-                profile.district = request.POST.get('district', '').strip()
-                profile.address = request.POST.get('address', '').strip()
-                profile.website = request.POST.get('website', '').strip()
-                
-                profile.contact_person = request.POST.get('contact_person', '').strip()
-                profile.contact_phone = request.POST.get('contact_phone', '').strip()
-            
-            # Dosya yüklemeleri
-            if 'profile_image' in request.FILES:
-                profile.profile_image = request.FILES['profile_image']
-            
-            if 'cv_file' in request.FILES and profile_type == 'jobseeker':
-                profile.cv_file = request.FILES['cv_file']
-            
-            if 'logo' in request.FILES and profile_type == 'business':
-                profile.logo = request.FILES['logo']
-            
-            profile.save()
+            elif user.user_type == 'business':
+                # İş veren profili güncelle
+                profile, created = BusinessProfile.objects.get_or_create(user=user)
+                profile.business_name = request.POST.get('business_name', '')
+                profile.description = request.POST.get('description', '')
+                profile.city = request.POST.get('city', '')
+                profile.district = request.POST.get('district', '')
+                profile.address = request.POST.get('address', '')
+                profile.phone = request.POST.get('phone', '')
+                profile.website = request.POST.get('website', '')
+                profile.contact_person = request.POST.get('contact_person', '')
+                profile.save()
             
             messages.success(request, 'Profiliniz başarıyla güncellendi!')
-            logger.info(f"Profile updated: {request.user.email}")
             return redirect('profiles:profile')
             
         except Exception as e:
-            logger.error(f"Profile update error: {str(e)}")
             messages.error(request, f'Profil güncellenirken hata oluştu: {str(e)}')
     
-    context = {
-        'profile': profile,
-        'profile_type': profile_type,
-        'user': request.user,
-    }
+    # GET request - form verilerini hazırla
+    profile_data = {}
     
-    return render(request, 'profiles/profile_edit.html', context)
-
-
-@login_required
-def my_applications_view(request):
-    """Kullanıcının başvurularını listele (sadece job seeker için)"""
-    
-    if request.user.user_type != 'jobseeker':
-        messages.error(request, 'Bu sayfaya erişim yetkiniz yok.')
-        return redirect('profiles:profile')
-    
-    # Filtreleme
-    status_filter = request.GET.get('status', '')
-    search_query = request.GET.get('search', '')
-    
-    applications = JobApplication.objects.filter(applicant=request.user)
-    
-    if status_filter:
-        applications = applications.filter(status=status_filter)
-    
-    if search_query:
-        applications = applications.filter(
-            Q(job__title__icontains=search_query) |
-            Q(job__business__first_name__icontains=search_query) |
-            Q(job__business__last_name__icontains=search_query)
-        )
-    
-    applications = applications.order_by('-created_at')
-    
-    # Sayfalama
-    paginator = Paginator(applications, 10)
-    page_number = request.GET.get('page')
-    page_obj = paginator.get_page(page_number)
-    
-    context = {
-        'page_obj': page_obj,
-        'status_filter': status_filter,
-        'search_query': search_query,
-        'status_choices': JobApplication.STATUS_CHOICES,
-    }
-    
-    return render(request, 'profiles/my_applications.html', context)
-
-
-@login_required
-def my_jobs_view(request):
-    """İş verenin ilanlarını listele (sadece business için)"""
-    
-    if request.user.user_type != 'business':
-        messages.error(request, 'Bu sayfaya erişim yetkiniz yok.')
-        return redirect('profiles:profile')
-    
-    # Filtreleme
-    status_filter = request.GET.get('status', '')
-    search_query = request.GET.get('search', '')
-    
-    jobs = JobListing.objects.filter(business=request.user)
-    
-    if status_filter:
-        jobs = jobs.filter(status=status_filter)
-    
-    if search_query:
-        jobs = jobs.filter(title__icontains=search_query)
-    
-    jobs = jobs.order_by('-created_at')
-    
-    # Sayfalama
-    paginator = Paginator(jobs, 10)
-    page_number = request.GET.get('page')
-    page_obj = paginator.get_page(page_number)
-    
-    context = {
-        'page_obj': page_obj,
-        'status_filter': status_filter,
-        'search_query': search_query,
-        'status_choices': JobListing.STATUS_CHOICES,
-    }
-    
-    return render(request, 'profiles/my_jobs.html', context)
-
-
-@login_required
-def saved_jobs_view(request):
-    """Kaydedilen iş ilanları"""
-    
-    if request.user.user_type != 'jobseeker':
-        messages.error(request, 'Bu sayfaya erişim yetkiniz yok.')
-        return redirect('profiles:profile')
-    
-    saved_jobs = SavedJob.objects.filter(user=request.user).order_by('-created_at')
-    
-    # Sayfalama
-    paginator = Paginator(saved_jobs, 10)
-    page_number = request.GET.get('page')
-    page_obj = paginator.get_page(page_number)
-    
-    context = {
-        'page_obj': page_obj,
-    }
-    
-    return render(request, 'profiles/saved_jobs.html', context)
-
-
-@login_required
-@require_http_methods(["POST"])
-def save_job_api(request):
-    """İş ilanını kaydet/kaldır API"""
-    
-    if request.user.user_type != 'jobseeker':
-        return JsonResponse({
-            'success': False,
-            'message': 'Bu işlem sadece iş arayanlar için geçerlidir.'
-        })
-    
-    try:
-        data = json.loads(request.body)
-        job_id = data.get('job_id')
-        
-        job = get_object_or_404(JobListing, id=job_id, status='active')
-        
-        saved_job, created = SavedJob.objects.get_or_create(user=request.user, job=job)
-        
-        if created:
-            return JsonResponse({
-                'success': True,
-                'saved': True,
-                'message': 'İlan kaydedildi!'
-            })
-        else:
-            saved_job.delete()
-            return JsonResponse({
-                'success': True,
-                'saved': False,
-                'message': 'İlan kaydetme kaldırıldı!'
-            })
-            
-    except Exception as e:
-        logger.error(f"Save job API error: {str(e)}")
-        return JsonResponse({
-            'success': False,
-            'message': 'Bir hata oluştu.'
-        })
-
-
-@login_required
-@require_http_methods(["POST"])
-def upload_avatar_api(request):
-    """Avatar yükleme API"""
-    
-    try:
-        if 'avatar' not in request.FILES:
-            return JsonResponse({
-                'success': False,
-                'message': 'Dosya seçilmedi.'
-            })
-        
-        avatar_file = request.FILES['avatar']
-        
-        # Dosya boyutu kontrolü (5MB)
-        if avatar_file.size > 5 * 1024 * 1024:
-            return JsonResponse({
-                'success': False,
-                'message': 'Dosya boyutu 5MB\'dan küçük olmalıdır.'
-            })
-        
-        # Dosya tipı kontrolü
-        allowed_types = ['image/jpeg', 'image/png', 'image/gif', 'image/webp']
-        if avatar_file.content_type not in allowed_types:
-            return JsonResponse({
-                'success': False,
-                'message': 'Sadece resim dosyaları yüklenebilir.'
-            })
-        
-        # Profili al veya oluştur
-        if request.user.user_type == 'jobseeker':
-            profile, created = JobSeekerProfile.objects.get_or_create(
-                user=request.user,
-                defaults={'city': 'İstanbul'}
-            )
-            profile.profile_image = avatar_file
-        elif request.user.user_type == 'business':
-            profile, created = BusinessProfile.objects.get_or_create(
-                user=request.user,
-                defaults={
-                    'company_name': f"{request.user.first_name} {request.user.last_name}",
-                    'city': 'İstanbul',
-                    'contact_phone': request.user.phone or "",
-                    'address': 'Belirtilmemiş'
-                }
-            )
-            profile.logo = avatar_file
-        
-        profile.save()
-        
-        return JsonResponse({
-            'success': True,
-            'message': 'Profil fotoğrafı güncellendi!',
-            'avatar_url': profile.profile_image.url if hasattr(profile, 'profile_image') and profile.profile_image else None
-        })
-        
-    except Exception as e:
-        logger.error(f"Avatar upload error: {str(e)}")
-        return JsonResponse({
-            'success': False,
-            'message': 'Dosya yüklenirken hata oluştu.'
-        })
-
-
-@login_required
-def settings_view(request):
-    """Kullanıcı ayarları"""
-    
-    if request.method == 'POST':
+    if user.user_type == 'jobseeker':
         try:
-            # Bildirim ayarları
-            request.user.email_notifications = request.POST.get('email_notifications') == 'on'
-            request.user.sms_notifications = request.POST.get('sms_notifications') == 'on'
-            request.user.marketing_emails = request.POST.get('marketing_emails') == 'on'
-            
-            request.user.save()
-            
-            messages.success(request, 'Ayarlarınız kaydedildi!')
-            
-        except Exception as e:
-            logger.error(f"Settings update error: {str(e)}")
-            messages.error(request, 'Ayarlar kaydedilirken hata oluştu.')
-    
-    return render(request, 'profiles/settings.html')
-
-
-@login_required
-def delete_account_view(request):
-    """Hesap silme"""
-    
-    if request.method == 'POST':
-        password = request.POST.get('password')
-        
-        if request.user.check_password(password):
-            # Hesabı soft delete (is_active = False)
-            request.user.is_active = False
-            request.user.save()
-            
-            messages.success(request, 'Hesabınız başarıyla kapatıldı.')
-            logger.info(f"Account deactivated: {request.user.email}")
-            
-            from django.contrib.auth import logout
-            logout(request)
-            return redirect('home')
-        else:
-            messages.error(request, 'Şifre hatalı.')
-    
-    return render(request, 'profiles/delete_account.html')
-
-
-@login_required
-def export_profile_data(request):
-    """Profil verilerini export et (GDPR uyumluluğu için)"""
-    
-    try:
-        profile_data = {
-            'user_info': {
-                'first_name': request.user.first_name,
-                'last_name': request.user.last_name,
-                'email': request.user.email,
-                'phone': request.user.phone,
-                'user_type': request.user.user_type,
-                'date_joined': request.user.date_joined.isoformat(),
-                'last_login': request.user.last_login.isoformat() if request.user.last_login else None,
-            },
-            'export_date': timezone.now().isoformat(),
-        }
-        
-        # Profil bilgilerini ekle
-        if request.user.user_type == 'jobseeker' and hasattr(request.user, 'jobseeker_profile'):
-            profile = request.user.jobseeker_profile
-            profile_data['jobseeker_profile'] = {
+            profile = user.jobseeker_profile
+            profile_data = {
+                'full_name': profile.full_name,
                 'bio': profile.bio,
                 'city': profile.city,
                 'district': profile.district,
@@ -497,24 +209,202 @@ def export_profile_data(request):
                 'skills': profile.skills,
                 'is_available': profile.is_available,
             }
-        elif request.user.user_type == 'business' and hasattr(request.user, 'business_profile'):
-            profile = request.user.business_profile
-            profile_data['business_profile'] = {
-                'company_name': profile.company_name,
-                'company_description': profile.company_description,
+        except:
+            profile_data = {
+                'full_name': user.get_full_name(),
+                'bio': '',
+                'city': '',
+                'district': '',
+                'experience_years': 0,
+                'skills': '',
+                'is_available': True,
+            }
+    
+    elif user.user_type == 'business':
+        try:
+            profile = user.business_profile
+            profile_data = {
+                'business_name': profile.business_name,
+                'description': profile.description,
                 'city': profile.city,
                 'district': profile.district,
                 'address': profile.address,
+                'phone': profile.phone,
                 'website': profile.website,
+                'contact_person': profile.contact_person,
             }
+        except:
+            profile_data = {
+                'business_name': '',
+                'description': '',
+                'city': '',
+                'district': '',
+                'address': '',
+                'phone': '',
+                'website': '',
+                'contact_person': '',
+            }
+    
+    context = {
+        'user': user,
+        'profile_data': profile_data,
+    }
+    
+    return render(request, 'profiles/edit.html', context)
+
+
+@login_required
+def my_applications_view(request):
+    """Başvurularım sayfası - sadece iş arayanlar"""
+    if request.user.user_type != 'jobseeker':
+        messages.error(request, 'Bu sayfaya erişim yetkiniz yok.')
+        return redirect('profiles:profile')
+    
+    applications = JobApplication.objects.filter(
+        applicant=request.user
+    ).select_related('job', 'job__business').order_by('-created_at')
+    
+    context = {
+        'applications': applications,
+    }
+    
+    return render(request, 'profiles/applications.html', context)
+
+
+@login_required
+def saved_jobs_view(request):
+    """Kayıtlı ilanlar sayfası - sadece iş arayanlar"""
+    if request.user.user_type != 'jobseeker':
+        messages.error(request, 'Bu sayfaya erişim yetkiniz yok.')
+        return redirect('profiles:profile')
+    
+    saved_jobs = SavedJob.objects.filter(
+        user=request.user
+    ).select_related('job', 'job__business').order_by('-created_at')
+    
+    context = {
+        'saved_jobs': saved_jobs,
+    }
+    
+    return render(request, 'profiles/saved_jobs.html', context)
+
+
+@login_required
+def my_jobs_view(request):
+    """İlanlarım sayfası - sadece iş verenler"""
+    if request.user.user_type != 'business':
+        messages.error(request, 'Bu sayfaya erişim yetkiniz yok.')
+        return redirect('profiles:profile')
+    
+    jobs = JobListing.objects.filter(
+        business=request.user
+    ).order_by('-created_at')
+    
+    context = {
+        'jobs': jobs,
+    }
+    
+    return render(request, 'profiles/my_jobs.html', context)
+
+
+@login_required
+def settings_view(request):
+    """Ayarlar sayfası"""
+    if request.method == 'POST':
+        try:
+            user = request.user
+            user.email_notifications = request.POST.get('email_notifications') == 'on'
+            user.sms_notifications = request.POST.get('sms_notifications') == 'on'
+            user.marketing_emails = request.POST.get('marketing_emails') == 'on'
+            user.save()
+            
+            messages.success(request, 'Ayarlarınız başarıyla güncellendi!')
+            
+        except Exception as e:
+            messages.error(request, f'Ayarlar güncellenirken hata oluştu: {str(e)}')
+    
+    return render(request, 'profiles/settings.html')
+
+
+@login_required
+def delete_account_view(request):
+    """Hesap silme sayfası"""
+    if request.method == 'POST':
+        password = request.POST.get('password')
+        confirm = request.POST.get('confirm_delete')
         
-        response = JsonResponse(profile_data, json_dumps_params={'indent': 2})
-        response['Content-Disposition'] = f'attachment; filename="profile_data_{request.user.id}.json"'
+        if confirm != 'HESABIMI SIL':
+            messages.error(request, 'Onay metni yanlış yazıldı.')
+            return render(request, 'profiles/delete_account.html')
         
-        return response
+        if not request.user.check_password(password):
+            messages.error(request, 'Şifre yanlış.')
+            return render(request, 'profiles/delete_account.html')
         
+        # Hesabı sil
+        request.user.delete()
+        messages.success(request, 'Hesabınız başarıyla silindi.')
+        return redirect('home')
+    
+    return render(request, 'profiles/delete_account.html')
+
+
+# API Views
+@login_required
+@require_http_methods(["POST"])
+def save_job_api(request):
+    """İş ilanı kaydetme/kaldırma API"""
+    try:
+        data = json.loads(request.body)
+        job_id = data.get('job_id')
+        
+        if not job_id:
+            return JsonResponse({'success': False, 'message': 'İş ilanı ID gerekli'})
+        
+        job = get_object_or_404(JobListing, id=job_id)
+        saved_job, created = SavedJob.objects.get_or_create(
+            user=request.user,
+            job=job
+        )
+        
+        if not created:
+            # Zaten kayıtlı, kaldır
+            saved_job.delete()
+            return JsonResponse({
+                'success': True,
+                'action': 'removed',
+                'message': 'İlan kaydedilenlerden kaldırıldı'
+            })
+        else:
+            # Yeni kayıt
+            return JsonResponse({
+                'success': True,
+                'action': 'saved',
+                'message': 'İlan başarıyla kaydedildi'
+            })
+            
     except Exception as e:
-        logger.error(f"Export profile data error: {str(e)}")
-        messages.error(request, 'Veri export edilirken hata oluştu.')
-        return redirect('profiles:settings')
-        
+        return JsonResponse({
+            'success': False,
+            'message': f'Hata oluştu: {str(e)}'
+        })
+
+
+@login_required
+@require_http_methods(["POST"])
+def upload_avatar_api(request):
+    """Avatar yükleme API - gelecekte kullanılmak üzere"""
+    return JsonResponse({
+        'success': False,
+        'message': 'Avatar yükleme özelliği yakında eklenecek'
+    })
+
+
+@login_required
+def export_profile_data(request):
+    """Profil verilerini export etme - gelecekte kullanılmak üzere"""
+    return JsonResponse({
+        'success': False,
+        'message': 'Veri export özelliği yakında eklenecek'
+    })
+    
