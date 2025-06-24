@@ -1,0 +1,965 @@
+{% extends 'base.html' %}
+
+{% block title %}Profil Düzenle - Kuaför İlan{% endblock %}
+
+{% block extra_css %}
+<style>
+    .edit-container {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 24px 20px;
+    }
+
+    .edit-header {
+        background: var(--white);
+        border-radius: var(--border-radius);
+        padding: 24px;
+        margin-bottom: 24px;
+        box-shadow: var(--shadow-sm);
+        border: 1px solid var(--border-color);
+    }
+
+    .edit-title {
+        font-size: 28px;
+        font-weight: 700;
+        color: var(--text-color);
+        margin-bottom: 8px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .edit-subtitle {
+        color: var(--text-muted);
+        font-size: 16px;
+    }
+
+    .edit-form {
+        background: var(--white);
+        border-radius: var(--border-radius);
+        padding: 32px;
+        box-shadow: var(--shadow-sm);
+        border: 1px solid var(--border-color);
+    }
+
+    .form-section {
+        margin-bottom: 40px;
+        padding-bottom: 32px;
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    .form-section:last-child {
+        margin-bottom: 0;
+        padding-bottom: 0;
+        border-bottom: none;
+    }
+
+    .section-title {
+        font-size: 20px;
+        font-weight: 700;
+        color: var(--text-color);
+        margin-bottom: 16px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .section-description {
+        color: var(--text-muted);
+        font-size: 14px;
+        margin-bottom: 24px;
+        line-height: 1.5;
+    }
+
+    .form-row {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 20px;
+        margin-bottom: 20px;
+    }
+
+    .form-row.single {
+        grid-template-columns: 1fr;
+    }
+
+    .form-group {
+        margin-bottom: 20px;
+    }
+
+    .form-label {
+        display: block;
+        font-weight: 600;
+        color: var(--text-color);
+        margin-bottom: 8px;
+        font-size: 14px;
+    }
+
+    .form-label.required::after {
+        content: " *";
+        color: var(--danger-color);
+    }
+
+    .form-control {
+        width: 100%;
+        padding: 12px 16px;
+        border: 2px solid var(--border-color);
+        border-radius: 8px;
+        font-size: 16px;
+        transition: var(--transition);
+        background: var(--white);
+        font-family: inherit;
+    }
+
+    .form-control:focus {
+        outline: none;
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 3px rgba(10, 102, 194, 0.1);
+    }
+
+    .form-control.is-invalid {
+        border-color: var(--danger-color);
+        box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.1);
+    }
+
+    .form-textarea {
+        min-height: 120px;
+        resize: vertical;
+        font-family: inherit;
+    }
+
+    .form-select {
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+        background-position: right 12px center;
+        background-repeat: no-repeat;
+        background-size: 16px 12px;
+        padding-right: 40px;
+        appearance: none;
+    }
+
+    .form-check {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 16px;
+        background: #f8fafc;
+        border-radius: 8px;
+        border: 1px solid var(--border-color);
+        cursor: pointer;
+        transition: var(--transition);
+    }
+
+    .form-check:hover {
+        background: #f0f9ff;
+        border-color: var(--primary-color);
+    }
+
+    .form-check input[type="checkbox"] {
+        width: 18px;
+        height: 18px;
+        margin: 0;
+        cursor: pointer;
+    }
+
+    .form-check-label {
+        flex: 1;
+        cursor: pointer;
+        font-weight: 500;
+        color: var(--text-color);
+    }
+
+    .form-check-description {
+        font-size: 13px;
+        color: var(--text-muted);
+        margin-top: 4px;
+    }
+
+    .form-help {
+        font-size: 13px;
+        color: var(--text-muted);
+        margin-top: 6px;
+        line-height: 1.4;
+    }
+
+    .invalid-feedback {
+        display: block;
+        font-size: 14px;
+        color: var(--danger-color);
+        margin-top: 6px;
+    }
+
+    /* Avatar Upload */
+    .avatar-upload {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        margin-bottom: 24px;
+    }
+
+    .current-avatar {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        background: var(--gradient-primary);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--white);
+        font-size: 32px;
+        font-weight: 700;
+        flex-shrink: 0;
+        border: 4px solid var(--border-color);
+    }
+
+    .avatar-actions {
+        flex: 1;
+    }
+
+    .file-upload {
+        position: relative;
+        display: inline-block;
+        cursor: pointer;
+    }
+
+    .file-upload input[type="file"] {
+        position: absolute;
+        left: -9999px;
+    }
+
+    .file-upload-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 16px;
+        background: var(--primary-color);
+        color: var(--white);
+        border-radius: 6px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: var(--transition);
+        border: none;
+        text-decoration: none;
+    }
+
+    .file-upload-btn:hover {
+        background: var(--primary-dark);
+        color: var(--white);
+    }
+
+    /* Skills Input */
+    .skills-input-container {
+        position: relative;
+    }
+
+    .skills-tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-bottom: 12px;
+        min-height: 40px;
+        padding: 8px;
+        border: 2px solid var(--border-color);
+        border-radius: 8px;
+        background: var(--white);
+        cursor: text;
+        transition: var(--transition);
+    }
+
+    .skills-tags:focus-within {
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 3px rgba(10, 102, 194, 0.1);
+    }
+
+    .skill-tag-edit {
+        background: var(--primary-color);
+        color: var(--white);
+        padding: 4px 12px;
+        border-radius: 16px;
+        font-size: 14px;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .skill-remove {
+        background: none;
+        border: none;
+        color: rgba(255, 255, 255, 0.8);
+        cursor: pointer;
+        padding: 2px;
+        border-radius: 50%;
+        width: 16px;
+        height: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 12px;
+    }
+
+    .skill-remove:hover {
+        background: rgba(255, 255, 255, 0.2);
+        color: white;
+    }
+
+    .skill-input {
+        border: none;
+        outline: none;
+        background: transparent;
+        flex: 1;
+        min-width: 120px;
+        padding: 4px 8px;
+        font-size: 14px;
+    }
+
+    /* Action Buttons */
+    .form-actions {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 16px;
+        margin-top: 32px;
+        padding-top: 24px;
+        border-top: 1px solid var(--border-color);
+    }
+
+    .btn-group {
+        display: flex;
+        gap: 12px;
+    }
+
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        padding: 12px 24px;
+        border: 2px solid transparent;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 16px;
+        text-decoration: none;
+        cursor: pointer;
+        transition: var(--transition);
+        user-select: none;
+        line-height: 1;
+        min-height: 44px;
+    }
+
+    .btn-primary {
+        background: var(--gradient-primary);
+        color: var(--white);
+        border-color: var(--primary-color);
+    }
+
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-md);
+        color: var(--white);
+    }
+
+    .btn-secondary {
+        background: var(--white);
+        color: var(--text-color);
+        border-color: var(--border-color);
+    }
+
+    .btn-secondary:hover {
+        background: #f8fafc;
+        border-color: var(--text-muted);
+        color: var(--text-color);
+    }
+
+    .btn-danger {
+        background: var(--danger-color);
+        color: var(--white);
+        border-color: var(--danger-color);
+    }
+
+    .btn-danger:hover {
+        background: #b91c1c;
+        border-color: #b91c1c;
+        color: var(--white);
+    }
+
+    /* Progress Indicator */
+    .form-progress {
+        background: #f8fafc;
+        border-radius: 8px;
+        padding: 16px;
+        margin-bottom: 24px;
+        border: 1px solid var(--border-color);
+    }
+
+    .progress-title {
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--text-color);
+        margin-bottom: 8px;
+    }
+
+    .progress-bar {
+        width: 100%;
+        height: 8px;
+        background: #e2e8f0;
+        border-radius: 4px;
+        overflow: hidden;
+    }
+
+    .progress-fill {
+        height: 100%;
+        background: var(--gradient-primary);
+        border-radius: 4px;
+        transition: width 0.3s ease;
+    }
+
+    .progress-text {
+        font-size: 13px;
+        color: var(--text-muted);
+        margin-top: 6px;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .edit-container {
+            padding: 16px;
+        }
+        
+        .edit-header,
+        .edit-form {
+            padding: 20px;
+        }
+        
+        .form-row {
+            grid-template-columns: 1fr;
+            gap: 16px;
+        }
+        
+        .avatar-upload {
+            flex-direction: column;
+            text-align: center;
+        }
+        
+        .form-actions {
+            flex-direction: column;
+            gap: 12px;
+        }
+        
+        .btn-group {
+            width: 100%;
+            justify-content: center;
+        }
+        
+        .btn {
+            flex: 1;
+            justify-content: center;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="edit-container">
+    <!-- Header -->
+    <div class="edit-header">
+        <h1 class="edit-title">
+            <i class="fas fa-user-edit"></i>
+            Profil Düzenle
+        </h1>
+        <p class="edit-subtitle">
+            {% if user.user_type == 'business' %}
+                Şirket bilgilerinizi güncelleyin ve daha fazla adayla buluşun.
+            {% else %}
+                Profilinizi güncelleyin ve daha fazla iş fırsatına erişin.
+            {% endif %}
+        </p>
+    </div>
+
+    <!-- Progress Indicator -->
+    <div class="form-progress">
+        <div class="progress-title">Profil Tamamlanma Oranı</div>
+        <div class="progress-bar">
+            <div class="progress-fill" id="progressFill" style="width: 0%;"></div>
+        </div>
+        <div class="progress-text" id="progressText">Bilgilerinizi doldurun</div>
+    </div>
+
+    <!-- Form -->
+    <form method="post" class="edit-form" id="profileForm">
+        {% csrf_token %}
+        
+        <!-- Profile Picture Section -->
+        <div class="form-section">
+            <h2 class="section-title">
+                <i class="fas fa-camera"></i>
+                Profil Fotoğrafı
+            </h2>
+            <p class="section-description">
+                Profil fotoğrafınız size daha fazla güven verir ve fark edilmenizi sağlar.
+            </p>
+            
+            <div class="avatar-upload">
+                <div class="current-avatar">
+                    {% if user.user_type == 'business' and profile_data.business_name %}
+                        {{ profile_data.business_name|first|upper }}
+                    {% else %}
+                        {{ user.first_name|first|upper|default:'U' }}
+                    {% endif %}
+                </div>
+                <div class="avatar-actions">
+                    <div class="file-upload">
+                        <input type="file" id="avatar" name="avatar" accept="image/*">
+                        <label for="avatar" class="file-upload-btn">
+                            <i class="fas fa-upload"></i>
+                            Fotoğraf Yükle
+                        </label>
+                    </div>
+                    <div class="form-help">
+                        JPG, PNG veya GIF formatında, maksimum 5MB
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Basic Information -->
+        <div class="form-section">
+            <h2 class="section-title">
+                <i class="fas fa-user"></i>
+                Temel Bilgiler
+            </h2>
+            <p class="section-description">
+                Size ulaşabilmemiz için gerekli temel bilgilerinizi girin.
+            </p>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="first_name" class="form-label required">Ad</label>
+                    <input type="text" id="first_name" name="first_name" class="form-control" 
+                           value="{{ user.first_name }}" required>
+                </div>
+                <div class="form-group">
+                    <label for="last_name" class="form-label required">Soyad</label>
+                    <input type="text" id="last_name" name="last_name" class="form-control" 
+                           value="{{ user.last_name }}" required>
+                </div>
+            </div>
+
+            {% if user.user_type == 'business' %}
+                <div class="form-group">
+                    <label for="business_name" class="form-label required">Şirket/İşletme Adı</label>
+                    <input type="text" id="business_name" name="business_name" class="form-control" 
+                           value="{{ profile_data.business_name }}" required>
+                    <div class="form-help">Müşterilerinizin sizi bulabilmesi için işletme adınızı girin</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="contact_person" class="form-label">İletişim Kişisi</label>
+                    <input type="text" id="contact_person" name="contact_person" class="form-control" 
+                           value="{{ profile_data.contact_person }}">
+                    <div class="form-help">İşletmede sorumlu kişi adı (isteğe bağlı)</div>
+                </div>
+            {% else %}
+                <div class="form-group">
+                    <label for="full_name" class="form-label">Görüntülenecek Ad</label>
+                    <input type="text" id="full_name" name="full_name" class="form-control" 
+                           value="{{ profile_data.full_name }}">
+                    <div class="form-help">Profilinizde görünecek isim (boş bırakılırsa ad soyad kullanılır)</div>
+                </div>
+            {% endif %}
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="city" class="form-label required">Şehir</label>
+                    <select id="city" name="city" class="form-control form-select" required>
+                        <option value="">Şehir seçin</option>
+                        <option value="İstanbul" {% if profile_data.city == 'İstanbul' %}selected{% endif %}>İstanbul</option>
+                        <option value="Ankara" {% if profile_data.city == 'Ankara' %}selected{% endif %}>Ankara</option>
+                        <option value="İzmir" {% if profile_data.city == 'İzmir' %}selected{% endif %}>İzmir</option>
+                        <option value="Bursa" {% if profile_data.city == 'Bursa' %}selected{% endif %}>Bursa</option>
+                        <option value="Antalya" {% if profile_data.city == 'Antalya' %}selected{% endif %}>Antalya</option>
+                        <option value="Adana" {% if profile_data.city == 'Adana' %}selected{% endif %}>Adana</option>
+                        <option value="Konya" {% if profile_data.city == 'Konya' %}selected{% endif %}>Konya</option>
+                        <option value="Gaziantep" {% if profile_data.city == 'Gaziantep' %}selected{% endif %}>Gaziantep</option>
+                        <option value="Diğer" {% if profile_data.city not in 'İstanbul,Ankara,İzmir,Bursa,Antalya,Adana,Konya,Gaziantep' and profile_data.city %}selected{% endif %}>Diğer</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="district" class="form-label">İlçe</label>
+                    <input type="text" id="district" name="district" class="form-control" 
+                           value="{{ profile_data.district }}" placeholder="İlçe adı">
+                </div>
+            </div>
+
+            {% if user.user_type == 'business' %}
+                <div class="form-group">
+                    <label for="address" class="form-label required">Adres</label>
+                    <textarea id="address" name="address" class="form-control form-textarea" 
+                              required>{{ profile_data.address }}</textarea>
+                    <div class="form-help">Müşterilerin sizi bulabilmesi için detaylı adres bilgisi</div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="phone" class="form-label">Telefon</label>
+                        <input type="tel" id="phone" name="phone" class="form-control" 
+                               value="{{ profile_data.phone }}" placeholder="+90 555 123 45 67">
+                    </div>
+                    <div class="form-group">
+                        <label for="website" class="form-label">Website</label>
+                        <input type="url" id="website" name="website" class="form-control" 
+                               value="{{ profile_data.website }}" placeholder="https://www.example.com">
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- About Section -->
+        <div class="form-section">
+            <h2 class="section-title">
+                <i class="fas fa-info-circle"></i>
+                {% if user.user_type == 'business' %}Şirket Hakkında{% else %}Hakkımda{% endif %}
+            </h2>
+            <p class="section-description">
+                {% if user.user_type == 'business' %}
+                    Şirketinizi tanıtın, sunduğunuz hizmetleri ve çalışma anlayışınızı açıklayın.
+                {% else %}
+                    Kendinizi tanıtın, deneyimlerinizi ve hedeflerinizi paylaşın.
+                {% endif %}
+            </p>
+
+            <div class="form-group">
+                <label for="bio" class="form-label">
+                    {% if user.user_type == 'business' %}Şirket Açıklaması{% else %}Hakkımda{% endif %}
+                </label>
+                <textarea id="bio" name="bio" class="form-control form-textarea" 
+                          rows="5">{{ profile_data.bio|default:profile_data.description }}</textarea>
+                <div class="form-help">
+                    {% if user.user_type == 'business' %}
+                        Şirketinizin hikayesi, misyonu ve çalışanlardan beklentileriniz
+                    {% else %}
+                        Deneyimleriniz, uzmanlık alanlarınız ve kariyer hedefleriniz
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Professional Information (Job Seekers) -->
+        {% if user.user_type == 'jobseeker' %}
+        <div class="form-section">
+            <h2 class="section-title">
+                <i class="fas fa-briefcase"></i>
+                Profesyonel Bilgiler
+            </h2>
+            <p class="section-description">
+                İş deneyiminiz ve yetenekleriniz işverenlerin sizi bulmasına yardımcı olur.
+            </p>
+
+            <div class="form-group">
+                <label for="experience_years" class="form-label">Deneyim Süresi</label>
+                <select id="experience_years" name="experience_years" class="form-control form-select">
+                    <option value="0" {% if profile_data.experience_years == 0 %}selected{% endif %}>Yeni başlayan</option>
+                    <option value="1" {% if profile_data.experience_years == 1 %}selected{% endif %}>1 yıl</option>
+                    <option value="2" {% if profile_data.experience_years == 2 %}selected{% endif %}>2 yıl</option>
+                    <option value="3" {% if profile_data.experience_years == 3 %}selected{% endif %}>3 yıl</option>
+                    <option value="4" {% if profile_data.experience_years == 4 %}selected{% endif %}>4 yıl</option>
+                    <option value="5" {% if profile_data.experience_years == 5 %}selected{% endif %}>5 yıl</option>
+                    <option value="6" {% if profile_data.experience_years == 6 %}selected{% endif %}>6-10 yıl</option>
+                    <option value="10" {% if profile_data.experience_years >= 10 %}selected{% endif %}>10+ yıl</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="skills" class="form-label">Yetenekler</label>
+                <div class="skills-input-container">
+                    <div class="skills-tags" id="skillsTags">
+                        <input type="text" class="skill-input" id="skillInput" placeholder="Yetenek ekleyin ve Enter'a basın...">
+                    </div>
+                    <input type="hidden" name="skills" id="skillsHidden" value="{{ profile_data.skills }}">
+                </div>
+                <div class="form-help">
+                    Saç kesimi, boyama, makyaj, nail art gibi yeteneklerinizi ekleyin
+                </div>
+            </div>
+
+            <div class="form-check">
+                <input type="checkbox" id="is_available" name="is_available" 
+                       {% if profile_data.is_available %}checked{% endif %}>
+                <label for="is_available" class="form-check-label">
+                    Şu anda iş arıyorum
+                    <div class="form-check-description">
+                        Bu seçenek açık olduğunda profiliniz işverenler tarafından görülebilir
+                    </div>
+                </label>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Form Actions -->
+        <div class="form-actions">
+            <a href="{% url 'profiles:profile' %}" class="btn btn-secondary">
+                <i class="fas fa-times"></i>
+                İptal
+            </a>
+            
+            <div class="btn-group">
+                <button type="button" class="btn btn-secondary" onclick="resetForm()">
+                    <i class="fas fa-undo"></i>
+                    Sıfırla
+                </button>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save"></i>
+                    Kaydet
+                </button>
+            </div>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Skills management
+    let skills = [];
+    
+    // Initialize skills from existing data
+    document.addEventListener('DOMContentLoaded', function() {
+        const existingSkills = document.getElementById('skillsHidden').value;
+        if (existingSkills) {
+            skills = existingSkills.split(',').map(skill => skill.trim()).filter(skill => skill);
+            updateSkillsDisplay();
+        }
+        
+        calculateProgress();
+        
+        // Setup skills input
+        const skillInput = document.getElementById('skillInput');
+        skillInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                addSkill(this.value.trim());
+                this.value = '';
+            }
+        });
+        
+        // Setup form validation
+        setupFormValidation();
+    });
+    
+    function addSkill(skillText) {
+        if (skillText && !skills.includes(skillText) && skills.length < 10) {
+            skills.push(skillText);
+            updateSkillsDisplay();
+            updateSkillsHidden();
+            calculateProgress();
+        }
+    }
+    
+    function removeSkill(skillText) {
+        skills = skills.filter(skill => skill !== skillText);
+        updateSkillsDisplay();
+        updateSkillsHidden();
+        calculateProgress();
+    }
+    
+    function updateSkillsDisplay() {
+        const skillsTags = document.getElementById('skillsTags');
+        const skillInput = document.getElementById('skillInput');
+        
+        // Clear existing tags except input
+        const existingTags = skillsTags.querySelectorAll('.skill-tag-edit');
+        existingTags.forEach(tag => tag.remove());
+        
+        // Add skill tags
+        skills.forEach(skill => {
+            const tag = document.createElement('div');
+            tag.className = 'skill-tag-edit';
+            tag.innerHTML = `
+                ${skill}
+                <button type="button" class="skill-remove" onclick="removeSkill('${skill}')">
+                    <i class="fas fa-times"></i>
+                </button>
+            `;
+            skillsTags.insertBefore(tag, skillInput);
+        });
+    }
+    
+    function updateSkillsHidden() {
+        document.getElementById('skillsHidden').value = skills.join(', ');
+    }
+    
+    // Progress calculation
+    function calculateProgress() {
+        const form = document.getElementById('profileForm');
+        const requiredFields = form.querySelectorAll('input[required], select[required], textarea[required]');
+        const totalFields = requiredFields.length + (skills.length > 0 ? 1 : 0) + 1; // +1 for bio, +1 for skills
+        let filledFields = 0;
+        
+        requiredFields.forEach(field => {
+            if (field.value.trim()) {
+                filledFields++;
+            }
+        });
+        
+        // Check bio
+        const bio = document.getElementById('bio');
+        if (bio && bio.value.trim()) {
+            filledFields++;
+        }
+        
+        // Check skills (for job seekers)
+        if (skills.length > 0) {
+            filledFields++;
+        }
+        
+        const progress = Math.round((filledFields / totalFields) * 100);
+        
+        document.getElementById('progressFill').style.width = `${progress}%`;
+        document.getElementById('progressText').textContent = `${progress}% tamamlandı (${filledFields}/${totalFields} alan)`;
+    }
+    
+    // Form validation
+    function setupFormValidation() {
+        const form = document.getElementById('profileForm');
+        const inputs = form.querySelectorAll('input, select, textarea');
+        
+        inputs.forEach(input => {
+            input.addEventListener('input', function() {
+                validateField(this);
+                calculateProgress();
+            });
+            
+            input.addEventListener('blur', function() {
+                validateField(this);
+            });
+        });
+    }
+    
+    function validateField(field) {
+        const value = field.value.trim();
+        const isRequired = field.hasAttribute('required');
+        
+        if (isRequired && !value) {
+            field.classList.add('is-invalid');
+            showFieldError(field, 'Bu alan gereklidir');
+        } else {
+            field.classList.remove('is-invalid');
+            hideFieldError(field);
+        }
+        
+        // Specific validations
+        if (field.type === 'email' && value) {
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(value)) {
+                field.classList.add('is-invalid');
+                showFieldError(field, 'Geçerli bir e-posta adresi girin');
+            }
+        }
+        
+        if (field.type === 'tel' && value) {
+            const phoneRegex = /^[\+]?[0-9\s\-\(\)]+$/;
+            if (!phoneRegex.test(value)) {
+                field.classList.add('is-invalid');
+                showFieldError(field, 'Geçerli bir telefon numarası girin');
+            }
+        }
+        
+        if (field.type === 'url' && value) {
+            const urlRegex = /^https?:\/\/.+/;
+            if (!urlRegex.test(value)) {
+                field.classList.add('is-invalid');
+                showFieldError(field, 'http:// veya https:// ile başlayan bir URL girin');
+            }
+        }
+    }
+    
+    function showFieldError(field, message) {
+        hideFieldError(field); // Remove existing error
+        
+        const error = document.createElement('div');
+        error.className = 'invalid-feedback';
+        error.textContent = message;
+        
+        field.parentNode.appendChild(error);
+    }
+    
+    function hideFieldError(field) {
+        const existingError = field.parentNode.querySelector('.invalid-feedback');
+        if (existingError) {
+            existingError.remove();
+        }
+    }
+    
+    // Form submission
+    document.getElementById('profileForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        // Validate all fields
+        const inputs = this.querySelectorAll('input[required], select[required], textarea[required]');
+        let isValid = true;
+        
+        inputs.forEach(input => {
+            validateField(input);
+            if (input.classList.contains('is-invalid')) {
+                isValid = false;
+            }
+        });
+        
+        if (!isValid) {
+            App.showToast('Lütfen gerekli alanları doldurun', 'danger');
+            return;
+        }
+        
+        // Show loading
+        const submitBtn = this.querySelector('button[type="submit"]');
+        const originalText = submitBtn.innerHTML;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Kaydediliyor...';
+        submitBtn.disabled = true;
+        
+        // Submit form
+        this.submit();
+    });
+    
+    // Reset form
+    function resetForm() {
+        if (confirm('Tüm değişiklikler kaybolacak. Emin misiniz?')) {
+            document.getElementById('profileForm').reset();
+            skills = [];
+            updateSkillsDisplay();
+            updateSkillsHidden();
+            calculateProgress();
+            
+            // Remove validation classes
+            const invalidFields = document.querySelectorAll('.is-invalid');
+            invalidFields.forEach(field => {
+                field.classList.remove('is-invalid');
+            });
+            
+            // Remove error messages
+            const errors = document.querySelectorAll('.invalid-feedback');
+            errors.forEach(error => error.remove());
+        }
+    }
+    
+    // Avatar preview
+    document.getElementById('avatar').addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (file) {
+            if (file.size > 5 * 1024 * 1024) { // 5MB
+                App.showToast('Dosya boyutu 5MB\'dan küçük olmalıdır', 'danger');
+                this.value = '';
+                return;
+            }
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const avatar = document.querySelector('.current-avatar');
+                avatar.style.backgroundImage = `url(${e.target.result})`;
+                avatar.style.backgroundSize = 'cover';
+                avatar.style.backgroundPosition = 'center';
+                avatar.textContent = '';
+            };
+            reader.readAsDataURL(file);
+        }
+    });
+</script>
+{% endblock %}
