@@ -1,22 +1,15 @@
-# apps/posts/views.py
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import get_user_model
 from django.http import JsonResponse
 from django.views.decorators.http import require_http_methods
-from django.views.decorators.csrf import csrf_exempt
 from django.core.paginator import Paginator
-from django.db.models import Q, F
-from django.utils import timezone
+from django.db.models import Q
 from django.contrib import messages
 import json
 import logging
 
-from .models import (
-    Post, PostCategory, PostLike, PostComment, PostCommentLike,
-    PostSave, PostShare, PostView, Poll, PollOption, PollVote,
-    Event, EventParticipant
-)
+from .models import Post, PostCategory, PostLike, PostComment, PostSave
 
 User = get_user_model()
 logger = logging.getLogger(__name__)
@@ -34,11 +27,7 @@ def posts_list_view(request):
         is_published=True,
         is_approved=True,
         is_deleted=False
-    ).select_related(
-        'author', 'category'
-    ).prefetch_related(
-        'likes', 'comments', 'poll', 'event'
-    )
+    ).select_related('author', 'category')
     
     # Apply filters
     if category_slug:
@@ -74,31 +63,6 @@ def posts_list_view(request):
             'tags_list': post.get_tags_list(),
             'can_edit': request.user == post.author if request.user.is_authenticated else False,
         }
-        
-        # Add poll data if exists
-        if hasattr(post, 'poll'):
-            poll = post.poll
-            post_data['poll'] = {
-                'question': poll.question,
-                'options': poll.options.all(),
-                'total_votes': poll.total_votes,
-                'can_vote': poll.can_vote(request.user) if request.user.is_authenticated else False,
-                'is_expired': poll.is_expired(),
-            }
-        
-        # Add event data if exists
-        if hasattr(post, 'event'):
-            event = post.event
-            post_data['event'] = {
-                'title': event.title,
-                'start_date': event.start_date,
-                'location_name': event.location_name,
-                'is_online': event.is_online,
-                'participants_count': event.participants_count,
-                'is_past': event.is_past(),
-                'is_full': event.is_full(),
-            }
-        
         processed_posts.append(post_data)
     
     context = {
@@ -128,6 +92,11 @@ def post_create_view(request):
             visibility = request.POST.get('visibility', 'public')
             
             if not content:
+                if request.headers.get('Accept') == 'application/json':
+                    return JsonResponse({
+                        'success': False,
+                        'message': 'İçerik boş olamaz.'
+                    })
                 messages.error(request, 'İçerik boş olamaz.')
                 return redirect('home')
             
@@ -152,51 +121,6 @@ def post_create_view(request):
                 post.video = request.FILES['video']
                 post.save()
             
-            # Handle link sharing
-            if post_type == 'link':
-                post.link_url = request.POST.get('link_url', '')
-                post.link_title = request.POST.get('link_title', '')
-                post.link_description = request.POST.get('link_description', '')
-                post.save()
-            
-            # Handle poll creation
-            if post_type == 'poll':
-                poll_question = request.POST.get('poll_question', '')
-                poll_options = request.POST.getlist('poll_options[]')
-                multiple_choice = request.POST.get('multiple_choice') == 'on'
-                
-                if poll_question and len(poll_options) >= 2:
-                    poll = Poll.objects.create(
-                        post=post,
-                        question=poll_question,
-                        multiple_choice=multiple_choice
-                    )
-                    
-                    for option_text in poll_options:
-                        if option_text.strip():
-                            PollOption.objects.create(
-                                poll=poll,
-                                text=option_text.strip()
-                            )
-            
-            # Handle event creation
-            if post_type == 'event':
-                event_title = request.POST.get('event_title', '')
-                event_description = request.POST.get('event_description', '')
-                start_date = request.POST.get('start_date')
-                location_name = request.POST.get('location_name', '')
-                is_online = request.POST.get('is_online') == 'on'
-                
-                if event_title and start_date:
-                    Event.objects.create(
-                        post=post,
-                        title=event_title,
-                        description=event_description,
-                        start_date=start_date,
-                        location_name=location_name,
-                        is_online=is_online
-                    )
-            
             messages.success(request, 'Gönderiniz başarıyla paylaşıldı!')
             logger.info(f"New post created by {request.user.email}: {post.id}")
             
@@ -211,7 +135,6 @@ def post_create_view(request):
             
         except Exception as e:
             logger.error(f"Post creation error: {str(e)}")
-            messages.error(request, 'Gönderi oluşturulurken hata oluştu.')
             
             if request.headers.get('Accept') == 'application/json':
                 return JsonResponse({
@@ -219,6 +142,7 @@ def post_create_view(request):
                     'message': 'Gönderi oluşturulamadı'
                 })
             
+            messages.error(request, 'Gönderi oluşturulurken hata oluştu.')
             return redirect('home')
     
     # GET request - show form
@@ -236,22 +160,11 @@ def post_detail_view(request, pk):
         is_deleted=False
     )
     
-    # Track view
-    if request.user != post.author:
-        PostView.objects.get_or_create(
-            post=post,
-            user=request.user if request.user.is_authenticated else None,
-            ip_address=request.META.get('REMOTE_ADDR', ''),
-            defaults={
-                'user_agent': request.META.get('HTTP_USER_AGENT', '')
-            }
-        )
-    
     # Get comments
     comments = post.comments.filter(
         is_deleted=False,
         parent=None
-    ).select_related('author').prefetch_related('replies')
+    ).select_related('author')
     
     context = {
         'post': post,
@@ -387,22 +300,12 @@ def post_share_api(request):
     try:
         data = json.loads(request.body)
         post_id = data.get('post_id')
-        shared_to = data.get('shared_to', 'timeline')
-        note = data.get('note', '')
         
         post = get_object_or_404(Post, pk=post_id)
         
-        PostShare.objects.create(
-            post=post,
-            user=request.user,
-            shared_to=shared_to,
-            note=note
-        )
-        
         return JsonResponse({
             'success': True,
-            'message': 'Gönderi başarıyla paylaşıldı',
-            'shares_count': post.shares_count
+            'message': 'Gönderi başarıyla paylaşıldı'
         })
         
     except Exception as e:
@@ -410,41 +313,6 @@ def post_share_api(request):
         return JsonResponse({
             'success': False,
             'message': 'Paylaşım başarısız'
-        })
-
-
-@require_http_methods(["POST"])
-def post_view_api(request):
-    """Post görüntülenme API"""
-    try:
-        data = json.loads(request.body)
-        post_id = data.get('post_id')
-        
-        post = get_object_or_404(Post, pk=post_id)
-        
-        # Don't track author's own views
-        if request.user.is_authenticated and request.user == post.author:
-            return JsonResponse({'success': True})
-        
-        PostView.objects.get_or_create(
-            post=post,
-            user=request.user if request.user.is_authenticated else None,
-            ip_address=request.META.get('REMOTE_ADDR', ''),
-            defaults={
-                'user_agent': request.META.get('HTTP_USER_AGENT', '')
-            }
-        )
-        
-        return JsonResponse({
-            'success': True,
-            'views_count': post.views_count
-        })
-        
-    except Exception as e:
-        logger.error(f"Post view error: {str(e)}")
-        return JsonResponse({
-            'success': False,
-            'message': 'Görüntülenme kaydedilemedi'
         })
 
 
@@ -468,23 +336,7 @@ def comments_api(request):
             },
             'created_at': comment.created_at.isoformat(),
             'likes_count': comment.likes_count,
-            'replies': []
         }
-        
-        # Add replies
-        for reply in comment.get_replies():
-            reply_data = {
-                'id': reply.id,
-                'content': reply.content,
-                'author': {
-                    'name': reply.author.get_full_name(),
-                    'avatar': reply.author.first_name[0].upper() if reply.author.first_name else 'U'
-                },
-                'created_at': reply.created_at.isoformat(),
-                'likes_count': reply.likes_count,
-            }
-            comment_data['replies'].append(reply_data)
-        
         comments_data.append(comment_data)
     
     return JsonResponse({
@@ -501,7 +353,6 @@ def comment_create_api(request):
         data = json.loads(request.body)
         post_id = data.get('post_id')
         content = data.get('content', '').strip()
-        parent_id = data.get('parent_id')
         
         if not content:
             return JsonResponse({
@@ -517,15 +368,10 @@ def comment_create_api(request):
                 'message': 'Bu gönderiye yorum yapılamaz'
             })
         
-        parent = None
-        if parent_id:
-            parent = get_object_or_404(PostComment, pk=parent_id, post=post)
-        
         comment = PostComment.objects.create(
             post=post,
             author=request.user,
-            content=content,
-            parent=parent
+            content=content
         )
         
         return JsonResponse({
@@ -548,73 +394,6 @@ def comment_create_api(request):
         return JsonResponse({
             'success': False,
             'message': 'Yorum eklenemedi'
-        })
-
-
-@login_required
-@require_http_methods(["POST"])
-def poll_vote_api(request):
-    """Anket oylama API"""
-    try:
-        data = json.loads(request.body)
-        poll_id = data.get('poll_id')
-        option_ids = data.get('option_ids', [])
-        
-        poll = get_object_or_404(Poll, pk=poll_id)
-        
-        if not poll.can_vote(request.user):
-            return JsonResponse({
-                'success': False,
-                'message': 'Bu ankete oy veremezsiniz'
-            })
-        
-        if not option_ids:
-            return JsonResponse({
-                'success': False,
-                'message': 'En az bir seçenek seçmelisiniz'
-            })
-        
-        # Check multiple choice
-        if not poll.multiple_choice and len(option_ids) > 1:
-            return JsonResponse({
-                'success': False,
-                'message': 'Bu ankette sadece bir seçenek seçebilirsiniz'
-            })
-        
-        # Create votes
-        for option_id in option_ids:
-            option = get_object_or_404(PollOption, pk=option_id, poll=poll)
-            PollVote.objects.create(
-                poll=poll,
-                option=option,
-                user=request.user
-            )
-        
-        # Get updated results
-        poll.refresh_from_db()
-        options_data = []
-        for option in poll.options.all():
-            options_data.append({
-                'id': option.id,
-                'text': option.text,
-                'votes_count': option.votes_count,
-                'percentage': option.get_percentage()
-            })
-        
-        return JsonResponse({
-            'success': True,
-            'message': 'Oyunuz kaydedildi',
-            'poll': {
-                'total_votes': poll.total_votes,
-                'options': options_data
-            }
-        })
-        
-    except Exception as e:
-        logger.error(f"Poll vote error: {str(e)}")
-        return JsonResponse({
-            'success': False,
-            'message': 'Oy kaydedilemedi'
         })
 
 
@@ -650,22 +429,4 @@ def feed_api(request):
         'posts': posts_data,
         'has_more': len(posts) == page_size
     })
-
-
-def trending_api(request):
-    """Trend konular API"""
-    # This would be implemented with proper trending algorithm
-    # For now, return mock data
-    trending_data = [
-        {'tag': 'kuaförilanları', 'count': 1234},
-        {'tag': 'berbertrendleri', 'count': 892},
-        {'tag': 'saçmodelleri', 'count': 756},
-        {'tag': 'güzelliksalonu', 'count': 634},
-        {'tag': 'profesyonelgelişim', 'count': 523},
-    ]
     
-    return JsonResponse({
-        'success': True,
-        'trending': trending_data
-    })
-  
