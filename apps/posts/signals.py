@@ -258,7 +258,7 @@ INSTALLED_APPS = [
     'apps.dashboard',
     'apps.jobs',
     'apps.profiles',
-    'apps.posts',  # BU SATIRI EKLEYİN
+    'apps.posts',
 ]
 """
 
