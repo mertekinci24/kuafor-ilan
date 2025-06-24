@@ -89,7 +89,7 @@ def register_view(request):
                 messages.success(request, 'Hesabınız başarıyla oluşturuldu! Hoş geldiniz.')
                 logger.info(f"New user registered: {user.email}")
                 
-                return redirect('dashboard:home')
+                return redirect('/')
                 
             except Exception as e:
                 logger.error(f"Registration error: {str(e)}")
