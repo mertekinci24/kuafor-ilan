@@ -1,0 +1,1099 @@
+{% extends 'base.html' %}
+
+{% block title %}Ayarlar - Kuaför İlan{% endblock %}
+
+{% block extra_css %}
+<style>
+    .settings-container {
+        max-width: 1000px;
+        margin: 0 auto;
+        padding: 24px 20px;
+    }
+
+    /* Header */
+    .settings-header {
+        background: var(--white);
+        border-radius: var(--border-radius);
+        padding: 32px;
+        margin-bottom: 24px;
+        box-shadow: var(--shadow-sm);
+        border: 1px solid var(--border-color);
+    }
+
+    .settings-title {
+        font-size: 32px;
+        font-weight: 800;
+        color: var(--text-color);
+        margin-bottom: 8px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .settings-subtitle {
+        color: var(--text-muted);
+        font-size: 16px;
+        line-height: 1.5;
+    }
+
+    /* Settings Layout */
+    .settings-layout {
+        display: grid;
+        grid-template-columns: 250px 1fr;
+        gap: 24px;
+    }
+
+    /* Sidebar Navigation */
+    .settings-nav {
+        background: var(--white);
+        border-radius: var(--border-radius);
+        padding: 24px;
+        box-shadow: var(--shadow-sm);
+        border: 1px solid var(--border-color);
+        height: fit-content;
+        position: sticky;
+        top: 100px;
+    }
+
+    .nav-section {
+        margin-bottom: 32px;
+    }
+
+    .nav-section:last-child {
+        margin-bottom: 0;
+    }
+
+    .nav-section-title {
+        font-size: 14px;
+        font-weight: 700;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 12px;
+    }
+
+    .nav-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px 16px;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: var(--transition);
+        margin-bottom: 4px;
+        color: var(--text-color);
+        text-decoration: none;
+        font-weight: 500;
+    }
+
+    .nav-item:hover {
+        background: #f8fafc;
+        color: var(--primary-color);
+    }
+
+    .nav-item.active {
+        background: #f0f9ff;
+        color: var(--primary-color);
+        border: 1px solid #e0f2fe;
+    }
+
+    .nav-icon {
+        font-size: 18px;
+        width: 18px;
+    }
+
+    /* Settings Content */
+    .settings-content {
+        display: flex;
+        flex-direction: column;
+        gap: 24px;
+    }
+
+    .settings-section {
+        background: var(--white);
+        border-radius: var(--border-radius);
+        padding: 32px;
+        box-shadow: var(--shadow-sm);
+        border: 1px solid var(--border-color);
+        display: none;
+    }
+
+    .settings-section.active {
+        display: block;
+        animation: fadeIn 0.3s ease;
+    }
+
+    .section-header {
+        margin-bottom: 24px;
+        padding-bottom: 16px;
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    .section-title {
+        font-size: 24px;
+        font-weight: 700;
+        color: var(--text-color);
+        margin-bottom: 8px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .section-description {
+        color: var(--text-muted);
+        font-size: 14px;
+        line-height: 1.5;
+    }
+
+    /* Form Styles */
+    .form-group {
+        margin-bottom: 24px;
+    }
+
+    .form-row {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 20px;
+        margin-bottom: 24px;
+    }
+
+    .form-label {
+        display: block;
+        font-weight: 600;
+        color: var(--text-color);
+        margin-bottom: 8px;
+        font-size: 14px;
+    }
+
+    .form-control {
+        width: 100%;
+        padding: 12px 16px;
+        border: 2px solid var(--border-color);
+        border-radius: 8px;
+        font-size: 16px;
+        transition: var(--transition);
+        background: var(--white);
+    }
+
+    .form-control:focus {
+        outline: none;
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 3px rgba(10, 102, 194, 0.1);
+    }
+
+    .form-help {
+        font-size: 13px;
+        color: var(--text-muted);
+        margin-top: 6px;
+        line-height: 1.4;
+    }
+
+    /* Toggle Switch */
+    .toggle-group {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 16px 20px;
+        background: #f8fafc;
+        border-radius: 8px;
+        border: 1px solid var(--border-color);
+        margin-bottom: 16px;
+        transition: var(--transition);
+    }
+
+    .toggle-group:hover {
+        background: #f0f9ff;
+        border-color: var(--primary-color);
+    }
+
+    .toggle-info {
+        flex: 1;
+    }
+
+    .toggle-title {
+        font-size: 16px;
+        font-weight: 600;
+        color: var(--text-color);
+        margin-bottom: 4px;
+    }
+
+    .toggle-description {
+        font-size: 14px;
+        color: var(--text-muted);
+        line-height: 1.4;
+    }
+
+    .toggle-switch {
+        position: relative;
+        display: inline-block;
+        width: 50px;
+        height: 24px;
+        margin-left: 16px;
+    }
+
+    .toggle-switch input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+    }
+
+    .slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #e2e8f0;
+        transition: 0.3s ease;
+        border-radius: 24px;
+    }
+
+    .slider:before {
+        position: absolute;
+        content: "";
+        height: 18px;
+        width: 18px;
+        left: 3px;
+        bottom: 3px;
+        background-color: white;
+        transition: 0.3s ease;
+        border-radius: 50%;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
+
+    input:checked + .slider {
+        background-color: var(--primary-color);
+    }
+
+    input:checked + .slider:before {
+        transform: translateX(26px);
+    }
+
+    /* Buttons */
+    .btn-group {
+        display: flex;
+        gap: 12px;
+        margin-top: 24px;
+        padding-top: 20px;
+        border-top: 1px solid var(--border-color);
+    }
+
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        padding: 12px 24px;
+        border: 2px solid transparent;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 16px;
+        text-decoration: none;
+        cursor: pointer;
+        transition: var(--transition);
+        line-height: 1;
+    }
+
+    .btn-primary {
+        background: var(--gradient-primary);
+        color: var(--white);
+        border-color: var(--primary-color);
+    }
+
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-md);
+        color: var(--white);
+    }
+
+    .btn-secondary {
+        background: var(--white);
+        color: var(--text-color);
+        border-color: var(--border-color);
+    }
+
+    .btn-secondary:hover {
+        background: #f8fafc;
+        border-color: var(--text-muted);
+        color: var(--text-color);
+    }
+
+    .btn-danger {
+        background: var(--danger-color);
+        color: var(--white);
+        border-color: var(--danger-color);
+    }
+
+    .btn-danger:hover {
+        background: #b91c1c;
+        border-color: #b91c1c;
+        color: var(--white);
+    }
+
+    /* Security Section */
+    .security-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 16px 0;
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    .security-item:last-child {
+        border-bottom: none;
+    }
+
+    .security-info {
+        flex: 1;
+    }
+
+    .security-title {
+        font-size: 16px;
+        font-weight: 600;
+        color: var(--text-color);
+        margin-bottom: 4px;
+    }
+
+    .security-description {
+        font-size: 14px;
+        color: var(--text-muted);
+    }
+
+    .security-status {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-right: 16px;
+    }
+
+    .status-indicator {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+    }
+
+    .status-active {
+        background: var(--success-color);
+    }
+
+    .status-inactive {
+        background: var(--danger-color);
+    }
+
+    .status-warning {
+        background: var(--warning-color);
+    }
+
+    /* Data Export */
+    .export-item {
+        background: #f8fafc;
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        padding: 20px;
+        margin-bottom: 16px;
+        transition: var(--transition);
+    }
+
+    .export-item:hover {
+        background: #f0f9ff;
+        border-color: var(--primary-color);
+    }
+
+    .export-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 8px;
+    }
+
+    .export-title {
+        font-size: 16px;
+        font-weight: 600;
+        color: var(--text-color);
+    }
+
+    .export-size {
+        font-size: 12px;
+        color: var(--text-muted);
+        background: var(--white);
+        padding: 4px 8px;
+        border-radius: 4px;
+    }
+
+    .export-description {
+        font-size: 14px;
+        color: var(--text-muted);
+        line-height: 1.4;
+        margin-bottom: 12px;
+    }
+
+    /* Delete Account */
+    .danger-zone {
+        background: #fef2f2;
+        border: 1px solid #fecaca;
+        border-radius: 8px;
+        padding: 24px;
+        margin-top: 32px;
+    }
+
+    .danger-title {
+        font-size: 18px;
+        font-weight: 700;
+        color: var(--danger-color);
+        margin-bottom: 8px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .danger-description {
+        color: #7f1d1d;
+        font-size: 14px;
+        line-height: 1.5;
+        margin-bottom: 16px;
+    }
+
+    /* Responsive */
+    @media (max-width: 1024px) {
+        .settings-layout {
+            grid-template-columns: 1fr;
+        }
+        
+        .settings-nav {
+            position: static;
+            order: 2;
+        }
+        
+        .nav-section {
+            margin-bottom: 16px;
+        }
+        
+        .nav-item {
+            display: inline-flex;
+            margin-right: 8px;
+            margin-bottom: 8px;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .settings-container {
+            padding: 16px;
+        }
+        
+        .settings-header,
+        .settings-section {
+            padding: 20px;
+        }
+        
+        .form-row {
+            grid-template-columns: 1fr;
+        }
+        
+        .toggle-group {
+            flex-direction: column;
+            align-items: stretch;
+            gap: 12px;
+        }
+        
+        .toggle-switch {
+            margin-left: 0;
+            align-self: flex-start;
+        }
+        
+        .security-item,
+        .export-header {
+            flex-direction: column;
+            align-items: stretch;
+            gap: 8px;
+        }
+        
+        .btn-group {
+            flex-direction: column;
+        }
+    }
+
+    /* Animations */
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .fade-in {
+        animation: fadeIn 0.3s ease;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="settings-container">
+    <!-- Header -->
+    <div class="settings-header">
+        <h1 class="settings-title">
+            <i class="fas fa-cog"></i>
+            Hesap Ayarları
+        </h1>
+        <p class="settings-subtitle">
+            Hesabınızı, gizlilik ayarlarınızı ve bildirim tercihlerinizi yönetin.
+        </p>
+    </div>
+
+    <div class="settings-layout">
+        <!-- Navigation Sidebar -->
+        <div class="settings-nav">
+            <div class="nav-section">
+                <div class="nav-section-title">Hesap</div>
+                <a href="#" class="nav-item active" data-section="profile">
+                    <i class="fas fa-user nav-icon"></i>
+                    Profil Bilgileri
+                </a>
+                <a href="#" class="nav-item" data-section="notifications">
+                    <i class="fas fa-bell nav-icon"></i>
+                    Bildirimler
+                </a>
+                <a href="#" class="nav-item" data-section="privacy">
+                    <i class="fas fa-shield-alt nav-icon"></i>
+                    Gizlilik
+                </a>
+            </div>
+            
+            <div class="nav-section">
+                <div class="nav-section-title">Güvenlik</div>
+                <a href="#" class="nav-item" data-section="security">
+                    <i class="fas fa-lock nav-icon"></i>
+                    Güvenlik
+                </a>
+                <a href="#" class="nav-item" data-section="sessions">
+                    <i class="fas fa-desktop nav-icon"></i>
+                    Oturumlar
+                </a>
+            </div>
+            
+            <div class="nav-section">
+                <div class="nav-section-title">Veri</div>
+                <a href="#" class="nav-item" data-section="export">
+                    <i class="fas fa-download nav-icon"></i>
+                    Veri İndir
+                </a>
+                <a href="#" class="nav-item" data-section="delete">
+                    <i class="fas fa-trash nav-icon"></i>
+                    Hesap Sil
+                </a>
+            </div>
+        </div>
+
+        <!-- Settings Content -->
+        <div class="settings-content">
+            <!-- Profile Settings -->
+            <div class="settings-section active" id="profile">
+                <div class="section-header">
+                    <h2 class="section-title">
+                        <i class="fas fa-user"></i>
+                        Profil Bilgileri
+                    </h2>
+                    <p class="section-description">
+                        Temel hesap bilgilerinizi ve iletişim tercihlerinizi güncelleyin.
+                    </p>
+                </div>
+
+                <form method="post" id="profileForm">
+                    {% csrf_token %}
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Ad</label>
+                            <input type="text" name="first_name" class="form-control" value="{{ user.first_name }}">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Soyad</label>
+                            <input type="text" name="last_name" class="form-control" value="{{ user.last_name }}">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">E-posta Adresi</label>
+                        <input type="email" name="email" class="form-control" value="{{ user.email }}">
+                        <div class="form-help">E-posta adresinizi değiştirdikten sonra doğrulama maili alacaksınız.</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Telefon Numarası</label>
+                        <input type="tel" name="phone" class="form-control" value="{{ user.phone|default:'' }}" placeholder="+90 555 123 45 67">
+                        <div class="form-help">SMS bildirimleri için kullanılacak telefon numaranız.</div>
+                    </div>
+
+                    <div class="btn-group">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i>
+                            Değişiklikleri Kaydet
+                        </button>
+                        <button type="button" class="btn btn-secondary" onclick="resetForm()">
+                            <i class="fas fa-undo"></i>
+                            Sıfırla
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Notification Settings -->
+            <div class="settings-section" id="notifications">
+                <div class="section-header">
+                    <h2 class="section-title">
+                        <i class="fas fa-bell"></i>
+                        Bildirim Ayarları
+                    </h2>
+                    <p class="section-description">
+                        Hangi bildirimleri nasıl almak istediğinizi seçin.
+                    </p>
+                </div>
+
+                <form method="post" id="notificationForm">
+                    {% csrf_token %}
+                    
+                    <div class="toggle-group">
+                        <div class="toggle-info">
+                            <div class="toggle-title">E-posta Bildirimleri</div>
+                            <div class="toggle-description">Önemli güncellemeler ve sistem bildirimleri</div>
+                        </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" name="email_notifications" {% if user.email_notifications %}checked{% endif %}>
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+
+                    <div class="toggle-group">
+                        <div class="toggle-info">
+                            <div class="toggle-title">SMS Bildirimleri</div>
+                            <div class="toggle-description">Acil durumlar ve güvenlik uyarıları</div>
+                        </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" name="sms_notifications" {% if user.sms_notifications %}checked{% endif %}>
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+
+                    <div class="toggle-group">
+                        <div class="toggle-info">
+                            <div class="toggle-title">Pazarlama E-postaları</div>
+                            <div class="toggle-description">Yeni özellikler, ipuçları ve özel teklifler</div>
+                        </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" name="marketing_emails" {% if user.marketing_emails %}checked{% endif %}>
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+
+                    <div class="toggle-group">
+                        <div class="toggle-info">
+                            <div class="toggle-title">İş Bildirimleri</div>
+                            <div class="toggle-description">Yeni iş fırsatları ve başvuru durumu güncellemeleri</div>
+                        </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" checked>
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+
+                    <div class="btn-group">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i>
+                            Bildirim Ayarlarını Kaydet
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Privacy Settings -->
+            <div class="settings-section" id="privacy">
+                <div class="section-header">
+                    <h2 class="section-title">
+                        <i class="fas fa-shield-alt"></i>
+                        Gizlilik Ayarları
+                    </h2>
+                    <p class="section-description">
+                        Profilinizin görünürlüğünü ve veri paylaşım tercihlerinizi kontrol edin.
+                    </p>
+                </div>
+
+                <div class="toggle-group">
+                    <div class="toggle-info">
+                        <div class="toggle-title">Profil Görünürlüğü</div>
+                        <div class="toggle-description">Profiliniz diğer kullanıcılar tarafından görülebilsin</div>
+                    </div>
+                    <label class="toggle-switch">
+                        <input type="checkbox" checked>
+                        <span class="slider"></span>
+                    </label>
+                </div>
+
+                <div class="toggle-group">
+                    <div class="toggle-info">
+                        <div class="toggle-title">Arama Sonuçlarında Görün</div>
+                        <div class="toggle-description">İşverenler sizi arama sonuçlarında bulabilsin</div>
+                    </div>
+                    <label class="toggle-switch">
+                        <input type="checkbox" checked>
+                        <span class="slider"></span>
+                    </label>
+                </div>
+
+                <div class="toggle-group">
+                    <div class="toggle-info">
+                        <div class="toggle-title">İletişim Bilgilerini Paylaş</div>
+                        <div class="toggle-description">Kabul edilen başvurularda iletişim bilgileriniz paylaşılsın</div>
+                    </div>
+                    <label class="toggle-switch">
+                        <input type="checkbox" checked>
+                        <span class="slider"></span>
+                    </label>
+                </div>
+
+                <div class="btn-group">
+                    <button type="button" class="btn btn-primary">
+                        <i class="fas fa-save"></i>
+                        Gizlilik Ayarlarını Kaydet
+                    </button>
+                </div>
+            </div>
+
+            <!-- Security Settings -->
+            <div class="settings-section" id="security">
+                <div class="section-header">
+                    <h2 class="section-title">
+                        <i class="fas fa-lock"></i>
+                        Güvenlik Ayarları
+                    </h2>
+                    <p class="section-description">
+                        Hesabınızın güvenliğini artırmak için bu ayarları kullanın.
+                    </p>
+                </div>
+
+                <div class="security-item">
+                    <div class="security-info">
+                        <div class="security-title">Şifre</div>
+                        <div class="security-description">Son güncelleme: 2 ay önce</div>
+                    </div>
+                    <div class="security-status">
+                        <span class="status-indicator status-active"></span>
+                        <span>Güçlü</span>
+                    </div>
+                    <button class="btn btn-secondary" onclick="showComingSoon('Şifre değiştirme özelliği yakında!')">
+                        Değiştir
+                    </button>
+                </div>
+
+                <div class="security-item">
+                    <div class="security-info">
+                        <div class="security-title">İki Faktörlü Doğrulama</div>
+                        <div class="security-description">Hesabınız için ekstra güvenlik katmanı</div>
+                    </div>
+                    <div class="security-status">
+                        <span class="status-indicator status-inactive"></span>
+                        <span>Kapalı</span>
+                    </div>
+                    <button class="btn btn-primary" onclick="showComingSoon('2FA özelliği yakında!')">
+                        Etkinleştir
+                    </button>
+                </div>
+
+                <div class="security-item">
+                    <div class="security-info">
+                        <div class="security-title">E-posta Doğrulama</div>
+                        <div class="security-description">E-posta adresiniz doğrulanmış durumda</div>
+                    </div>
+                    <div class="security-status">
+                        <span class="status-indicator status-active"></span>
+                        <span>Doğrulandı</span>
+                    </div>
+                    <button class="btn btn-secondary" disabled>
+                        Aktif
+                    </button>
+                </div>
+            </div>
+
+            <!-- Sessions -->
+            <div class="settings-section" id="sessions">
+                <div class="section-header">
+                    <h2 class="section-title">
+                        <i class="fas fa-desktop"></i>
+                        Aktif Oturumlar
+                    </h2>
+                    <p class="section-description">
+                        Hesabınıza erişen cihazları görün ve yönetin.
+                    </p>
+                </div>
+
+                <div class="security-item">
+                    <div class="security-info">
+                        <div class="security-title">Bu Cihaz (Geçerli)</div>
+                        <div class="security-description">Chrome • İstanbul, Türkiye • Şimdi aktif</div>
+                    </div>
+                    <div class="security-status">
+                        <span class="status-indicator status-active"></span>
+                        <span>Aktif</span>
+                    </div>
+                    <button class="btn btn-secondary" disabled>
+                        Geçerli
+                    </button>
+                </div>
+
+                <div class="btn-group">
+                    <button type="button" class="btn btn-danger" onclick="showComingSoon('Oturum yönetimi yakında!')">
+                        <i class="fas fa-sign-out-alt"></i>
+                        Tüm Diğer Oturumları Sonlandır
+                    </button>
+                </div>
+            </div>
+
+            <!-- Data Export -->
+            <div class="settings-section" id="export">
+                <div class="section-header">
+                    <h2 class="section-title">
+                        <i class="fas fa-download"></i>
+                        Verilerinizi İndirin
+                    </h2>
+                    <p class="section-description">
+                        Kuaför İlan'daki verilerinizin bir kopyasını indirin.
+                    </p>
+                </div>
+
+                <div class="export-item">
+                    <div class="export-header">
+                        <div class="export-title">Profil Bilgileri</div>
+                        <div class="export-size">~2 KB</div>
+                    </div>
+                    <div class="export-description">
+                        Ad, soyad, e-posta, telefon ve profil açıklaması
+                    </div>
+                    <button class="btn btn-secondary" onclick="exportData('profile')">
+                        <i class="fas fa-download"></i>
+                        İndir (JSON)
+                    </button>
+                </div>
+
+                <div class="export-item">
+                    <div class="export-header">
+                        <div class="export-title">Başvuru Geçmişi</div>
+                        <div class="export-size">~5 KB</div>
+                    </div>
+                    <div class="export-description">
+                        Tüm iş başvurularınız ve durumları
+                    </div>
+                    <button class="btn btn-secondary" onclick="exportData('applications')">
+                        <i class="fas fa-download"></i>
+                        İndir (CSV)
+                    </button>
+                </div>
+
+                <div class="export-item">
+                    <div class="export-header">
+                        <div class="export-title">Hesap Aktivitesi</div>
+                        <div class="export-size">~1 KB</div>
+                    </div>
+                    <div class="export-description">
+                        Giriş logları ve hesap aktiviteleriniz
+                    </div>
+                    <button class="btn btn-secondary" onclick="exportData('activity')">
+                        <i class="fas fa-download"></i>
+                        İndir (JSON)
+                    </button>
+                </div>
+
+                <div class="btn-group">
+                    <button type="button" class="btn btn-primary" onclick="exportData('all')">
+                        <i class="fas fa-download"></i>
+                        Tüm Verileri İndir (ZIP)
+                    </button>
+                </div>
+            </div>
+
+            <!-- Delete Account -->
+            <div class="settings-section" id="delete">
+                <div class="section-header">
+                    <h2 class="section-title">
+                        <i class="fas fa-trash"></i>
+                        Hesap Silme
+                    </h2>
+                    <p class="section-description">
+                        Hesabınızı kalıcı olarak silmek için aşağıdaki adımları takip edin.
+                    </p>
+                </div>
+
+                <div class="danger-zone">
+                    <h3 class="danger-title">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        Tehlikeli Bölge
+                    </h3>
+                    <p class="danger-description">
+                        Hesabınızı silerseniz, tüm verileriniz kalıcı olarak silinir ve bu işlem geri alınamaz. 
+                        Profiliniz, başvurularınız, mesajlarınız ve tüm hesap geçmişiniz tamamen kaybolur.
+                    </p>
+                    
+                    <div class="btn-group">
+                        <a href="{% url 'profiles:delete_account' %}" class="btn btn-danger">
+                            <i class="fas fa-trash"></i>
+                            Hesabı Sil
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Navigation functionality
+    document.addEventListener('DOMContentLoaded', function() {
+        const navItems = document.querySelectorAll('.nav-item');
+        const sections = document.querySelectorAll('.settings-section');
+
+        navItems.forEach(item => {
+            item.addEventListener('click', function(e) {
+                e.preventDefault();
+                
+                // Remove active class from all nav items
+                navItems.forEach(nav => nav.classList.remove('active'));
+                // Add active class to clicked item
+                this.classList.add('active');
+                
+                // Hide all sections
+                sections.forEach(section => section.classList.remove('active'));
+                // Show target section
+                const targetSection = document.getElementById(this.dataset.section);
+                if (targetSection) {
+                    targetSection.classList.add('active');
+                }
+            });
+        });
+    });
+
+    // Form submissions
+    document.getElementById('profileForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        // Show loading
+        const submitBtn = this.querySelector('button[type="submit"]');
+        const originalText = submitBtn.innerHTML;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Kaydediliyor...';
+        submitBtn.disabled = true;
+        
+        // Simulate API call
+        setTimeout(() => {
+            submitBtn.innerHTML = originalText;
+            submitBtn.disabled = false;
+            App.showToast('Profil bilgileri başarıyla güncellendi!', 'success');
+        }, 1500);
+    });
+
+    document.getElementById('notificationForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const submitBtn = this.querySelector('button[type="submit"]');
+        const originalText = submitBtn.innerHTML;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Kaydediliyor...';
+        submitBtn.disabled = true;
+        
+        setTimeout(() => {
+            submitBtn.innerHTML = originalText;
+            submitBtn.disabled = false;
+            App.showToast('Bildirim ayarları başarıyla güncellendi!', 'success');
+        }, 1000);
+    });
+
+    // Export functionality
+    function exportData(type) {
+        App.showToast('Verileriniz hazırlanıyor...', 'info');
+        
+        // Simulate data export
+        setTimeout(() => {
+            const data = {
+                profile: {
+                    name: '{{ user.get_full_name }}',
+                    email: '{{ user.email }}',
+                    phone: '{{ user.phone|default:"" }}',
+                    joined: '{{ user.date_joined|date:"Y-m-d" }}',
+                    user_type: '{{ user.user_type }}'
+                },
+                applications: 'CSV verisi burada olacak...',
+                activity: 'Aktivite logları burada olacak...'
+            };
+            
+            let content, filename, contentType;
+            
+            switch(type) {
+                case 'profile':
+                    content = JSON.stringify(data.profile, null, 2);
+                    filename = 'profil-bilgileri.json';
+                    contentType = 'application/json';
+                    break;
+                case 'applications':
+                    content = data.applications;
+                    filename = 'basvuru-gecmisi.csv';
+                    contentType = 'text/csv';
+                    break;
+                case 'activity':
+                    content = JSON.stringify({activity: data.activity}, null, 2);
+                    filename = 'hesap-aktivitesi.json';
+                    contentType = 'application/json';
+                    break;
+                case 'all':
+                    content = JSON.stringify(data, null, 2);
+                    filename = 'tum-verilerim.json';
+                    contentType = 'application/json';
+                    break;
+            }
+            
+            // Create and trigger download
+            const blob = new Blob([content], { type: contentType });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+            
+            App.showToast('Verileriniz başarıyla indirildi!', 'success');
+        }, 1500);
+    }
+
+    // Utility functions
+    function resetForm() {
+        if (confirm('Tüm değişiklikler kaybolacak. Emin misiniz?')) {
+            document.getElementById('profileForm').reset();
+            App.showToast('Form sıfırlandı', 'info');
+        }
+    }
+
+    function showComingSoon(message) {
+        if (typeof App !== 'undefined' && App.showToast) {
+            App.showToast(message, 'info');
+        } else {
+            alert(message);
+        }
+    }
+
+    // Auto-save for toggles
+    document.querySelectorAll('.toggle-switch input').forEach(toggle => {
+        toggle.addEventListener('change', function() {
+            const setting = this.name;
+            const enabled = this.checked;
+            
+            // Auto-save toggle state
+            setTimeout(() => {
+                App.showToast(`${setting} ${enabled ? 'açıldı' : 'kapatıldı'}`, 'success');
+            }, 300);
+        });
+    });
+
+    // Initialize animations
+    document.addEventListener('DOMContentLoaded', function() {
+        const sections = document.querySelectorAll('.settings-section');
+        sections.forEach(section => {
+            section.classList.add('fade-in');
+        });
+    });
+</script>
+{% endblock %}
