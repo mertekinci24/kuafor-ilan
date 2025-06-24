@@ -623,7 +623,7 @@
             </div>
 
             <!-- Skills (for job seekers) -->
-            {% if profile_data.type == 'jobseeker' and profile_data.skills %}
+            {% if profile_data.type == 'jobseeker' and profile_data.skills_list %}
             <div class="profile-card">
                 <div class="profile-card-header">
                     <h2 class="profile-card-title">
@@ -633,11 +633,9 @@
                 </div>
                 
                 <div class="skills-list">
-                    {% if profile_data.skills %}
-                        {% with skills=profile_data.skills %}
-                            <span class="skill-tag">{{ skills }}</span>
-                        {% endwith %}
-                    {% endif %}
+                    {% for skill in profile_data.skills_list %}
+                        <span class="skill-tag">{{ skill }}</span>
+                    {% endfor %}
                 </div>
             </div>
             {% endif %}
