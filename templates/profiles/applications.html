@@ -1,0 +1,1035 @@
+{% extends 'base.html' %}
+
+{% block title %}Başvurularım - Kuaför İlan{% endblock %}
+
+{% block extra_css %}
+<style>
+    .applications-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 24px 20px;
+    }
+
+    /* Header */
+    .applications-header {
+        background: var(--white);
+        border-radius: var(--border-radius);
+        padding: 32px;
+        margin-bottom: 24px;
+        box-shadow: var(--shadow-sm);
+        border: 1px solid var(--border-color);
+    }
+
+    .header-content {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 16px;
+    }
+
+    .header-title {
+        font-size: 32px;
+        font-weight: 800;
+        color: var(--text-color);
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .header-stats {
+        display: flex;
+        gap: 24px;
+        font-size: 14px;
+    }
+
+    .stat-item {
+        text-align: center;
+        padding: 12px 20px;
+        background: #f8fafc;
+        border-radius: 8px;
+        border: 1px solid var(--border-color);
+    }
+
+    .stat-number {
+        font-size: 24px;
+        font-weight: 700;
+        color: var(--primary-color);
+        margin-bottom: 4px;
+    }
+
+    .stat-label {
+        color: var(--text-muted);
+        font-weight: 500;
+        text-transform: uppercase;
+        font-size: 12px;
+        letter-spacing: 0.5px;
+    }
+
+    .header-subtitle {
+        color: var(--text-muted);
+        font-size: 16px;
+        line-height: 1.5;
+    }
+
+    /* Filters */
+    .applications-filters {
+        background: var(--white);
+        border-radius: var(--border-radius);
+        padding: 24px;
+        margin-bottom: 24px;
+        box-shadow: var(--shadow-sm);
+        border: 1px solid var(--border-color);
+    }
+
+    .filters-row {
+        display: flex;
+        gap: 16px;
+        align-items: center;
+        flex-wrap: wrap;
+    }
+
+    .filter-group {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .filter-label {
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--text-color);
+        white-space: nowrap;
+    }
+
+    .filter-select {
+        padding: 8px 12px;
+        border: 2px solid var(--border-color);
+        border-radius: 6px;
+        font-size: 14px;
+        background: var(--white);
+        min-width: 120px;
+        transition: var(--transition);
+    }
+
+    .filter-select:focus {
+        outline: none;
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 3px rgba(10, 102, 194, 0.1);
+    }
+
+    .search-input {
+        flex: 1;
+        min-width: 250px;
+        padding: 8px 16px 8px 40px;
+        border: 2px solid var(--border-color);
+        border-radius: 6px;
+        font-size: 14px;
+        background: var(--white);
+        transition: var(--transition);
+    }
+
+    .search-input:focus {
+        outline: none;
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 3px rgba(10, 102, 194, 0.1);
+    }
+
+    .search-group {
+        position: relative;
+        flex: 1;
+        min-width: 250px;
+    }
+
+    .search-icon {
+        position: absolute;
+        left: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--text-muted);
+        font-size: 16px;
+    }
+
+    /* Status Tabs */
+    .status-tabs {
+        display: flex;
+        gap: 4px;
+        margin-bottom: 24px;
+        background: #f8fafc;
+        padding: 4px;
+        border-radius: 8px;
+        border: 1px solid var(--border-color);
+    }
+
+    .status-tab {
+        flex: 1;
+        padding: 12px 16px;
+        text-align: center;
+        border-radius: 6px;
+        font-weight: 600;
+        font-size: 14px;
+        cursor: pointer;
+        transition: var(--transition);
+        border: none;
+        background: transparent;
+        color: var(--text-muted);
+    }
+
+    .status-tab.active {
+        background: var(--white);
+        color: var(--primary-color);
+        box-shadow: var(--shadow-sm);
+    }
+
+    .status-tab:hover {
+        color: var(--primary-color);
+    }
+
+    /* Applications List */
+    .applications-list {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+    }
+
+    .application-card {
+        background: var(--white);
+        border-radius: var(--border-radius);
+        padding: 24px;
+        box-shadow: var(--shadow-sm);
+        border: 1px solid var(--border-color);
+        transition: var(--transition);
+        position: relative;
+    }
+
+    .application-card:hover {
+        box-shadow: var(--shadow-md);
+        transform: translateY(-2px);
+    }
+
+    .application-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 16px;
+    }
+
+    .application-info {
+        flex: 1;
+    }
+
+    .job-title {
+        font-size: 20px;
+        font-weight: 700;
+        color: var(--text-color);
+        margin-bottom: 8px;
+        line-height: 1.3;
+    }
+
+    .job-title a {
+        color: inherit;
+        text-decoration: none;
+        transition: var(--transition);
+    }
+
+    .job-title a:hover {
+        color: var(--primary-color);
+    }
+
+    .company-info {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 12px;
+    }
+
+    .company-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: var(--gradient-primary);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--white);
+        font-weight: 600;
+        font-size: 16px;
+        flex-shrink: 0;
+    }
+
+    .company-details h4 {
+        font-size: 16px;
+        font-weight: 600;
+        color: var(--text-color);
+        margin-bottom: 2px;
+    }
+
+    .company-location {
+        font-size: 14px;
+        color: var(--text-muted);
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+    .application-meta {
+        display: flex;
+        gap: 16px;
+        font-size: 14px;
+        color: var(--text-muted);
+        flex-wrap: wrap;
+    }
+
+    .meta-item {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .application-status {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 8px;
+    }
+
+    .status-badge {
+        padding: 6px 16px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        white-space: nowrap;
+    }
+
+    .status-pending {
+        background: #fef3c7;
+        color: #d97706;
+        border: 1px solid #fed7aa;
+    }
+
+    .status-reviewed {
+        background: #dbeafe;
+        color: #1d4ed8;
+        border: 1px solid #bfdbfe;
+    }
+
+    .status-accepted {
+        background: #dcfce7;
+        color: #16a34a;
+        border: 1px solid #bbf7d0;
+    }
+
+    .status-rejected {
+        background: #fee2e2;
+        color: #dc2626;
+        border: 1px solid #fecaca;
+    }
+
+    .application-date {
+        font-size: 12px;
+        color: var(--text-muted);
+        text-align: right;
+    }
+
+    /* Application Body */
+    .application-body {
+        margin-bottom: 16px;
+    }
+
+    .job-description {
+        color: var(--text-color);
+        line-height: 1.6;
+        margin-bottom: 12px;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+
+    .job-tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .job-tag {
+        background: #f0f9ff;
+        color: var(--primary-color);
+        padding: 4px 12px;
+        border-radius: 16px;
+        font-size: 12px;
+        font-weight: 500;
+        border: 1px solid #e0f2fe;
+    }
+
+    /* Application Actions */
+    .application-actions {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding-top: 16px;
+        border-top: 1px solid var(--border-color);
+    }
+
+    .action-buttons {
+        display: flex;
+        gap: 8px;
+    }
+
+    .action-btn {
+        padding: 8px 16px;
+        border: 1px solid var(--border-color);
+        background: var(--white);
+        color: var(--text-color);
+        border-radius: 6px;
+        font-size: 14px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: var(--transition);
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .action-btn:hover {
+        background: #f8fafc;
+        border-color: var(--primary-color);
+        color: var(--primary-color);
+    }
+
+    .action-btn.primary {
+        background: var(--primary-color);
+        color: var(--white);
+        border-color: var(--primary-color);
+    }
+
+    .action-btn.primary:hover {
+        background: var(--primary-dark);
+        color: var(--white);
+    }
+
+    .action-btn.danger {
+        background: var(--danger-color);
+        color: var(--white);
+        border-color: var(--danger-color);
+    }
+
+    .action-btn.danger:hover {
+        background: #b91c1c;
+        color: var(--white);
+    }
+
+    .application-progress {
+        font-size: 12px;
+        color: var(--text-muted);
+    }
+
+    /* Empty State */
+    .empty-state {
+        text-align: center;
+        padding: 80px 20px;
+        background: var(--white);
+        border-radius: var(--border-radius);
+        box-shadow: var(--shadow-sm);
+        border: 1px solid var(--border-color);
+    }
+
+    .empty-icon {
+        font-size: 64px;
+        color: var(--text-muted);
+        margin-bottom: 24px;
+        opacity: 0.5;
+    }
+
+    .empty-title {
+        font-size: 24px;
+        font-weight: 700;
+        color: var(--text-color);
+        margin-bottom: 12px;
+    }
+
+    .empty-description {
+        font-size: 16px;
+        color: var(--text-muted);
+        margin-bottom: 32px;
+        max-width: 400px;
+        margin-left: auto;
+        margin-right: auto;
+        line-height: 1.5;
+    }
+
+    .empty-action {
+        padding: 12px 24px;
+        background: var(--gradient-primary);
+        color: var(--white);
+        border: none;
+        border-radius: 8px;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: var(--transition);
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .empty-action:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-md);
+        color: var(--white);
+    }
+
+    /* Loading State */
+    .loading-card {
+        background: var(--white);
+        border-radius: var(--border-radius);
+        padding: 24px;
+        box-shadow: var(--shadow-sm);
+        border: 1px solid var(--border-color);
+        animation: pulse 2s infinite;
+    }
+
+    .loading-placeholder {
+        background: #e2e8f0;
+        border-radius: 4px;
+        margin-bottom: 12px;
+    }
+
+    .loading-title {
+        height: 24px;
+        width: 60%;
+    }
+
+    .loading-company {
+        height: 16px;
+        width: 40%;
+    }
+
+    .loading-description {
+        height: 14px;
+        width: 80%;
+    }
+
+    .loading-meta {
+        height: 12px;
+        width: 30%;
+    }
+
+    @keyframes pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.5; }
+    }
+
+    /* Responsive */
+    @media (max-width: 1024px) {
+        .header-content {
+            flex-direction: column;
+            align-items: stretch;
+            gap: 16px;
+        }
+        
+        .header-stats {
+            justify-content: center;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .applications-container {
+            padding: 16px;
+        }
+        
+        .applications-header,
+        .applications-filters,
+        .application-card {
+            padding: 20px;
+        }
+        
+        .filters-row {
+            flex-direction: column;
+            align-items: stretch;
+            gap: 12px;
+        }
+        
+        .search-group {
+            order: -1;
+        }
+        
+        .status-tabs {
+            flex-wrap: wrap;
+        }
+        
+        .application-header {
+            flex-direction: column;
+            gap: 12px;
+        }
+        
+        .application-status {
+            align-items: flex-start;
+        }
+        
+        .application-actions {
+            flex-direction: column;
+            gap: 12px;
+            align-items: stretch;
+        }
+        
+        .action-buttons {
+            justify-content: center;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .header-stats {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+        }
+        
+        .company-info {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 8px;
+        }
+        
+        .application-meta {
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        .action-buttons {
+            flex-direction: column;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="applications-container">
+    <!-- Header -->
+    <div class="applications-header">
+        <div class="header-content">
+            <h1 class="header-title">
+                <i class="fas fa-paper-plane"></i>
+                Başvurularım
+            </h1>
+            
+            <div class="header-stats">
+                <div class="stat-item">
+                    <div class="stat-number">{{ applications|length }}</div>
+                    <div class="stat-label">Toplam</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">
+                        {% for app in applications %}
+                            {% if app.status == 'pending' %}{% if forloop.first %}1{% else %}{{ forloop.counter }}{% endif %}{% endif %}
+                        {% empty %}0{% endfor %}
+                    </div>
+                    <div class="stat-label">Beklemede</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">
+                        {% for app in applications %}
+                            {% if app.status == 'accepted' %}{% if forloop.first %}1{% else %}{{ forloop.counter }}{% endif %}{% endif %}
+                        {% empty %}0{% endfor %}
+                    </div>
+                    <div class="stat-label">Kabul</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">
+                        {% for app in applications %}
+                            {% if app.status == 'rejected' %}{% if forloop.first %}1{% else %}{{ forloop.counter }}{% endif %}{% endif %}
+                        {% empty %}0{% endfor %}
+                    </div>
+                    <div class="stat-label">Red</div>
+                </div>
+            </div>
+        </div>
+        
+        <p class="header-subtitle">
+            İş başvurularınızı takip edin, durum güncellemelerini görün ve işverenlerle iletişime geçin.
+        </p>
+    </div>
+
+    <!-- Filters -->
+    <div class="applications-filters">
+        <div class="filters-row">
+            <div class="search-group">
+                <i class="fas fa-search search-icon"></i>
+                <input type="text" class="search-input" placeholder="İş adı, şirket veya konum ara..." id="searchInput">
+            </div>
+            
+            <div class="filter-group">
+                <label class="filter-label">Durum:</label>
+                <select class="filter-select" id="statusFilter">
+                    <option value="">Tümü</option>
+                    <option value="pending">Beklemede</option>
+                    <option value="reviewed">İncelendi</option>
+                    <option value="accepted">Kabul Edildi</option>
+                    <option value="rejected">Reddedildi</option>
+                </select>
+            </div>
+            
+            <div class="filter-group">
+                <label class="filter-label">Sıralama:</label>
+                <select class="filter-select" id="sortFilter">
+                    <option value="newest">En Yeni</option>
+                    <option value="oldest">En Eski</option>
+                    <option value="company">Şirkete Göre</option>
+                    <option value="status">Duruma Göre</option>
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <!-- Status Tabs -->
+    <div class="status-tabs">
+        <button class="status-tab active" data-status="">
+            Tümü ({{ applications|length }})
+        </button>
+        <button class="status-tab" data-status="pending">
+            Beklemede 
+        </button>
+        <button class="status-tab" data-status="reviewed">
+            İncelendi
+        </button>
+        <button class="status-tab" data-status="accepted">
+            Kabul Edildi
+        </button>
+        <button class="status-tab" data-status="rejected">
+            Reddedildi
+        </button>
+    </div>
+
+    <!-- Applications List -->
+    <div class="applications-list" id="applicationsList">
+        {% if applications %}
+            {% for application in applications %}
+            <div class="application-card" data-status="{{ application.status }}" data-company="{{ application.job.business.get_full_name|lower }}" data-title="{{ application.job.title|lower }}">
+                <div class="application-header">
+                    <div class="application-info">
+                        <h3 class="job-title">
+                            <a href="{% url 'jobs:detail' application.job.id %}">{{ application.job.title }}</a>
+                        </h3>
+                        
+                        <div class="company-info">
+                            <div class="company-avatar">
+                                {{ application.job.business.get_full_name|first|upper }}
+                            </div>
+                            <div class="company-details">
+                                <h4>{{ application.job.business.get_full_name }}</h4>
+                                <div class="company-location">
+                                    <i class="fas fa-map-marker-alt"></i>
+                                    {{ application.job.city }}{% if application.job.district %}, {{ application.job.district }}{% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="application-meta">
+                            <div class="meta-item">
+                                <i class="fas fa-calendar-alt"></i>
+                                Başvuru: {{ application.created_at|date:"d M Y" }}
+                            </div>
+                            <div class="meta-item">
+                                <i class="fas fa-clock"></i>
+                                {{ application.created_at|timesince }} önce
+                            </div>
+                            {% if application.job.salary_min %}
+                            <div class="meta-item">
+                                <i class="fas fa-money-bill-wave"></i>
+                                {% if application.job.salary_max %}
+                                    {{ application.job.salary_min|floatformat:0 }}-{{ application.job.salary_max|floatformat:0 }} TL
+                                {% else %}
+                                    {{ application.job.salary_min|floatformat:0 }}+ TL
+                                {% endif %}
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="application-status">
+                        <div class="status-badge status-{{ application.status }}">
+                            {% if application.status == 'pending' %}
+                                Beklemede
+                            {% elif application.status == 'reviewed' %}
+                                İncelendi
+                            {% elif application.status == 'accepted' %}
+                                Kabul Edildi
+                            {% elif application.status == 'rejected' %}
+                                Reddedildi
+                            {% endif %}
+                        </div>
+                        <div class="application-date">
+                            {{ application.created_at|date:"d.m.Y H:i" }}
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="application-body">
+                    <p class="job-description">
+                        {{ application.job.description|truncatewords:25 }}
+                    </p>
+                    
+                    <div class="job-tags">
+                        <span class="job-tag">{{ application.job.category.name }}</span>
+                        {% if application.job.is_urgent %}
+                            <span class="job-tag" style="background: #fee2e2; color: #dc2626;">Acil</span>
+                        {% endif %}
+                        <span class="job-tag">{{ application.job.city }}</span>
+                    </div>
+                </div>
+                
+                <div class="application-actions">
+                    <div class="application-progress">
+                        {% if application.status == 'pending' %}
+                            <i class="fas fa-hourglass-half"></i> İşveren incelemesini bekliyor
+                        {% elif application.status == 'reviewed' %}
+                            <i class="fas fa-eye"></i> İşveren tarafından incelendi
+                        {% elif application.status == 'accepted' %}
+                            <i class="fas fa-check-circle"></i> Tebrikler! Başvurunuz kabul edildi
+                        {% elif application.status == 'rejected' %}
+                            <i class="fas fa-times-circle"></i> Başvurunuz reddedildi
+                        {% endif %}
+                    </div>
+                    
+                    <div class="action-buttons">
+                        <a href="{% url 'jobs:detail' application.job.id %}" class="action-btn">
+                            <i class="fas fa-eye"></i>
+                            İlanı Görüntüle
+                        </a>
+                        
+                        {% if application.status == 'accepted' %}
+                            <button class="action-btn primary" onclick="showComingSoon('Mesajlaşma özelliği yakında!')">
+                                <i class="fas fa-envelope"></i>
+                                Mesaj Gönder
+                            </button>
+                        {% elif application.status == 'pending' %}
+                            <button class="action-btn" onclick="withdrawApplication({{ application.id }})">
+                                <i class="fas fa-times"></i>
+                                Başvuruyu Geri Çek
+                            </button>
+                        {% endif %}
+                        
+                        <button class="action-btn" onclick="showApplicationDetails({{ application.id }})">
+                            <i class="fas fa-info-circle"></i>
+                            Detaylar
+                        </button>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="empty-state">
+                <div class="empty-icon">
+                    <i class="fas fa-inbox"></i>
+                </div>
+                <h2 class="empty-title">Henüz başvurunuz yok</h2>
+                <p class="empty-description">
+                    Size uygun iş fırsatlarını keşfedin ve hemen başvurmaya başlayın. 
+                    Hayalinizdeki işe bir adım daha yaklaşın!
+                </p>
+                <a href="{% url 'jobs:list' %}" class="empty-action">
+                    <i class="fas fa-search"></i>
+                    İş İlanlarını Keşfet
+                </a>
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Loading template (hidden) -->
+    <div class="loading-card" style="display: none;" id="loadingTemplate">
+        <div class="loading-placeholder loading-title"></div>
+        <div class="loading-placeholder loading-company"></div>
+        <div class="loading-placeholder loading-description"></div>
+        <div class="loading-placeholder loading-meta"></div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Filter and search functionality
+    document.addEventListener('DOMContentLoaded', function() {
+        const searchInput = document.getElementById('searchInput');
+        const statusFilter = document.getElementById('statusFilter');
+        const sortFilter = document.getElementById('sortFilter');
+        const statusTabs = document.querySelectorAll('.status-tab');
+        const applicationCards = document.querySelectorAll('.application-card');
+
+        // Search functionality
+        searchInput.addEventListener('input', filterApplications);
+        statusFilter.addEventListener('change', filterApplications);
+        sortFilter.addEventListener('change', sortApplications);
+
+        // Status tabs
+        statusTabs.forEach(tab => {
+            tab.addEventListener('click', function() {
+                // Remove active class from all tabs
+                statusTabs.forEach(t => t.classList.remove('active'));
+                // Add active class to clicked tab
+                this.classList.add('active');
+                
+                // Update status filter
+                statusFilter.value = this.dataset.status;
+                filterApplications();
+            });
+        });
+
+        function filterApplications() {
+            const searchTerm = searchInput.value.toLowerCase();
+            const statusValue = statusFilter.value;
+            
+            applicationCards.forEach(card => {
+                const title = card.dataset.title;
+                const company = card.dataset.company;
+                const status = card.dataset.status;
+                
+                const matchesSearch = !searchTerm || 
+                    title.includes(searchTerm) || 
+                    company.includes(searchTerm);
+                    
+                const matchesStatus = !statusValue || status === statusValue;
+                
+                if (matchesSearch && matchesStatus) {
+                    card.style.display = 'block';
+                    card.classList.add('fade-in');
+                } else {
+                    card.style.display = 'none';
+                    card.classList.remove('fade-in');
+                }
+            });
+            
+            // Update empty state
+            updateEmptyState();
+        }
+
+        function sortApplications() {
+            const sortValue = sortFilter.value;
+            const container = document.getElementById('applicationsList');
+            const cards = Array.from(applicationCards);
+            
+            cards.sort((a, b) => {
+                switch(sortValue) {
+                    case 'newest':
+                        return new Date(b.querySelector('.application-date').textContent.trim()) - 
+                               new Date(a.querySelector('.application-date').textContent.trim());
+                    case 'oldest':
+                        return new Date(a.querySelector('.application-date').textContent.trim()) - 
+                               new Date(b.querySelector('.application-date').textContent.trim());
+                    case 'company':
+                        return a.dataset.company.localeCompare(b.dataset.company);
+                    case 'status':
+                        return a.dataset.status.localeCompare(b.dataset.status);
+                    default:
+                        return 0;
+                }
+            });
+            
+            // Reorder cards in DOM
+            cards.forEach(card => container.appendChild(card));
+        }
+
+        function updateEmptyState() {
+            const visibleCards = Array.from(applicationCards).filter(card => 
+                card.style.display !== 'none'
+            );
+            
+            const emptyState = document.querySelector('.empty-state');
+            if (emptyState) {
+                emptyState.style.display = visibleCards.length === 0 ? 'block' : 'none';
+            }
+        }
+    });
+
+    // Application actions
+    function withdrawApplication(applicationId) {
+        if (!confirm('Başvurunuzu geri çekmek istediğinizden emin misiniz?')) {
+            return;
+        }
+        
+        // Show loading
+        showLoading();
+        
+        // Simulate API call
+        setTimeout(() => {
+            hideLoading();
+            App.showToast('Başvurunuz geri çekildi', 'success');
+            
+            // Remove card from DOM
+            const card = document.querySelector(`[data-application-id="${applicationId}"]`);
+            if (card) {
+                card.style.opacity = '0';
+                card.style.transform = 'translateX(-100%)';
+                setTimeout(() => card.remove(), 300);
+            }
+        }, 1000);
+    }
+
+    function showApplicationDetails(applicationId) {
+        // In a real application, this would open a modal with detailed information
+        App.showToast('Başvuru detayları özelliği yakında eklenecek!', 'info');
+    }
+
+    function showComingSoon(message) {
+        if (typeof App !== 'undefined' && App.showToast) {
+            App.showToast(message, 'info');
+        } else {
+            alert(message);
+        }
+    }
+
+    // Loading states
+    function showLoading() {
+        const loading = document.createElement('div');
+        loading.id = 'pageLoading';
+        loading.innerHTML = '<div class="loading-overlay"><div class="loading-spinner"></div></div>';
+        document.body.appendChild(loading);
+    }
+
+    function hideLoading() {
+        const loading = document.getElementById('pageLoading');
+        if (loading) {
+            loading.remove();
+        }
+    }
+
+    // Real-time updates simulation
+    function simulateStatusUpdates() {
+        setInterval(() => {
+            const pendingCards = document.querySelectorAll('[data-status="pending"]');
+            if (pendingCards.length > 0 && Math.random() > 0.95) {
+                const randomCard = pendingCards[Math.floor(Math.random() * pendingCards.length)];
+                const newStatus = Math.random() > 0.5 ? 'reviewed' : 'accepted';
+                
+                // Update card status
+                randomCard.dataset.status = newStatus;
+                const badge = randomCard.querySelector('.status-badge');
+                badge.className = `status-badge status-${newStatus}`;
+                badge.textContent = newStatus === 'reviewed' ? 'İncelendi' : 'Kabul Edildi';
+                
+                // Show notification
+                App.showToast(`Başvuru durumunuz güncellendi: ${badge.textContent}`, 'success');
+            }
+        }, 30000); // Check every 30 seconds
+    }
+
+    // Initialize real-time updates
+    setTimeout(simulateStatusUpdates, 5000);
+
+    // Smooth animations
+    document.addEventListener('DOMContentLoaded', function() {
+        const cards = document.querySelectorAll('.application-card');
+        cards.forEach((card, index) => {
+            card.style.opacity = '0';
+            card.style.transform = 'translateY(20px)';
+            card.style.transition = 'all 0.3s ease';
+            
+            setTimeout(() => {
+                card.style.opacity = '1';
+                card.style.transform = 'translateY(0)';
+            }, index * 100);
+        });
+    });
+</script>
+{% endblock %}
