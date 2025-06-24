@@ -46,7 +46,7 @@ def login_view(request):
                     logger.info(f"User logged in: {user.email}")
                     
                     # Redirect
-                    next_url = request.GET.get('next', 'dashboard:home')
+                    next_url = request.GET.get('next', '/')
                     return redirect(next_url)
                 else:
                     messages.error(request, 'Hesabınız deaktive edilmiş.')
@@ -63,7 +63,7 @@ def login_view(request):
 def register_view(request):
     """Kayıt sayfası ve işlemleri"""
     if request.user.is_authenticated:
-        return redirect('dashboard:home')
+        return redirect('/')
     
     if request.method == 'POST':
         form = SimpleRegisterForm(request.POST)
