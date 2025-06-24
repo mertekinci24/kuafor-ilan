@@ -27,6 +27,7 @@ INSTALLED_APPS = [
     'apps.dashboard',
     'apps.jobs',
     'apps.profiles',
+    'apps.posts',  # Bu satır eklendi
 ]
 
 MIDDLEWARE = [
@@ -38,7 +39,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'apps.core.middleware.WordPressProtectionMiddleware',  # WordPress bot koruması
+    'apps.core.middleware.WordPressProtectionMiddleware',
 ]
 
 ROOT_URLCONF = 'kuafor_ilan.urls'
@@ -88,7 +89,7 @@ AUTHENTICATION_BACKENDS = [
 
 # Login URLs
 LOGIN_URL = '/auth/login/'
-LOGIN_REDIRECT_URL = '/'  # Giriş sonrası anasayfaya yönlendir
+LOGIN_REDIRECT_URL = '/'
 LOGOUT_REDIRECT_URL = '/'
 
 # REST Framework
@@ -145,7 +146,7 @@ CSRF_TRUSTED_ORIGINS = [
 # Email (basic)
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
-# Logging for debugging - WordPress bot koruması ile
+# Logging for debugging
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
@@ -181,7 +182,7 @@ LOGGING = {
 }
 
 # Session settings
-SESSION_COOKIE_AGE = 86400 * 30  # 30 days
+SESSION_COOKIE_AGE = 86400 * 30
 SESSION_COOKIE_SECURE = not DEBUG
 SESSION_COOKIE_HTTPONLY = True
 SESSION_SAVE_EVERY_REQUEST = True
@@ -208,12 +209,12 @@ DEFAULT_FROM_EMAIL = 'noreply@kuaforilan.com'
 OTP_EXPIRY_MINUTES = 5
 OTP_MAX_ATTEMPTS = 3
 
-# Sosyal medya authentication ayarları (gelecek için)
+# Sosyal medya authentication ayarları
 GOOGLE_OAUTH2_CLIENT_ID = os.environ.get('GOOGLE_OAUTH2_CLIENT_ID', '')
 GOOGLE_OAUTH2_CLIENT_SECRET = os.environ.get('GOOGLE_OAUTH2_CLIENT_SECRET', '')
 LINKEDIN_CLIENT_ID = os.environ.get('LINKEDIN_CLIENT_ID', '')
 LINKEDIN_CLIENT_SECRET = os.environ.get('LINKEDIN_CLIENT_SECRET', '')
 
-# Rate limiting ayarları (güvenlik için)
+# Rate limiting ayarları
 LOGIN_ATTEMPT_LIMIT = 5
-LOGIN_ATTEMPT_TIMEOUT = 300  # 5 dakika
+LOGIN_ATTEMPT_TIMEOUT = 300
