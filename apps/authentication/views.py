@@ -21,7 +21,7 @@ logger = logging.getLogger(__name__)
 def login_view(request):
     """Login sayfası ve işlemleri"""
     if request.user.is_authenticated:
-        return redirect('dashboard:home')
+        return redirect('/')  # Ana sayfaya yönlendir
     
     if request.method == 'POST':
         form = SimpleLoginForm(request.POST)
