@@ -31,6 +31,8 @@ urlpatterns = [
     
     # Profiles URL'leri - BU SATIRI EKLEYİN
     path('profiles/', include('apps.profiles.urls')),
+
+    path('posts/', include('apps.posts.urls')),
     
     # WordPress bot koruması
     re_path(r'^wp-.*', block_bots),
