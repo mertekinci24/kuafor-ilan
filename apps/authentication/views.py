@@ -333,5 +333,5 @@ def profile_redirect(request):
 @login_required 
 def dashboard_redirect(request):
     """Dashboard yönlendirme"""
-    return redirect('dashboard:home')
+    return redirect('/')  # Ana sayfaya yönlendir
     
