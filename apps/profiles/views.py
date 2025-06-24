@@ -37,6 +37,9 @@ def profile_view(request, user_id=None):
     if profile_user.user_type == 'jobseeker':
         try:
             jobseeker_profile = profile_user.jobseeker_profile
+            skills_text = getattr(jobseeker_profile, 'skills', '')
+            skills_list = [skill.strip() for skill in skills_text.split(',') if skill.strip()] if skills_text else []
+            
             profile_data = {
                 'type': 'jobseeker',
                 'full_name': getattr(jobseeker_profile, 'full_name', profile_user.get_full_name()),
@@ -45,6 +48,7 @@ def profile_view(request, user_id=None):
                 'district': getattr(jobseeker_profile, 'district', ''),
                 'experience_years': getattr(jobseeker_profile, 'experience_years', 0),
                 'skills': getattr(jobseeker_profile, 'skills', ''),
+                'skills_list': skills_list,
                 'is_available': getattr(jobseeker_profile, 'is_available', True),
                 'portfolio_images': getattr(jobseeker_profile, 'portfolio_images', ''),
             }
@@ -65,6 +69,7 @@ def profile_view(request, user_id=None):
                 'district': '',
                 'experience_years': 0,
                 'skills': '',
+                'skills_list': [],
                 'is_available': True,
                 'portfolio_images': '',
             }
