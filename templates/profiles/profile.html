@@ -633,9 +633,11 @@
                 </div>
                 
                 <div class="skills-list">
-                    {% for skill in profile_data.skills|split:',' %}
-                        <span class="skill-tag">{{ skill|strip }}</span>
-                    {% endfor %}
+                    {% if profile_data.skills %}
+                        {% with skills=profile_data.skills %}
+                            <span class="skill-tag">{{ skills }}</span>
+                        {% endwith %}
+                    {% endif %}
                 </div>
             </div>
             {% endif %}
