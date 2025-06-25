@@ -1,6 +1,6 @@
 {
   "build": {
-    "command": "python manage.py makemigrations authentication && python manage.py migrate auth && python manage.py makemigrations && python manage.py migrate && python manage.py create_admin && python manage.py collectstatic --noinput"
+    "command": "rm -rf */migrations/0*.py && python manage.py makemigrations authentication && python manage.py makemigrations core && python manage.py makemigrations posts && python manage.py makemigrations jobs && python manage.py makemigrations profiles && python manage.py makemigrations dashboard && python manage.py migrate && python manage.py create_admin && python manage.py collectstatic --noinput"
   },
   "start": {
     "command": "gunicorn kuafor_ilan.wsgi:application"
