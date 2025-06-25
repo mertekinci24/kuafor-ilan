@@ -1,1 +1,669 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Ana Sayfa - Kuaförİlan{% endblock %}
+
+{% block extra_css %}
+<style>
+    .post-card {
+        transition: var(--transition);
+        position: relative;
+    }
+    
+    .post-card:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-md);
+    }
+    
+    .post-actions button {
+        background: none;
+        border: none;
+        padding: 8px 12px;
+        border-radius: var(--border-radius-sm);
+        cursor: pointer;
+        transition: var(--transition);
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        color: var(--text-muted);
+        font-size: 14px;
+        font-weight: 500;
+    }
+    
+    .post-actions button:hover {
+        background: var(--light-color);
+        color: var(--primary-color);
+    }
+    
+    .post-actions button.active {
+        color: var(--primary-color);
+    }
+    
+    .post-actions button.liked {
+        color: var(--danger-color);
+    }
+    
+    .post-content img, .post-content video {
+        max-width: 100%;
+        border-radius: var(--border-radius-sm);
+        margin: 1rem 0;
+    }
+    
+    .tag {
+        display: inline-block;
+        background: #f1f5f9;
+        color: var(--primary-color);
+        padding: 0.25rem 0.75rem;
+        border-radius: 20px;
+        font-size: 0.875rem;
+        font-weight: 500;
+        margin: 0.25rem 0.25rem 0.25rem 0;
+        text-decoration: none;
+        transition: var(--transition);
+    }
+    
+    .tag:hover {
+        background: var(--primary-color);
+        color: var(--white);
+    }
+    
+    .quick-post-form {
+        background: var(--white);
+        border-radius: var(--border-radius);
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+        box-shadow: var(--shadow-sm);
+        border: 1px solid var(--border-color);
+    }
+    
+    .quick-post-textarea {
+        border: none;
+        resize: none;
+        outline: none;
+        font-size: 16px;
+        line-height: 1.5;
+        padding: 0;
+        background: transparent;
+        width: 100%;
+        min-height: 60px;
+    }
+    
+    .quick-post-textarea::placeholder {
+        color: var(--text-muted);
+    }
+    
+    .media-preview {
+        position: relative;
+        margin-top: 1rem;
+    }
+    
+    .media-preview img {
+        max-width: 100%;
+        max-height: 300px;
+        object-fit: cover;
+        border-radius: var(--border-radius-sm);
+    }
+    
+    .remove-media {
+        position: absolute;
+        top: 8px;
+        right: 8px;
+        background: rgba(0, 0, 0, 0.6);
+        color: white;
+        border: none;
+        border-radius: 50%;
+        width: 24px;
+        height: 24px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 12px;
+    }
+    
+    .welcome-card {
+        background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+        color: var(--white);
+        text-align: center;
+        padding: 3rem 2rem;
+        border-radius: var(--border-radius);
+        margin-bottom: 2rem;
+    }
+    
+    .empty-state {
+        text-align: center;
+        padding: 4rem 2rem;
+        color: var(--text-muted);
+    }
+    
+    .empty-state i {
+        font-size: 4rem;
+        margin-bottom: 1rem;
+        opacity: 0.5;
+    }
+    
+    .pagination {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 0.5rem;
+        margin-top: 2rem;
+        padding: 2rem 0;
+    }
+    
+    .page-link {
+        padding: 8px 12px;
+        border: 1px solid var(--border-color);
+        background: var(--white);
+        color: var(--text-color);
+        text-decoration: none;
+        border-radius: var(--border-radius-sm);
+        transition: var(--transition);
+    }
+    
+    .page-link:hover {
+        background: var(--primary-color);
+        color: var(--white);
+        border-color: var(--primary-color);
+    }
+    
+    .page-link.active {
+        background: var(--primary-color);
+        color: var(--white);
+        border-color: var(--primary-color);
+    }
+    
+    @media (max-width: 768px) {
+        .quick-post-form {
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+        
+        .post-card {
+            padding: 1rem;
+        }
+        
+        .post-actions {
+            flex-wrap: wrap;
+            gap: 0.25rem;
+        }
+        
+        .post-actions button {
+            font-size: 12px;
+            padding: 6px 8px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Welcome Section / Quick Post -->
+    {% if user.is_authenticated %}
+        <div class="quick-post-form">
+            <form id="quickPostForm" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="d-flex align-items-start" style="gap: 1rem;">
+                    <div class="user-avatar" style="flex-shrink: 0;">
+                        {{ user.first_name.0|upper|default:"U" }}
+                    </div>
+                    <div style="flex: 1;">
+                        <textarea 
+                            name="content" 
+                            class="quick-post-textarea"
+                            placeholder="Ne düşünüyorsun? İş deneyimini, becerilerini veya sektörle ilgili düşüncelerini paylaş..."
+                            rows="3"
+                            required></textarea>
+                        
+                        <!-- Media Preview -->
+                        <div id="mediaPreview" class="media-preview hidden"></div>
+                        
+                        <!-- Post Options -->
+                        <div class="d-flex justify-content-between align-items-center" style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--border-color);">
+                            <div class="d-flex align-items-center" style="gap: 0.75rem;">
+                                <!-- Media Upload Buttons -->
+                                <label class="btn btn-outline btn-sm" style="cursor: pointer;" title="Fotoğraf ekle">
+                                    <i class="fas fa-image"></i>
+                                    <input type="file" name="image" accept="image/*" style="display: none;" id="imageInput">
+                                </label>
+                                
+                                <label class="btn btn-outline btn-sm" style="cursor: pointer;" title="Video ekle">
+                                    <i class="fas fa-video"></i>
+                                    <input type="file" name="video" accept="video/*" style="display: none;" id="videoInput">
+                                </label>
+                                
+                                <!-- Category Select -->
+                                {% if categories %}
+                                <select name="category" class="form-control form-select" style="width: auto; min-width: 140px;">
+                                    <option value="">Kategori</option>
+                                    {% for category in categories %}
+                                    <option value="{{ category.id }}">{{ category.name }}</option>
+                                    {% endfor %}
+                                </select>
+                                {% endif %}
+                            </div>
+                            
+                            <!-- Submit Button -->
+                            <button type="submit" class="btn btn-primary" id="submitBtn">
+                                <i class="fas fa-paper-plane"></i>
+                                <span>Paylaş</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    {% else %}
+        <div class="welcome-card">
+            <h1 class="h2">Kuaförİlan'a Hoş Geldiniz</h1>
+            <p style="font-size: 1.125rem; margin: 1rem 0 2rem; opacity: 0.9;">
+                Türkiye'nin en büyük kuaför ve berber iş platformu. Sektördeki fırsatları keşfedin, deneyimlerinizi paylaşın.
+            </p>
+            <div class="d-flex justify-content-center" style="gap: 1rem;">
+                <a href="/auth/login/" class="btn btn-secondary btn-lg">
+                    <i class="fas fa-sign-in-alt"></i>
+                    <span>Giriş Yap</span>
+                </a>
+                <a href="/auth/register/" class="btn btn-outline btn-lg" style="color: var(--white); border-color: var(--white);">
+                    <i class="fas fa-user-plus"></i>
+                    <span>Üye Ol</span>
+                </a>
+            </div>
+        </div>
+    {% endif %}
+    
+    <!-- Posts Feed -->
+    <div id="postsContainer">
+        {% for post_data in posts %}
+            <article class="card post-card" data-post-id="{{ post_data.post.id }}">
+                <!-- Post Header -->
+                <header class="d-flex align-items-center justify-content-between mb-3">
+                    <div class="d-flex align-items-center" style="gap: 1rem;">
+                        <div class="user-avatar" style="flex-shrink: 0;">
+                            {{ post_data.post.author.first_name.0|upper|default:"U" }}
+                        </div>
+                        <div>
+                            <h3 style="margin: 0; font-size: 1rem; font-weight: 600;">
+                                <a href="/profiles/{{ post_data.post.author.pk }}/" 
+                                   class="text-primary" 
+                                   style="text-decoration: none;">
+                                    {{ post_data.post.author.get_full_name|default:post_data.post.author.email }}
+                                </a>
+                            </h3>
+                            <div class="text-muted text-sm" style="margin: 0;">
+                                <time datetime="{{ post_data.post.created_at|date:'c' }}">
+                                    {{ post_data.post.created_at|timesince }} önce
+                                </time>
+                                {% if post_data.post.category %}
+                                    <span style="margin: 0 0.5rem;">•</span>
+                                    <span class="text-primary">{{ post_data.post.category.name }}</span>
+                                {% endif %}
+                                {% if post_data.post.location %}
+                                    <span style="margin: 0 0.5rem;">•</span>
+                                    <i class="fas fa-map-marker-alt"></i>
+                                    <span>{{ post_data.post.location }}</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    {% if post_data.can_edit %}
+                    <div class="dropdown" style="position: relative;">
+                        <button class="btn btn-sm" 
+                                style="background: none; border: none; color: var(--text-muted); padding: 8px;"
+                                onclick="toggleDropdown(this)">
+                            <i class="fas fa-ellipsis-h"></i>
+                        </button>
+                        <div class="dropdown-menu" style="right: 0;">
+                            <a href="/posts/{{ post_data.post.id }}/edit/" class="dropdown-item">
+                                <i class="fas fa-edit"></i> Düzenle
+                            </a>
+                            <a href="/posts/{{ post_data.post.id }}/delete/" class="dropdown-item text-danger">
+                                <i class="fas fa-trash"></i> Sil
+                            </a>
+                        </div>
+                    </div>
+                    {% endif %}
+                </header>
+                
+                <!-- Post Content -->
+                <div class="post-content">
+                    {% if post_data.post.title %}
+                        <h2 style="font-size: 1.25rem; font-weight: 600; margin-bottom: 0.75rem; color: var(--text-color);">
+                            {{ post_data.post.title }}
+                        </h2>
+                    {% endif %}
+                    
+                    <div style="white-space: pre-wrap; line-height: 1.6; margin-bottom: 1rem;">
+                        {{ post_data.post.content }}
+                    </div>
+                    
+                    <!-- Media Content -->
+                    {% if post_data.post.image %}
+                        <div class="mb-3">
+                            <img src="{{ post_data.post.image.url }}" 
+                                 alt="Post görseli" 
+                                 loading="lazy"
+                                 style="width: 100%; max-height: 500px; object-fit: cover;">
+                        </div>
+                    {% endif %}
+                    
+                    {% if post_data.post.video %}
+                        <div class="mb-3">
+                            <video controls 
+                                   style="width: 100%; max-height: 500px;"
+                                   preload="metadata">
+                                <source src="{{ post_data.post.video.url }}" type="video/mp4">
+                                <p>Tarayıcınız video oynatmayı desteklemiyor.</p>
+                            </video>
+                        </div>
+                    {% endif %}
+                    
+                    <!-- Tags -->
+                    {% if post_data.tags_list %}
+                        <div style="margin: 1rem 0;">
+                            {% for tag in post_data.tags_list %}
+                                <a href="/?search=%23{{ tag }}" class="tag">
+                                    #{{ tag }}
+                                </a>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+                
+                <!-- Post Actions -->
+                <footer class="post-actions d-flex justify-content-between align-items-center" 
+                        style="padding-top: 1rem; border-top: 1px solid var(--border-color);">
+                    <div class="d-flex align-items-center" style="gap: 0.5rem;">
+                        <!-- Like Button -->
+                        <button class="like-btn {% if post_data.is_liked %}liked active{% endif %}" 
+                                data-post-id="{{ post_data.post.id }}"
+                                title="Beğen">
+                            <i class="fas fa-heart"></i>
+                            <span class="like-count">{{ post_data.post.likes_count }}</span>
+                        </button>
+                        
+                        <!-- Comment Button -->
+                        <button class="comment-btn" 
+                                onclick="window.location.href='/posts/{{ post_data.post.id }}/#comments'"
+                                title="Yorumla">
+                            <i class="fas fa-comment"></i>
+                            <span>{{ post_data.post.comments_count }}</span>
+                        </button>
+                        
+                        <!-- Save Button -->
+                        <button class="save-btn {% if post_data.is_saved %}active{% endif %}" 
+                                data-post-id="{{ post_data.post.id }}"
+                                title="Kaydet">
+                            <i class="fas fa-bookmark"></i>
+                        </button>
+                        
+                        <!-- Share Button -->
+                        <button class="share-btn" 
+                                onclick="sharePost('{{ post_data.post.id }}')"
+                                title="Paylaş">
+                            <i class="fas fa-share"></i>
+                        </button>
+                    </div>
+                    
+                    <a href="/posts/{{ post_data.post.id }}/" 
+                       class="btn btn-outline btn-sm"
+                       style="font-size: 14px;">
+                        Detay
+                    </a>
+                </footer>
+            </article>
+        {% empty %}
+            <div class="empty-state">
+                <i class="fas fa-comments"></i>
+                <h3 class="h4">Henüz gönderi paylaşılmamış</h3>
+                <p>İlk paylaşımı yaparak topluluğa katılın!</p>
+                {% if user.is_authenticated %}
+                    <button onclick="document.querySelector('.quick-post-textarea').focus()" 
+                            class="btn btn-primary mt-3">
+                        <i class="fas fa-plus"></i>
+                        İlk Gönderiyi Paylaş
+                    </button>
+                {% endif %}
+            </div>
+        {% endfor %}
+    </div>
+    
+    <!-- Pagination -->
+    {% if posts_page.has_other_pages %}
+        <nav class="pagination" aria-label="Sayfa navigasyonu">
+            {% if posts_page.has_previous %}
+                <a href="?page=1{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.category %}&category={{ request.GET.category }}{% endif %}" 
+                   class="page-link" title="İlk sayfa">
+                    <i class="fas fa-angle-double-left"></i>
+                </a>
+                <a href="?page={{ posts_page.previous_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.category %}&category={{ request.GET.category }}{% endif %}" 
+                   class="page-link" title="Önceki sayfa">
+                    <i class="fas fa-angle-left"></i>
+                </a>
+            {% endif %}
+            
+            <span class="page-link active">
+                {{ posts_page.number }} / {{ posts_page.paginator.num_pages }}
+            </span>
+            
+            {% if posts_page.has_next %}
+                <a href="?page={{ posts_page.next_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.category %}&category={{ request.GET.category }}{% endif %}" 
+                   class="page-link" title="Sonraki sayfa">
+                    <i class="fas fa-angle-right"></i>
+                </a>
+                <a href="?page={{ posts_page.paginator.num_pages }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.category %}&category={{ request.GET.category }}{% endif %}" 
+                   class="page-link" title="Son sayfa">
+                    <i class="fas fa-angle-double-right"></i>
+                </a>
+            {% endif %}
+        </nav>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Quick Post Form
+    const quickPostForm = document.getElementById('quickPostForm');
+    const submitBtn = document.getElementById('submitBtn');
+    const imageInput = document.getElementById('imageInput');
+    const videoInput = document.getElementById('videoInput');
+    const mediaPreview = document.getElementById('mediaPreview');
+    
+    // Media Preview Functionality
+    function showMediaPreview(file, type) {
+        mediaPreview.classList.remove('hidden');
+        const url = URL.createObjectURL(file);
+        
+        if (type === 'image') {
+            mediaPreview.innerHTML = `
+                <img src="${url}" alt="Preview">
+                <button type="button" class="remove-media" onclick="removeMedia()">
+                    <i class="fas fa-times"></i>
+                </button>
+            `;
+        } else if (type === 'video') {
+            mediaPreview.innerHTML = `
+                <video controls src="${url}"></video>
+                <button type="button" class="remove-media" onclick="removeMedia()">
+                    <i class="fas fa-times"></i>
+                </button>
+            `;
+        }
+    }
+    
+    window.removeMedia = function() {
+        mediaPreview.classList.add('hidden');
+        mediaPreview.innerHTML = '';
+        imageInput.value = '';
+        videoInput.value = '';
+    };
+    
+    // File Input Handlers
+    imageInput.addEventListener('change', function(e) {
+        if (e.target.files[0]) {
+            videoInput.value = ''; // Clear video if image selected
+            showMediaPreview(e.target.files[0], 'image');
+        }
+    });
+    
+    videoInput.addEventListener('change', function(e) {
+        if (e.target.files[0]) {
+            imageInput.value = ''; // Clear image if video selected
+            showMediaPreview(e.target.files[0], 'video');
+        }
+    });
+    
+    // Quick Post Submit
+    if (quickPostForm) {
+        quickPostForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            const originalBtnText = submitBtn.innerHTML;
+            
+            try {
+                // Show loading state
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<div class="loading"></div> Paylaşılıyor...';
+                
+                const response = await fetch('/posts/create/', {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-CSRFToken': App.getCsrfToken(),
+                    }
+                });
+                
+                if (response.ok) {
+                    App.showToast('Gönderi başarıyla paylaşıldı!', 'success');
+                    this.reset();
+                    removeMedia();
+                    
+                    // Reload page after short delay
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 1000);
+                } else {
+                    const data = await response.json();
+                    throw new Error(data.message || 'Gönderi paylaşılamadı');
+                }
+            } catch (error) {
+                App.showToast(error.message, 'danger');
+            } finally {
+                // Restore button state
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalBtnText;
+            }
+        });
+    }
+    
+    // Like Button Functionality
+    document.querySelectorAll('.like-btn').forEach(btn => {
+        btn.addEventListener('click', async function() {
+            if (!{{ user.is_authenticated|yesno:'true,false' }}) {
+                App.showToast('Beğenmek için giriş yapmalısınız', 'warning');
+                return;
+            }
+            
+            const postId = this.dataset.postId;
+            const likeCount = this.querySelector('.like-count');
+            const wasLiked = this.classList.contains('liked');
+            
+            try {
+                const response = await App.request('/posts/api/like/', {
+                    method: 'POST',
+                    body: JSON.stringify({ post_id: postId })
+                });
+                
+                if (response.success) {
+                    if (response.is_liked) {
+                        this.classList.add('liked', 'active');
+                    } else {
+                        this.classList.remove('liked', 'active');
+                    }
+                    likeCount.textContent = response.likes_count;
+                }
+            } catch (error) {
+                // Error handled by App.request
+            }
+        });
+    });
+    
+    // Save Button Functionality
+    document.querySelectorAll('.save-btn').forEach(btn => {
+        btn.addEventListener('click', async function() {
+            if (!{{ user.is_authenticated|yesno:'true,false' }}) {
+                App.showToast('Kaydetmek için giriş yapmalısınız', 'warning');
+                return;
+            }
+            
+            const postId = this.dataset.postId;
+            const wasSaved = this.classList.contains('active');
+            
+            try {
+                const response = await App.request('/posts/api/save/', {
+                    method: 'POST',
+                    body: JSON.stringify({ post_id: postId })
+                });
+                
+                if (response.success) {
+                    if (response.is_saved) {
+                        this.classList.add('active');
+                        App.showToast('Gönderi kaydedildi', 'success');
+                    } else {
+                        this.classList.remove('active');
+                        App.showToast('Kayıt kaldırıldı', 'success');
+                    }
+                }
+            } catch (error) {
+                // Error handled by App.request
+            }
+        });
+    });
+});
+
+// Share Post Function
+function sharePost(postId) {
+    const url = `${window.location.origin}/posts/${postId}/`;
+    
+    if (navigator.share) {
+        navigator.share({
+            title: 'Kuaförİlan - Gönderi',
+            text: 'Bu gönderiyi inceleyin',
+            url: url
+        }).catch(() => {
+            // Fallback to copy
+            copyToClipboard(url);
+        });
+    } else {
+        copyToClipboard(url);
+    }
+}
+
+function copyToClipboard(text) {
+    navigator.clipboard.writeText(text).then(() => {
+        App.showToast('Bağlantı kopyalandı', 'success');
+    }).catch(() => {
+        App.showToast('Bağlantı kopyalanamadı', 'danger');
+    });
+}
+
+// Dropdown Toggle
+function toggleDropdown(button) {
+    const dropdown = button.nextElementSibling;
+    dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
+    
+    // Close on outside click
+    document.addEventListener('click', function closeDropdown(e) {
+        if (!button.contains(e.target) && !dropdown.contains(e.target)) {
+            dropdown.style.display = 'none';
+            document.removeEventListener('click', closeDropdown);
+        }
+    });
+}
+</script>
+{% endblock %}
 
