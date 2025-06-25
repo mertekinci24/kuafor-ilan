@@ -4,6 +4,71 @@
 
 {% block extra_css %}
 <style>
+    :root {
+        --primary-color: #0a66c2;
+        --primary-light: #4c9eff;
+        --primary-dark: #004182;
+        --secondary-color: #f3f6f8;
+        --accent-color: #ff6b35;
+        --success-color: #28a745;
+        --warning-color: #ffc107;
+        --danger-color: #dc3545;
+        --text-color: #333333;
+        --text-muted: #6c757d;
+        --border-color: #e1e5e9;
+        --white: #ffffff;
+        --light-gray: #f8f9fa;
+        --shadow-sm: 0 2px 4px rgba(0,0,0,0.1);
+        --shadow-md: 0 4px 8px rgba(0,0,0,0.15);
+        --border-radius: 12px;
+        --transition: all 0.3s ease;
+        --gradient-primary: linear-gradient(135deg, var(--primary-color), var(--primary-light));
+    }
+
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    body {
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        background: #f5f7fa;
+        color: var(--text-color);
+        line-height: 1.6;
+    }
+
+    /* Animations */
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes slideIn {
+        from { transform: translateX(-100%); }
+        to { transform: translateX(0); }
+    }
+
+    @keyframes pulse {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.05); }
+    }
+
+    @keyframes bounce {
+        0%, 20%, 53%, 80%, 100% { transform: translate3d(0,0,0); }
+        40%, 43% { transform: translate3d(0,-8px,0); }
+        70% { transform: translate3d(0,-4px,0); }
+    }
+
+    .fade-in {
+        animation: fadeIn 0.6s ease-out forwards;
+        opacity: 0;
+    }
+
+    .slide-in {
+        animation: slideIn 0.5s ease-out forwards;
+    }
+
     /* Header */
     .main-header {
         background: var(--white);
@@ -29,10 +94,17 @@
         gap: 12px;
         text-decoration: none;
         color: var(--primary-color);
+        transition: var(--transition);
+    }
+
+    .logo-container:hover {
+        transform: scale(1.02);
+        color: var(--primary-color);
     }
 
     .logo {
         font-size: 28px;
+        animation: bounce 2s infinite;
     }
 
     .logo-text {
@@ -62,6 +134,7 @@
         border-color: var(--primary-color);
         box-shadow: 0 0 0 3px rgba(10, 102, 194, 0.1);
         background: var(--white);
+        transform: scale(1.02);
     }
 
     .search-icon {
@@ -71,6 +144,11 @@
         transform: translateY(-50%);
         color: var(--text-muted);
         font-size: 18px;
+        transition: var(--transition);
+    }
+
+    .search-box:focus + .search-icon {
+        color: var(--primary-color);
     }
 
     .nav-icons {
@@ -100,11 +178,13 @@
         background: var(--primary-color);
         color: var(--white);
         transform: translateY(-2px);
+        box-shadow: var(--shadow-md);
     }
 
     .nav-icon.active {
         background: var(--primary-color);
         color: var(--white);
+        transform: scale(1.1);
     }
 
     .notification-badge {
@@ -121,6 +201,7 @@
         display: flex;
         align-items: center;
         justify-content: center;
+        animation: pulse 2s infinite;
     }
 
     .user-menu {
@@ -159,70 +240,23 @@
         display: grid;
         grid-template-columns: 300px 1fr 300px;
         gap: 24px;
+        min-height: calc(100vh - 200px);
     }
 
-    /* Sidebar */
-    .sidebar {
-        background: var(--white);
-        border-radius: var(--border-radius);
-        padding: 24px;
-        box-shadow: var(--shadow-sm);
-        height: fit-content;
-        position: sticky;
-        top: 100px;
-    }
-
-    .sidebar-section {
-        margin-bottom: 32px;
-    }
-
-    .sidebar-title {
-        font-size: 18px;
-        font-weight: 700;
-        color: var(--text-color);
-        margin-bottom: 16px;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-    }
-
-    .sidebar-item {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        padding: 12px 16px;
-        border-radius: 8px;
-        cursor: pointer;
-        transition: var(--transition);
-        text-decoration: none;
-        color: var(--text-color);
-        margin-bottom: 8px;
-    }
-
-    .sidebar-item:hover,
-    .sidebar-item.active {
-        background: #f0f9ff;
-        color: var(--primary-color);
-    }
-
-    .sidebar-icon {
-        font-size: 20px;
-        width: 20px;
-    }
-
-    /* Feed */
-    .feed {
-        display: flex;
-        flex-direction: column;
-        gap: 24px;
-    }
-
+    /* Enhanced Post Composer */
     .post-composer {
         background: var(--white);
         border-radius: var(--border-radius);
         padding: 24px;
         box-shadow: var(--shadow-sm);
         border: 1px solid var(--border-color);
+        margin-bottom: 24px;
+        transition: var(--transition);
+    }
+
+    .post-composer:hover {
+        box-shadow: var(--shadow-md);
+        transform: translateY(-2px);
     }
 
     .composer-header {
@@ -244,8 +278,13 @@
         font-weight: 600;
     }
 
-    .composer-input {
+    .composer-input-container {
         flex: 1;
+        position: relative;
+    }
+
+    .composer-input {
+        width: 100%;
         border: none;
         outline: none;
         font-size: 16px;
@@ -254,11 +293,14 @@
         border-radius: 25px;
         cursor: pointer;
         transition: var(--transition);
+        resize: none;
+        min-height: 50px;
     }
 
     .composer-input:focus {
         background: var(--white);
         box-shadow: 0 0 0 2px var(--primary-color);
+        cursor: text;
     }
 
     .composer-actions {
@@ -273,6 +315,7 @@
     .composer-buttons {
         display: flex;
         gap: 8px;
+        flex-wrap: wrap;
     }
 
     .composer-btn {
@@ -288,11 +331,19 @@
         font-size: 14px;
         font-weight: 500;
         transition: var(--transition);
+        position: relative;
+        overflow: hidden;
     }
 
     .composer-btn:hover {
         background: #f0f9ff;
         color: var(--primary-color);
+        transform: translateY(-1px);
+    }
+
+    .composer-btn.active {
+        background: var(--primary-color);
+        color: var(--white);
     }
 
     .post-btn {
@@ -304,6 +355,8 @@
         font-weight: 600;
         cursor: pointer;
         transition: var(--transition);
+        position: relative;
+        overflow: hidden;
     }
 
     .post-btn:hover {
@@ -311,7 +364,70 @@
         box-shadow: var(--shadow-md);
     }
 
-    /* Post Card */
+    .post-btn:active {
+        transform: scale(0.98);
+    }
+
+    /* Enhanced Media Upload */
+    .media-upload-area {
+        display: none;
+        margin-top: 16px;
+        padding: 20px;
+        border: 2px dashed var(--border-color);
+        border-radius: 8px;
+        text-align: center;
+        background: #f8fafc;
+        transition: var(--transition);
+    }
+
+    .media-upload-area.active {
+        display: block;
+        border-color: var(--primary-color);
+        background: #f0f9ff;
+    }
+
+    .upload-icon {
+        font-size: 48px;
+        color: var(--text-muted);
+        margin-bottom: 12px;
+    }
+
+    .upload-text {
+        color: var(--text-muted);
+        margin-bottom: 12px;
+    }
+
+    .upload-buttons {
+        display: flex;
+        justify-content: center;
+        gap: 12px;
+        flex-wrap: wrap;
+    }
+
+    .upload-btn {
+        padding: 8px 16px;
+        background: var(--white);
+        border: 1px solid var(--border-color);
+        border-radius: 6px;
+        cursor: pointer;
+        transition: var(--transition);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .upload-btn:hover {
+        background: var(--primary-color);
+        color: var(--white);
+        border-color: var(--primary-color);
+    }
+
+    /* Hidden file inputs */
+    .file-input {
+        display: none;
+    }
+
+    /* Post Cards - Enhanced */
     .post-card {
         background: var(--white);
         border-radius: var(--border-radius);
@@ -319,10 +435,12 @@
         border: 1px solid var(--border-color);
         overflow: hidden;
         transition: var(--transition);
+        margin-bottom: 24px;
     }
 
     .post-card:hover {
         box-shadow: var(--shadow-md);
+        transform: translateY(-2px);
     }
 
     .post-header {
@@ -376,6 +494,7 @@
     .post-menu:hover {
         background: #f8fafc;
         color: var(--text-color);
+        transform: rotate(90deg);
     }
 
     .post-content {
@@ -393,6 +512,11 @@
         width: 100%;
         border-radius: 8px;
         margin-bottom: 16px;
+        transition: var(--transition);
+    }
+
+    .post-image:hover {
+        transform: scale(1.02);
     }
 
     .post-tags {
@@ -409,6 +533,14 @@
         border-radius: 20px;
         font-size: 12px;
         font-weight: 500;
+        transition: var(--transition);
+        cursor: pointer;
+    }
+
+    .post-tag:hover {
+        background: var(--primary-color);
+        color: var(--white);
+        transform: scale(1.05);
     }
 
     .post-stats {
@@ -425,6 +557,7 @@
         align-items: center;
         padding: 12px 24px;
         border-top: 1px solid var(--border-color);
+        background: #fafbfc;
     }
 
     .action-btn {
@@ -444,16 +577,80 @@
     }
 
     .action-btn:hover {
-        background: #f8fafc;
+        background: var(--white);
         color: var(--text-color);
+        transform: translateY(-1px);
     }
 
     .action-btn.liked {
         color: var(--danger-color);
+        background: #ffebee;
     }
 
     .action-btn.saved {
         color: var(--warning-color);
+        background: #fff8e1;
+    }
+
+    .action-btn.shared {
+        color: var(--success-color);
+        background: #e8f5e8;
+    }
+
+    /* Sidebar Enhancements */
+    .sidebar {
+        background: var(--white);
+        border-radius: var(--border-radius);
+        padding: 24px;
+        box-shadow: var(--shadow-sm);
+        height: fit-content;
+        position: sticky;
+        top: 100px;
+        border: 1px solid var(--border-color);
+        transition: var(--transition);
+    }
+
+    .sidebar:hover {
+        box-shadow: var(--shadow-md);
+    }
+
+    .sidebar-section {
+        margin-bottom: 32px;
+    }
+
+    .sidebar-title {
+        font-size: 18px;
+        font-weight: 700;
+        color: var(--text-color);
+        margin-bottom: 16px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .sidebar-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px 16px;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: var(--transition);
+        text-decoration: none;
+        color: var(--text-color);
+        margin-bottom: 8px;
+    }
+
+    .sidebar-item:hover,
+    .sidebar-item.active {
+        background: #f0f9ff;
+        color: var(--primary-color);
+        transform: translateX(5px);
+    }
+
+    .sidebar-icon {
+        font-size: 20px;
+        width: 20px;
     }
 
     /* Right Sidebar */
@@ -469,6 +666,12 @@
         padding: 24px;
         box-shadow: var(--shadow-sm);
         border: 1px solid var(--border-color);
+        transition: var(--transition);
+    }
+
+    .widget:hover {
+        box-shadow: var(--shadow-md);
+        transform: translateY(-2px);
     }
 
     .widget-title {
@@ -481,94 +684,48 @@
         gap: 8px;
     }
 
-    .suggestion-item {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        padding: 12px 0;
-        border-bottom: 1px solid #f8fafc;
-    }
-
-    .suggestion-item:last-child {
-        border-bottom: none;
-    }
-
-    .suggestion-avatar {
-        width: 40px;
-        height: 40px;
+    /* Loading States */
+    .loading {
+        display: inline-block;
+        width: 20px;
+        height: 20px;
+        border: 3px solid #f3f3f3;
+        border-top: 3px solid var(--primary-color);
         border-radius: 50%;
-        background: var(--gradient-primary);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: var(--white);
-        font-weight: 600;
-        font-size: 14px;
+        animation: spin 1s linear infinite;
     }
 
-    .suggestion-info {
-        flex: 1;
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
     }
 
-    .suggestion-name {
-        font-size: 14px;
-        font-weight: 600;
-        color: var(--text-color);
-        margin-bottom: 2px;
-    }
-
-    .suggestion-title {
-        font-size: 12px;
-        color: var(--text-muted);
-    }
-
-    .follow-btn {
-        padding: 6px 16px;
-        background: var(--primary-color);
-        color: var(--white);
-        border: none;
-        border-radius: 6px;
-        font-size: 12px;
-        font-weight: 600;
-        cursor: pointer;
-        transition: var(--transition);
-    }
-
-    .follow-btn:hover {
-        background: var(--primary-dark);
-    }
-
-    .trending-item {
-        padding: 12px 0;
-        border-bottom: 1px solid #f8fafc;
-        cursor: pointer;
-        transition: var(--transition);
-    }
-
-    .trending-item:hover {
-        background: #f8fafc;
-        margin: 0 -12px;
-        padding: 12px;
+    /* Success/Error Messages */
+    .toast {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        padding: 16px 24px;
         border-radius: 8px;
+        color: var(--white);
+        font-weight: 500;
+        z-index: 9999;
+        animation: slideIn 0.3s ease-out;
     }
 
-    .trending-item:last-child {
-        border-bottom: none;
+    .toast.success {
+        background: var(--success-color);
     }
 
-    .trending-tag {
-        font-size: 14px;
-        font-weight: 600;
-        color: var(--text-color);
-        margin-bottom: 4px;
+    .toast.error {
+        background: var(--danger-color);
     }
 
-    .trending-count {
-        font-size: 12px;
-        color: var(--text-muted);
+    .toast.info {
+        background: var(--primary-color);
     }
 
-    /* Responsive */
+    /* Responsive Design */
     @media (max-width: 1024px) {
         .main-container {
             grid-template-columns: 1fr;
@@ -610,6 +767,10 @@
         .widget {
             padding: 16px;
         }
+
+        .composer-buttons {
+            grid-template-columns: repeat(2, 1fr);
+        }
     }
 
     @media (max-width: 480px) {
@@ -629,6 +790,10 @@
         .composer-input {
             margin-top: 12px;
         }
+
+        .composer-buttons {
+            grid-template-columns: 1fr;
+        }
     }
 </style>
 {% endblock %}
@@ -643,8 +808,8 @@
         </a>
         
         <div class="search-container">
-            <i class="fas fa-search search-icon"></i>
             <input type="text" class="search-box" placeholder="İş ilanı, şirket veya kişi ara..." id="searchInput">
+            <i class="fas fa-search search-icon"></i>
         </div>
         
         <div class="nav-icons">
@@ -662,7 +827,7 @@
                 <i class="fas fa-bell"></i>
                 <span class="notification-badge">5</span>
             </a>
-            <a href="/profiles/" class="nav-icon" title="Profilim">
+            <a href="{% url 'profiles:profile' %}" class="nav-icon" title="Profilim">
                 <i class="fas fa-user"></i>
             </a>
         </div>
@@ -684,7 +849,7 @@
 <!-- Main Content -->
 <main class="main-container">
     <!-- Left Sidebar -->
-    <aside class="sidebar">
+    <aside class="sidebar slide-in">
         <div class="sidebar-section">
             <h3 class="sidebar-title">
                 <i class="fas fa-compass"></i>
@@ -734,38 +899,80 @@
 
     <!-- Feed -->
     <section class="feed">
-        <!-- Post Composer -->
+        <!-- Enhanced Post Composer -->
         {% if user.is_authenticated %}
-        <div class="post-composer">
-            <div class="composer-header">
-                <div class="composer-avatar">{{ user.first_name|first|upper|default:'U' }}</div>
-                <input type="text" class="composer-input" placeholder="Neler oluyor? Bir gönderi paylaşın..." onclick="showComingSoon('Gönderi paylaşma özelliği yakında!')">
-            </div>
-            <div class="composer-actions">
-                <div class="composer-buttons">
-                    <button class="composer-btn" onclick="showComingSoon('Fotoğraf paylaşma yakında!')">
-                        <i class="fas fa-image"></i>
-                        Fotoğraf
-                    </button>
-                    <button class="composer-btn" onclick="showComingSoon('Video paylaşma yakında!')">
-                        <i class="fas fa-video"></i>
-                        Video
-                    </button>
-                    <button class="composer-btn" onclick="showComingSoon('Etkinlik oluşturma yakında!')">
-                        <i class="fas fa-calendar"></i>
-                        Etkinlik
-                    </button>
-                    <button class="composer-btn" onclick="showComingSoon('Anket oluşturma yakında!')">
-                        <i class="fas fa-poll"></i>
-                        Anket
+        <div class="post-composer fade-in">
+            <form id="postForm" method="post" action="{% url 'posts:create' %}" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="composer-header">
+                    <div class="composer-avatar">{{ user.first_name|first|upper|default:'U' }}</div>
+                    <div class="composer-input-container">
+                        <textarea name="content" class="composer-input" placeholder="Neler oluyor? Bir gönderi paylaşın..." required></textarea>
+                    </div>
+                </div>
+
+                <!-- Media Upload Area -->
+                <div class="media-upload-area" id="mediaUploadArea">
+                    <div class="upload-icon">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                    </div>
+                    <div class="upload-text">Dosyalarınızı buraya sürükleyin veya aşağıdaki butonları kullanın</div>
+                    <div class="upload-buttons">
+                        <label for="imageInput" class="upload-btn">
+                            <i class="fas fa-image"></i>
+                            Görsel Seç
+                        </label>
+                        <label for="videoInput" class="upload-btn">
+                            <i class="fas fa-video"></i>
+                            Video Seç
+                        </label>
+                        <button type="button" class="upload-btn" onclick="openCamera()">
+                            <i class="fas fa-camera"></i>
+                            Kamera
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Hidden file inputs -->
+                <input type="file" id="imageInput" name="image" class="file-input" accept="image/*">
+                <input type="file" id="videoInput" name="video" class="file-input" accept="video/*">
+                <input type="hidden" name="post_type" value="text">
+
+                <div class="composer-actions">
+                    <div class="composer-buttons">
+                        <button type="button" class="composer-btn" onclick="toggleMediaUpload()">
+                            <i class="fas fa-image"></i>
+                            Medya
+                        </button>
+                        <button type="button" class="composer-btn" onclick="showComingSoon('Video paylaşma yakında!')">
+                            <i class="fas fa-video"></i>
+                            Video
+                        </button>
+                        <button type="button" class="composer-btn" onclick="showComingSoon('Etkinlik oluşturma yakında!')">
+                            <i class="fas fa-calendar"></i>
+                            Etkinlik
+                        </button>
+                        <button type="button" class="composer-btn" onclick="showComingSoon('Anket oluşturma yakında!')">
+                            <i class="fas fa-poll"></i>
+                            Anket
+                        </button>
+                        <button type="button" class="composer-btn" onclick="showComingSoon('Belge paylaşma yakında!')">
+                            <i class="fas fa-file-alt"></i>
+                            Belge
+                        </button>
+                    </div>
+                    <button type="submit" class="post-btn">
+                        <span class="btn-text">Paylaş</span>
+                        <span class="btn-loading" style="display: none;">
+                            <span class="loading"></span>
+                        </span>
                     </button>
                 </div>
-                <button class="post-btn" onclick="showComingSoon('Gönderi paylaşma özelliği yakında!')">Paylaş</button>
-            </div>
+            </form>
         </div>
         {% endif %}
 
-        <!-- Sample Posts -->
+        <!-- Sample Posts with Enhanced Interactions -->
         <article class="post-card fade-in">
             <div class="post-header">
                 <div class="post-user">
@@ -785,10 +992,10 @@
                     Modern salonumuzda çalışmak isteyen, müşteri odaklı ve yaratıcı ekip arkadaşları bekliyoruz. 💇‍♀️✨
                 </p>
                 <div class="post-tags">
-                    <span class="post-tag">#kuaför</span>
-                    <span class="post-tag">#işilanı</span>
-                    <span class="post-tag">#kadıköy</span>
-                    <span class="post-tag">#deneyimli</span>
+                    <span class="post-tag" onclick="searchTag('kuaför')">#kuaför</span>
+                    <span class="post-tag" onclick="searchTag('işilanı')">#işilanı</span>
+                    <span class="post-tag" onclick="searchTag('kadıköy')">#kadıköy</span>
+                    <span class="post-tag" onclick="searchTag('deneyimli')">#deneyimli</span>
                 </div>
             </div>
             <div class="post-stats">
@@ -796,15 +1003,15 @@
                 <span>8 yorum • 3 paylaşım</span>
             </div>
             <div class="post-actions">
-                <button class="action-btn" onclick="toggleLike(this)">
+                <button class="action-btn" onclick="toggleLike(this)" data-post-id="1">
                     <i class="fas fa-heart"></i>
                     <span>Beğen</span>
                 </button>
-                <button class="action-btn" onclick="showComingSoon('Yorum özelliği yakında!')">
+                <button class="action-btn" onclick="toggleComments(this)">
                     <i class="fas fa-comment"></i>
                     <span>Yorum</span>
                 </button>
-                <button class="action-btn" onclick="showComingSoon('Paylaşım özelliği yakında!')">
+                <button class="action-btn" onclick="sharePost(this)">
                     <i class="fas fa-share"></i>
                     <span>Paylaş</span>
                 </button>
@@ -834,10 +1041,10 @@
                     trendleri takip etmek ve müşteri memnuniyeti her zaman önceliğim! 💪
                 </p>
                 <div class="post-tags">
-                    <span class="post-tag">#berber</span>
-                    <span class="post-tag">#saçkesimi</span>
-                    <span class="post-tag">#erkekstili</span>
-                    <span class="post-tag">#profesyonel</span>
+                    <span class="post-tag" onclick="searchTag('berber')">#berber</span>
+                    <span class="post-tag" onclick="searchTag('saçkesimi')">#saçkesimi</span>
+                    <span class="post-tag" onclick="searchTag('erkekstili')">#erkekstili</span>
+                    <span class="post-tag" onclick="searchTag('profesyonel')">#profesyonel</span>
                 </div>
             </div>
             <div class="post-stats">
@@ -845,15 +1052,15 @@
                 <span>12 yorum • 7 paylaşım</span>
             </div>
             <div class="post-actions">
-                <button class="action-btn liked" onclick="toggleLike(this)">
+                <button class="action-btn liked" onclick="toggleLike(this)" data-post-id="2">
                     <i class="fas fa-heart"></i>
                     <span>Beğendim</span>
                 </button>
-                <button class="action-btn" onclick="showComingSoon('Yorum özelliği yakında!')">
+                <button class="action-btn" onclick="toggleComments(this)">
                     <i class="fas fa-comment"></i>
                     <span>Yorum</span>
                 </button>
-                <button class="action-btn" onclick="showComingSoon('Paylaşım özelliği yakında!')">
+                <button class="action-btn" onclick="sharePost(this)">
                     <i class="fas fa-share"></i>
                     <span>Paylaş</span>
                 </button>
@@ -883,10 +1090,10 @@
                     Hemen başlayabilecek, sosyal güvenceli pozisyon. Detaylar için DM! 💅
                 </p>
                 <div class="post-tags">
-                    <span class="post-tag">#acilişilanı</span>
-                    <span class="post-tag">#nailart</span>
-                    <span class="post-tag">#beşiktaş</span>
-                    <span class="post-tag">#hemenbaşla</span>
+                    <span class="post-tag" onclick="searchTag('acilişilanı')">#acilişilanı</span>
+                    <span class="post-tag" onclick="searchTag('nailart')">#nailart</span>
+                    <span class="post-tag" onclick="searchTag('beşiktaş')">#beşiktaş</span>
+                    <span class="post-tag" onclick="searchTag('hemenbaşla')">#hemenbaşla</span>
                 </div>
             </div>
             <div class="post-stats">
@@ -894,15 +1101,15 @@
                 <span>25 yorum • 12 paylaşım</span>
             </div>
             <div class="post-actions">
-                <button class="action-btn" onclick="toggleLike(this)">
+                <button class="action-btn" onclick="toggleLike(this)" data-post-id="3">
                     <i class="fas fa-heart"></i>
                     <span>Beğen</span>
                 </button>
-                <button class="action-btn" onclick="showComingSoon('Yorum özelliği yakında!')">
+                <button class="action-btn" onclick="toggleComments(this)">
                     <i class="fas fa-comment"></i>
                     <span>Yorum</span>
                 </button>
-                <button class="action-btn" onclick="showComingSoon('Paylaşım özelliği yakında!')">
+                <button class="action-btn" onclick="sharePost(this)">
                     <i class="fas fa-share"></i>
                     <span>Paylaş</span>
                 </button>
@@ -915,9 +1122,9 @@
     </section>
 
     <!-- Right Sidebar -->
-    <aside class="right-sidebar">
+    <aside class="right-sidebar slide-in">
         <!-- Önerilen Kişiler -->
-        <div class="widget">
+        <div class="widget fade-in">
             <h3 class="widget-title">
                 <i class="fas fa-user-plus"></i>
                 Tanıyor Olabileceğiniz Kişiler
@@ -949,7 +1156,7 @@
         </div>
 
         <!-- Trend Konular -->
-        <div class="widget">
+        <div class="widget fade-in">
             <h3 class="widget-title">
                 <i class="fas fa-fire"></i>
                 Trend Konular
@@ -977,7 +1184,7 @@
         </div>
 
         <!-- Son İş İlanları -->
-        <div class="widget">
+        <div class="widget fade-in">
             <h3 class="widget-title">
                 <i class="fas fa-briefcase"></i>
                 Son İş İlanları
@@ -1013,41 +1220,214 @@
 
 {% block extra_js %}
 <script>
+    // Global variables
+    let mediaUploadActive = false;
+    let currentStream = null;
+
     // Utility functions
-    function showComingSoon(message) {
-        App.showToast(message, 'info');
+    function showToast(message, type = 'info') {
+        const toast = document.createElement('div');
+        toast.className = `toast ${type}`;
+        toast.textContent = message;
+        document.body.appendChild(toast);
+        
+        setTimeout(() => {
+            toast.remove();
+        }, 3000);
     }
 
-    // Like functionality
-    function toggleLike(button) {
-        if (button.classList.contains('liked')) {
-            button.classList.remove('liked');
-            button.querySelector('span').textContent = 'Beğen';
+    function showComingSoon(message) {
+        showToast(message, 'info');
+    }
+
+    // Media upload functionality
+    function toggleMediaUpload() {
+        const uploadArea = document.getElementById('mediaUploadArea');
+        const button = event.target;
+        
+        mediaUploadActive = !mediaUploadActive;
+        
+        if (mediaUploadActive) {
+            uploadArea.classList.add('active');
+            button.classList.add('active');
+            button.innerHTML = '<i class="fas fa-times"></i> Kapat';
         } else {
-            button.classList.add('liked');
-            button.querySelector('span').textContent = 'Beğendim';
+            uploadArea.classList.remove('active');
+            button.classList.remove('active');
+            button.innerHTML = '<i class="fas fa-image"></i> Medya';
         }
+    }
+
+    // Camera functionality
+    async function openCamera() {
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ 
+                video: true, 
+                audio: false 
+            });
+            
+            // Create video element for camera preview
+            const video = document.createElement('video');
+            video.srcObject = stream;
+            video.autoplay = true;
+            video.style.width = '100%';
+            video.style.borderRadius = '8px';
+            video.style.marginTop = '10px';
+            
+            const uploadArea = document.getElementById('mediaUploadArea');
+            uploadArea.appendChild(video);
+            
+            // Add capture button
+            const captureBtn = document.createElement('button');
+            captureBtn.textContent = 'Fotoğraf Çek';
+            captureBtn.className = 'upload-btn';
+            captureBtn.style.marginTop = '10px';
+            captureBtn.onclick = () => capturePhoto(video, stream);
+            
+            uploadArea.appendChild(captureBtn);
+            currentStream = stream;
+            
+        } catch (error) {
+            showToast('Kamera erişimi reddedildi veya desteklenmiyor.', 'error');
+        }
+    }
+
+    function capturePhoto(video, stream) {
+        const canvas = document.createElement('canvas');
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(video, 0, 0);
+        
+        // Convert to blob and create file
+        canvas.toBlob((blob) => {
+            const file = new File([blob], 'camera-photo.jpg', { type: 'image/jpeg' });
+            
+            // Update file input
+            const imageInput = document.getElementById('imageInput');
+            const dt = new DataTransfer();
+            dt.items.add(file);
+            imageInput.files = dt.files;
+            
+            showToast('Fotoğraf çekildi!', 'success');
+            
+            // Stop camera and remove video
+            stream.getTracks().forEach(track => track.stop());
+            video.remove();
+            event.target.remove();
+        }, 'image/jpeg', 0.8);
+    }
+
+    // Enhanced like functionality with API
+    async function toggleLike(button) {
+        const postId = button.getAttribute('data-post-id');
+        const icon = button.querySelector('i');
+        const text = button.querySelector('span');
+        
+        button.style.pointerEvents = 'none';
+        
+        try {
+            {% if user.is_authenticated %}
+            const response = await fetch('{% url "posts:like_api" %}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                body: JSON.stringify({ post_id: postId })
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                if (data.is_liked) {
+                    button.classList.add('liked');
+                    text.textContent = 'Beğendim';
+                    icon.style.animation = 'bounce 0.5s ease';
+                } else {
+                    button.classList.remove('liked');
+                    text.textContent = 'Beğen';
+                }
+                showToast(data.is_liked ? 'Beğenildi!' : 'Beğeni kaldırıldı!', 'success');
+            } else {
+                showToast('Bir hata oluştu.', 'error');
+            }
+            {% else %}
+            showToast('Beğenmek için giriş yapmalısınız.', 'info');
+            {% endif %}
+        } catch (error) {
+            showToast('Bağlantı hatası.', 'error');
+        }
+        
+        button.style.pointerEvents = 'auto';
+        setTimeout(() => icon.style.animation = '', 500);
     }
 
     // Save functionality
     function toggleSave(button) {
+        const icon = button.querySelector('i');
+        const text = button.querySelector('span');
+        
         if (button.classList.contains('saved')) {
             button.classList.remove('saved');
-            button.querySelector('span').textContent = 'Kaydet';
+            text.textContent = 'Kaydet';
+            showToast('Kaydetme kaldırıldı!', 'info');
         } else {
             button.classList.add('saved');
-            button.querySelector('span').textContent = 'Kaydedildi';
+            text.textContent = 'Kaydedildi';
+            icon.style.animation = 'bounce 0.5s ease';
+            showToast('Kaydedildi!', 'success');
         }
+        
+        setTimeout(() => icon.style.animation = '', 500);
+    }
+
+    // Share functionality
+    function sharePost(button) {
+        const text = button.querySelector('span');
+        const icon = button.querySelector('i');
+        
+        if (navigator.share) {
+            navigator.share({
+                title: 'Kuaför İlan Paylaşımı',
+                text: 'Bu gönderiyi kontrol et!',
+                url: window.location.href
+            });
+        } else {
+            // Fallback - copy to clipboard
+            navigator.clipboard.writeText(window.location.href);
+            showToast('Link kopyalandı!', 'success');
+            
+            button.classList.add('shared');
+            text.textContent = 'Paylaşıldı';
+            icon.style.animation = 'bounce 0.5s ease';
+            
+            setTimeout(() => {
+                button.classList.remove('shared');
+                text.textContent = 'Paylaş';
+                icon.style.animation = '';
+            }, 2000);
+        }
+    }
+
+    // Comments functionality
+    function toggleComments(button) {
+        showComingSoon('Yorum sistemi yakında aktif olacak!');
     }
 
     // Follow functionality
     function toggleFollow(button) {
-        if (button.textContent === 'Takip Et') {
+        const text = button.textContent;
+        
+        if (text === 'Takip Et') {
             button.textContent = 'Takip Ediliyor';
             button.style.background = 'var(--success-color)';
+            showToast('Takip edildi!', 'success');
         } else {
             button.textContent = 'Takip Et';
             button.style.background = 'var(--primary-color)';
+            showToast('Takip bırakıldı!', 'info');
         }
     }
 
@@ -1066,13 +1446,71 @@
         window.location.href = `{% url 'jobs:list' %}?search=${encodeURIComponent('#' + tag)}`;
     }
 
+    // Post form submission
+    document.getElementById('postForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        const submitBtn = this.querySelector('.post-btn');
+        const btnText = submitBtn.querySelector('.btn-text');
+        const btnLoading = submitBtn.querySelector('.btn-loading');
+        
+        // Show loading state
+        btnText.style.display = 'none';
+        btnLoading.style.display = 'inline-block';
+        submitBtn.disabled = true;
+        
+        try {
+            const formData = new FormData(this);
+            
+            const response = await fetch(this.action, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}'
+                }
+            });
+            
+            if (response.ok) {
+                showToast('Gönderi başarıyla paylaşıldı!', 'success');
+                this.reset();
+                toggleMediaUpload(); // Close media upload area
+                
+                // Reload page after 1 second
+                setTimeout(() => {
+                    window.location.reload();
+                }, 1000);
+            } else {
+                showToast('Gönderi paylaşılamadı. Tekrar deneyin.', 'error');
+            }
+        } catch (error) {
+            showToast('Bağlantı hatası.', 'error');
+        }
+        
+        // Reset button state
+        btnText.style.display = 'inline-block';
+        btnLoading.style.display = 'none';
+        submitBtn.disabled = false;
+    });
+
+    // File input change handlers
+    document.getElementById('imageInput').addEventListener('change', function() {
+        if (this.files.length > 0) {
+            showToast(`${this.files[0].name} seçildi.`, 'success');
+        }
+    });
+
+    document.getElementById('videoInput').addEventListener('change', function() {
+        if (this.files.length > 0) {
+            showToast(`${this.files[0].name} seçildi.`, 'success');
+        }
+    });
+
     // Initialize page
     document.addEventListener('DOMContentLoaded', function() {
         // Add smooth animations
-        const cards = document.querySelectorAll('.post-card, .widget');
+        const cards = document.querySelectorAll('.post-card, .widget, .sidebar');
         cards.forEach((card, index) => {
             card.style.animationDelay = `${index * 0.1}s`;
-            card.classList.add('fade-in');
         });
         
         // Simulate real-time updates
@@ -1080,12 +1518,54 @@
             const badges = document.querySelectorAll('.notification-badge');
             badges.forEach(badge => {
                 const currentCount = parseInt(badge.textContent);
-                if (Math.random() > 0.8) {
+                if (Math.random() > 0.7) {
                     badge.textContent = currentCount + 1;
                     badge.style.animation = 'pulse 0.5s ease-in-out';
                 }
             });
-        }, 10000);
+        }, 15000);
+
+        // Add drag and drop functionality
+        const uploadArea = document.getElementById('mediaUploadArea');
+        
+        uploadArea.addEventListener('dragover', function(e) {
+            e.preventDefault();
+            this.style.borderColor = 'var(--primary-color)';
+            this.style.backgroundColor = '#f0f9ff';
+        });
+        
+        uploadArea.addEventListener('dragleave', function(e) {
+            e.preventDefault();
+            this.style.borderColor = 'var(--border-color)';
+            this.style.backgroundColor = '#f8fafc';
+        });
+        
+        uploadArea.addEventListener('drop', function(e) {
+            e.preventDefault();
+            this.style.borderColor = 'var(--border-color)';
+            this.style.backgroundColor = '#f8fafc';
+            
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                const file = files[0];
+                if (file.type.startsWith('image/')) {
+                    document.getElementById('imageInput').files = files;
+                    showToast(`${file.name} yüklendi.`, 'success');
+                } else if (file.type.startsWith('video/')) {
+                    document.getElementById('videoInput').files = files;
+                    showToast(`${file.name} yüklendi.`, 'success');
+                } else {
+                    showToast('Sadece resim ve video dosyaları desteklenir.', 'error');
+                }
+            }
+        });
+    });
+
+    // Cleanup function for camera
+    window.addEventListener('beforeunload', function() {
+        if (currentStream) {
+            currentStream.getTracks().forEach(track => track.stop());
+        }
     });
 </script>
 {% endblock %}
