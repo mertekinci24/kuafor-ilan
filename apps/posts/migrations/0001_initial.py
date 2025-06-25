@@ -3,14 +3,12 @@ from django.db import migrations, models
 import django.db.models.deletion
 import uuid
 
-
 class Migration(migrations.Migration):
 
     initial = True
 
     dependencies = [
         ('authentication', '0001_initial'),
-        ('contenttypes', '0002_remove_content_type_name'),
     ]
 
     operations = [
@@ -33,90 +31,6 @@ class Migration(migrations.Migration):
                 'ordering': ['name'],
             },
         ),
-        migrations.CreateModel(
-            name='Post',
-            fields=[
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('id', models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True, serialize=False)),
-                ('post_type', models.CharField(choices=[('text', 'Metin'), ('image', 'Fotoğraf'), ('video', 'Video'), ('link', 'Link'), ('poll', 'Anket'), ('event', 'Etkinlik'), ('job', 'İş İlanı')], default='text', max_length=20)),
-                ('content', models.TextField(verbose_name='İçerik')),
-                ('title', models.CharField(blank=True, max_length=200, verbose_name='Başlık')),
-                ('image', models.ImageField(blank=True, null=True, upload_to='posts/images/%Y/%m/', verbose_name='Fotoğraf')),
-                ('video', models.FileField(blank=True, null=True, upload_to='posts/videos/%Y/%m/', verbose_name='Video')),
-                ('tags', models.CharField(blank=True, max_length=500, verbose_name='Etiketler')),
-                ('location', models.CharField(blank=True, max_length=100, verbose_name='Konum')),
-                ('visibility', models.CharField(choices=[('public', 'Herkese Açık'), ('followers', 'Takipçiler'), ('private', 'Sadece Ben')], default='public', max_length=20)),
-                ('allow_comments', models.BooleanField(default=True, verbose_name='Yorumlara İzin Ver')),
-                ('is_pinned', models.BooleanField(default=False, verbose_name='Sabitlenmiş')),
-                ('is_featured', models.BooleanField(default=False, verbose_name='Öne Çıkan')),
-                ('is_published', models.BooleanField(default=True, verbose_name='Yayınlanmış')),
-                ('is_approved', models.BooleanField(default=True, verbose_name='Onaylanmış')),
-                ('is_deleted', models.BooleanField(default=False, verbose_name='Silinmiş')),
-                ('likes_count', models.PositiveIntegerField(default=0)),
-                ('comments_count', models.PositiveIntegerField(default=0)),
-                ('shares_count', models.PositiveIntegerField(default=0)),
-                ('views_count', models.PositiveIntegerField(default=0)),
-                ('author', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='posts', to=settings.AUTH_USER_MODEL)),
-                ('category', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, to='posts.postcategory')),
-            ],
-            options={
-                'verbose_name': 'Gönderi',
-                'verbose_name_plural': 'Gönderiler',
-                'ordering': ['-created_at'],
-            },
-        ),
-        migrations.CreateModel(
-            name='PostLike',
-            fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('post', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='likes', to='posts.post')),
-                ('user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
-            ],
-            options={
-                'verbose_name': 'Beğeni',
-                'verbose_name_plural': 'Beğeniler',
-                'unique_together': {('post', 'user')},
-            },
-        ),
-        migrations.CreateModel(
-            name='PostComment',
-            fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('content', models.TextField(verbose_name='Yorum')),
-                ('is_edited', models.BooleanField(default=False)),
-                ('is_deleted', models.BooleanField(default=False)),
-                ('likes_count', models.PositiveIntegerField(default=0)),
-                ('replies_count', models.PositiveIntegerField(default=0)),
-                ('author', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
-                ('parent', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, related_name='replies', to='posts.postcomment')),
-                ('post', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='comments', to='posts.post')),
-            ],
-            options={
-                'verbose_name': 'Yorum',
-                'verbose_name_plural': 'Yorumlar',
-                'ordering': ['-created_at'],
-            },
-        ),
-        migrations.CreateModel(
-            name='PostSave',
-            fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('post', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='saved_posts', to='posts.post')),
-                ('user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
-            ],
-            options={
-                'verbose_name': 'Kayıtlı Gönderi',
-                'verbose_name_plural': 'Kayıtlı Gönderiler',
-                'ordering': ['-created_at'],
-                'unique_together': {('post', 'user')},
-            },
-        ),
+        # Diğer modeller...
     ]
-  
+    
