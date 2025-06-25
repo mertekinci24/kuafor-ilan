@@ -1,669 +1,1727 @@
 {% extends 'base.html' %}
-{% load static %}
 
-{% block title %}Ana Sayfa - Kuaförİlan{% endblock %}
+{% block title %}Ana Sayfa - Kuaför İlan{% endblock %}
 
 {% block extra_css %}
 <style>
-    .post-card {
+    :root {
+        --primary-color: #0a66c2;
+        --primary-light: #4c9eff;
+        --primary-dark: #004182;
+        --secondary-color: #f3f6f8;
+        --accent-color: #ff6b35;
+        --success-color: #28a745;
+        --warning-color: #ffc107;
+        --danger-color: #dc3545;
+        --text-color: #333333;
+        --text-muted: #6c757d;
+        --border-color: #e1e5e9;
+        --white: #ffffff;
+        --light-gray: #f8f9fa;
+        --shadow-sm: 0 2px 4px rgba(0,0,0,0.1);
+        --shadow-md: 0 4px 8px rgba(0,0,0,0.15);
+        --border-radius: 12px;
+        --transition: all 0.3s ease;
+        --gradient-primary: linear-gradient(135deg, var(--primary-color), var(--primary-light));
+    }
+
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    body {
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        background: #f5f7fa;
+        color: var(--text-color);
+        line-height: 1.6;
+    }
+
+    /* Animations */
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes slideIn {
+        from { transform: translateX(-100%); }
+        to { transform: translateX(0); }
+    }
+
+    @keyframes pulse {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.05); }
+    }
+
+    @keyframes bounce {
+        0%, 20%, 53%, 80%, 100% { transform: translate3d(0,0,0); }
+        40%, 43% { transform: translate3d(0,-8px,0); }
+        70% { transform: translate3d(0,-4px,0); }
+    }
+
+    .fade-in {
+        animation: fadeIn 0.6s ease-out forwards;
+        opacity: 0;
+    }
+
+    .slide-in {
+        animation: slideIn 0.5s ease-out forwards;
+    }
+
+    /* Header */
+    .main-header {
+        background: var(--white);
+        box-shadow: var(--shadow-sm);
+        position: sticky;
+        top: 0;
+        z-index: 1000;
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    .header-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 12px 20px;
+    }
+
+    .logo-container {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        text-decoration: none;
+        color: var(--primary-color);
         transition: var(--transition);
+    }
+
+    .logo-container:hover {
+        transform: scale(1.02);
+        color: var(--primary-color);
+    }
+
+    .logo {
+        font-size: 28px;
+        animation: bounce 2s infinite;
+    }
+
+    .logo-text {
+        font-size: 20px;
+        font-weight: 700;
+    }
+
+    .search-container {
+        flex: 1;
+        max-width: 400px;
+        margin: 0 40px;
         position: relative;
     }
-    
-    .post-card:hover {
+
+    .search-box {
+        width: 100%;
+        padding: 12px 16px 12px 48px;
+        border: 2px solid var(--border-color);
+        border-radius: 25px;
+        font-size: 16px;
+        background: #f8fafc;
+        transition: var(--transition);
+    }
+
+    .search-box:focus {
+        outline: none;
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 3px rgba(10, 102, 194, 0.1);
+        background: var(--white);
+        transform: scale(1.02);
+    }
+
+    .search-icon {
+        position: absolute;
+        left: 16px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--text-muted);
+        font-size: 18px;
+        transition: var(--transition);
+    }
+
+    .search-box:focus + .search-icon {
+        color: var(--primary-color);
+    }
+
+    .nav-icons {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .nav-icon {
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        background: #f8fafc;
+        border: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--text-color);
+        font-size: 18px;
+        cursor: pointer;
+        transition: var(--transition);
+        position: relative;
+        text-decoration: none;
+    }
+
+    .nav-icon:hover {
+        background: var(--primary-color);
+        color: var(--white);
         transform: translateY(-2px);
         box-shadow: var(--shadow-md);
     }
-    
-    .post-actions button {
-        background: none;
-        border: none;
-        padding: 8px 12px;
-        border-radius: var(--border-radius-sm);
-        cursor: pointer;
-        transition: var(--transition);
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-        color: var(--text-muted);
-        font-size: 14px;
-        font-weight: 500;
-    }
-    
-    .post-actions button:hover {
-        background: var(--light-color);
-        color: var(--primary-color);
-    }
-    
-    .post-actions button.active {
-        color: var(--primary-color);
-    }
-    
-    .post-actions button.liked {
-        color: var(--danger-color);
-    }
-    
-    .post-content img, .post-content video {
-        max-width: 100%;
-        border-radius: var(--border-radius-sm);
-        margin: 1rem 0;
-    }
-    
-    .tag {
-        display: inline-block;
-        background: #f1f5f9;
-        color: var(--primary-color);
-        padding: 0.25rem 0.75rem;
-        border-radius: 20px;
-        font-size: 0.875rem;
-        font-weight: 500;
-        margin: 0.25rem 0.25rem 0.25rem 0;
-        text-decoration: none;
-        transition: var(--transition);
-    }
-    
-    .tag:hover {
+
+    .nav-icon.active {
         background: var(--primary-color);
         color: var(--white);
+        transform: scale(1.1);
     }
-    
-    .quick-post-form {
+
+    .notification-badge {
+        position: absolute;
+        top: -4px;
+        right: -4px;
+        background: var(--danger-color);
+        color: var(--white);
+        border-radius: 50%;
+        width: 20px;
+        height: 20px;
+        font-size: 12px;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        animation: pulse 2s infinite;
+    }
+
+    .user-menu {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-left: 16px;
+    }
+
+    .user-avatar {
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        background: var(--gradient-primary);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--white);
+        font-weight: 600;
+        cursor: pointer;
+        transition: var(--transition);
+        text-decoration: none;
+    }
+
+    .user-avatar:hover {
+        transform: scale(1.05);
+        box-shadow: var(--shadow-md);
+        color: var(--white);
+    }
+
+    /* Main Layout */
+    .main-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 24px 20px;
+        display: grid;
+        grid-template-columns: 300px 1fr 300px;
+        gap: 24px;
+        min-height: calc(100vh - 200px);
+    }
+
+    /* Enhanced Post Composer */
+    .post-composer {
         background: var(--white);
         border-radius: var(--border-radius);
-        padding: 1.5rem;
-        margin-bottom: 2rem;
+        padding: 24px;
         box-shadow: var(--shadow-sm);
         border: 1px solid var(--border-color);
-    }
-    
-    .quick-post-textarea {
-        border: none;
-        resize: none;
-        outline: none;
-        font-size: 16px;
-        line-height: 1.5;
-        padding: 0;
-        background: transparent;
-        width: 100%;
-        min-height: 60px;
-    }
-    
-    .quick-post-textarea::placeholder {
-        color: var(--text-muted);
-    }
-    
-    .media-preview {
-        position: relative;
-        margin-top: 1rem;
-    }
-    
-    .media-preview img {
-        max-width: 100%;
-        max-height: 300px;
-        object-fit: cover;
-        border-radius: var(--border-radius-sm);
-    }
-    
-    .remove-media {
-        position: absolute;
-        top: 8px;
-        right: 8px;
-        background: rgba(0, 0, 0, 0.6);
-        color: white;
-        border: none;
-        border-radius: 50%;
-        width: 24px;
-        height: 24px;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 12px;
-    }
-    
-    .welcome-card {
-        background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
-        color: var(--white);
-        text-align: center;
-        padding: 3rem 2rem;
-        border-radius: var(--border-radius);
-        margin-bottom: 2rem;
-    }
-    
-    .empty-state {
-        text-align: center;
-        padding: 4rem 2rem;
-        color: var(--text-muted);
-    }
-    
-    .empty-state i {
-        font-size: 4rem;
-        margin-bottom: 1rem;
-        opacity: 0.5;
-    }
-    
-    .pagination {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        gap: 0.5rem;
-        margin-top: 2rem;
-        padding: 2rem 0;
-    }
-    
-    .page-link {
-        padding: 8px 12px;
-        border: 1px solid var(--border-color);
-        background: var(--white);
-        color: var(--text-color);
-        text-decoration: none;
-        border-radius: var(--border-radius-sm);
+        margin-bottom: 24px;
         transition: var(--transition);
     }
-    
-    .page-link:hover {
+
+    .post-composer:hover {
+        box-shadow: var(--shadow-md);
+        transform: translateY(-2px);
+    }
+
+    .composer-header {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        margin-bottom: 16px;
+    }
+
+    .composer-avatar {
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        background: var(--gradient-primary);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--white);
+        font-weight: 600;
+    }
+
+    .composer-input-container {
+        flex: 1;
+        position: relative;
+    }
+
+    .composer-input {
+        width: 100%;
+        border: none;
+        outline: none;
+        font-size: 16px;
+        background: #f8fafc;
+        padding: 16px 20px;
+        border-radius: 25px;
+        cursor: pointer;
+        transition: var(--transition);
+        resize: none;
+        min-height: 50px;
+    }
+
+    .composer-input:focus {
+        background: var(--white);
+        box-shadow: 0 0 0 2px var(--primary-color);
+        cursor: text;
+    }
+
+    .composer-actions {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-top: 16px;
+        padding-top: 16px;
+        border-top: 1px solid var(--border-color);
+    }
+
+    .composer-buttons {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+
+    .composer-btn {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 16px;
+        border: none;
+        background: #f8fafc;
+        border-radius: 8px;
+        color: var(--text-muted);
+        cursor: pointer;
+        font-size: 14px;
+        font-weight: 500;
+        transition: var(--transition);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .composer-btn:hover {
+        background: #f0f9ff;
+        color: var(--primary-color);
+        transform: translateY(-1px);
+    }
+
+    .composer-btn.active {
+        background: var(--primary-color);
+        color: var(--white);
+    }
+
+    .post-btn {
+        padding: 12px 24px;
+        background: var(--gradient-primary);
+        color: var(--white);
+        border: none;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: var(--transition);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .post-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-md);
+    }
+
+    .post-btn:active {
+        transform: scale(0.98);
+    }
+
+    /* Enhanced Media Upload */
+    .media-upload-area {
+        display: none;
+        margin-top: 16px;
+        padding: 20px;
+        border: 2px dashed var(--border-color);
+        border-radius: 8px;
+        text-align: center;
+        background: #f8fafc;
+        transition: var(--transition);
+    }
+
+    .media-upload-area.active {
+        display: block;
+        border-color: var(--primary-color);
+        background: #f0f9ff;
+    }
+
+    .upload-icon {
+        font-size: 48px;
+        color: var(--text-muted);
+        margin-bottom: 12px;
+    }
+
+    .upload-text {
+        color: var(--text-muted);
+        margin-bottom: 12px;
+    }
+
+    .upload-buttons {
+        display: flex;
+        justify-content: center;
+        gap: 12px;
+        flex-wrap: wrap;
+    }
+
+    .upload-btn {
+        padding: 8px 16px;
+        background: var(--white);
+        border: 1px solid var(--border-color);
+        border-radius: 6px;
+        cursor: pointer;
+        transition: var(--transition);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .upload-btn:hover {
         background: var(--primary-color);
         color: var(--white);
         border-color: var(--primary-color);
     }
-    
-    .page-link.active {
+
+    /* Hidden file inputs */
+    .file-input {
+        display: none;
+    }
+
+    /* Post Cards - Enhanced */
+    .post-card {
+        background: var(--white);
+        border-radius: var(--border-radius);
+        box-shadow: var(--shadow-sm);
+        border: 1px solid var(--border-color);
+        overflow: hidden;
+        transition: var(--transition);
+        margin-bottom: 24px;
+    }
+
+    .post-card:hover {
+        box-shadow: var(--shadow-md);
+        transform: translateY(-2px);
+    }
+
+    .post-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 20px 24px 16px;
+    }
+
+    .post-user {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .post-avatar {
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        background: var(--gradient-primary);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--white);
+        font-weight: 600;
+    }
+
+    .post-user-info h4 {
+        font-size: 16px;
+        font-weight: 600;
+        color: var(--text-color);
+        margin-bottom: 2px;
+    }
+
+    .post-user-info span {
+        font-size: 14px;
+        color: var(--text-muted);
+    }
+
+    .post-menu {
+        background: none;
+        border: none;
+        color: var(--text-muted);
+        font-size: 18px;
+        cursor: pointer;
+        padding: 8px;
+        border-radius: 50%;
+        transition: var(--transition);
+    }
+
+    .post-menu:hover {
+        background: #f8fafc;
+        color: var(--text-color);
+        transform: rotate(90deg);
+    }
+
+    .post-content {
+        padding: 0 24px 16px;
+    }
+
+    .post-text {
+        font-size: 16px;
+        line-height: 1.6;
+        color: var(--text-color);
+        margin-bottom: 16px;
+    }
+
+    .post-image {
+        width: 100%;
+        border-radius: 8px;
+        margin-bottom: 16px;
+        transition: var(--transition);
+    }
+
+    .post-image:hover {
+        transform: scale(1.02);
+    }
+
+    .post-tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-bottom: 16px;
+    }
+
+    .post-tag {
+        background: #f0f9ff;
+        color: var(--primary-color);
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 500;
+        transition: var(--transition);
+        cursor: pointer;
+    }
+
+    .post-tag:hover {
         background: var(--primary-color);
         color: var(--white);
-        border-color: var(--primary-color);
+        transform: scale(1.05);
     }
-    
+
+    .post-stats {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 24px 16px;
+        font-size: 14px;
+        color: var(--text-muted);
+    }
+
+    .post-actions {
+        display: flex;
+        align-items: center;
+        padding: 12px 24px;
+        border-top: 1px solid var(--border-color);
+        background: #fafbfc;
+    }
+
+    .action-btn {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        padding: 12px;
+        background: none;
+        border: none;
+        color: var(--text-muted);
+        cursor: pointer;
+        border-radius: 8px;
+        font-weight: 500;
+        transition: var(--transition);
+    }
+
+    .action-btn:hover {
+        background: var(--white);
+        color: var(--text-color);
+        transform: translateY(-1px);
+    }
+
+    .action-btn.liked {
+        color: var(--danger-color);
+        background: #ffebee;
+    }
+
+    .action-btn.saved {
+        color: var(--warning-color);
+        background: #fff8e1;
+    }
+
+    .action-btn.shared {
+        color: var(--success-color);
+        background: #e8f5e8;
+    }
+
+    /* Sidebar Enhancements */
+    .sidebar {
+        background: var(--white);
+        border-radius: var(--border-radius);
+        padding: 24px;
+        box-shadow: var(--shadow-sm);
+        height: fit-content;
+        position: sticky;
+        top: 100px;
+        border: 1px solid var(--border-color);
+        transition: var(--transition);
+    }
+
+    .sidebar:hover {
+        box-shadow: var(--shadow-md);
+    }
+
+    .sidebar-section {
+        margin-bottom: 32px;
+    }
+
+    .sidebar-title {
+        font-size: 18px;
+        font-weight: 700;
+        color: var(--text-color);
+        margin-bottom: 16px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .sidebar-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px 16px;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: var(--transition);
+        text-decoration: none;
+        color: var(--text-color);
+        margin-bottom: 8px;
+    }
+
+    .sidebar-item:hover,
+    .sidebar-item.active {
+        background: #f0f9ff;
+        color: var(--primary-color);
+        transform: translateX(5px);
+    }
+
+    .sidebar-icon {
+        font-size: 20px;
+        width: 20px;
+    }
+
+    /* Right Sidebar */
+    .right-sidebar {
+        display: flex;
+        flex-direction: column;
+        gap: 24px;
+    }
+
+    .widget {
+        background: var(--white);
+        border-radius: var(--border-radius);
+        padding: 24px;
+        box-shadow: var(--shadow-sm);
+        border: 1px solid var(--border-color);
+        transition: var(--transition);
+    }
+
+    .widget:hover {
+        box-shadow: var(--shadow-md);
+        transform: translateY(-2px);
+    }
+
+    .widget-title {
+        font-size: 18px;
+        font-weight: 700;
+        color: var(--text-color);
+        margin-bottom: 16px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .suggestion-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px 0;
+        border-bottom: 1px solid #f8fafc;
+    }
+
+    .suggestion-item:last-child {
+        border-bottom: none;
+    }
+
+    .suggestion-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: var(--gradient-primary);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--white);
+        font-weight: 600;
+        font-size: 14px;
+    }
+
+    .suggestion-info {
+        flex: 1;
+    }
+
+    .suggestion-name {
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--text-color);
+        margin-bottom: 2px;
+    }
+
+    .suggestion-title {
+        font-size: 12px;
+        color: var(--text-muted);
+    }
+
+    .follow-btn {
+        padding: 6px 16px;
+        background: var(--primary-color);
+        color: var(--white);
+        border: none;
+        border-radius: 6px;
+        font-size: 12px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: var(--transition);
+    }
+
+    .follow-btn:hover {
+        background: var(--primary-dark);
+    }
+
+    .trending-item {
+        padding: 12px 0;
+        border-bottom: 1px solid #f8fafc;
+        cursor: pointer;
+        transition: var(--transition);
+    }
+
+    .trending-item:hover {
+        background: #f8fafc;
+        margin: 0 -12px;
+        padding: 12px;
+        border-radius: 8px;
+    }
+
+    .trending-item:last-child {
+        border-bottom: none;
+    }
+
+    .trending-tag {
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--text-color);
+        margin-bottom: 4px;
+    }
+
+    .trending-count {
+        font-size: 12px;
+        color: var(--text-muted);
+    }
+
+    /* Loading States */
+    .loading {
+        display: inline-block;
+        width: 20px;
+        height: 20px;
+        border: 3px solid #f3f3f3;
+        border-top: 3px solid var(--primary-color);
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+
+    /* Success/Error Messages */
+    .toast {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        padding: 16px 24px;
+        border-radius: 8px;
+        color: var(--white);
+        font-weight: 500;
+        z-index: 9999;
+        animation: slideIn 0.3s ease-out;
+    }
+
+    .toast.success {
+        background: var(--success-color);
+    }
+
+    .toast.error {
+        background: var(--danger-color);
+    }
+
+    .toast.info {
+        background: var(--primary-color);
+    }
+
+    /* Responsive Design */
+    @media (max-width: 1024px) {
+        .main-container {
+            grid-template-columns: 1fr;
+            gap: 16px;
+        }
+        
+        .sidebar,
+        .right-sidebar {
+            display: none;
+        }
+    }
+
     @media (max-width: 768px) {
-        .quick-post-form {
-            padding: 1rem;
-            margin-bottom: 1rem;
+        .header-container {
+            padding: 12px 16px;
         }
         
-        .post-card {
-            padding: 1rem;
+        .search-container {
+            margin: 0 16px;
+            max-width: none;
         }
         
-        .post-actions {
-            flex-wrap: wrap;
-            gap: 0.25rem;
+        .nav-icons {
+            gap: 4px;
         }
         
-        .post-actions button {
-            font-size: 12px;
-            padding: 6px 8px;
+        .nav-icon {
+            width: 40px;
+            height: 40px;
+            font-size: 16px;
+        }
+        
+        .main-container {
+            padding: 16px;
+        }
+        
+        .post-composer,
+        .post-card,
+        .widget {
+            padding: 16px;
+        }
+
+        .composer-buttons {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+
+    @media (max-width: 480px) {
+        .logo-text {
+            display: none;
+        }
+        
+        .search-container {
+            margin: 0 12px;
+        }
+        
+        .composer-header {
+            flex-direction: column;
+            align-items: stretch;
+        }
+        
+        .composer-input {
+            margin-top: 12px;
+        }
+
+        .composer-buttons {
+            grid-template-columns: 1fr;
         }
     }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="container">
-    <!-- Welcome Section / Quick Post -->
-    {% if user.is_authenticated %}
-        <div class="quick-post-form">
-            <form id="quickPostForm" enctype="multipart/form-data">
+<!-- Header -->
+<header class="main-header">
+    <div class="header-container">
+        <a href="{% url 'home' %}" class="logo-container">
+            <span class="logo">💇‍♀️</span>
+            <span class="logo-text">Kuaför İlan</span>
+        </a>
+        
+        <div class="search-container">
+            <input type="text" class="search-box" placeholder="İş ilanı, şirket veya kişi ara..." id="searchInput">
+            <i class="fas fa-search search-icon"></i>
+        </div>
+        
+        <div class="nav-icons">
+            <a href="{% url 'home' %}" class="nav-icon active" title="Ana Sayfa">
+                <i class="fas fa-home"></i>
+            </a>
+            <a href="{% url 'jobs:list' %}" class="nav-icon" title="İş İlanları">
+                <i class="fas fa-briefcase"></i>
+            </a>
+            <a href="#" class="nav-icon" title="Mesajlar" onclick="showComingSoon('Mesajlaşma özelliği yakında!')">
+                <i class="fas fa-comment-dots"></i>
+                <span class="notification-badge">3</span>
+            </a>
+            <a href="#" class="nav-icon" title="Bildirimler" onclick="showComingSoon('Bildirimler özelliği yakında!')">
+                <i class="fas fa-bell"></i>
+                <span class="notification-badge">5</span>
+            </a>
+            <a href="{% url 'profiles:profile' %}" class="nav-icon" title="Profilim">
+                <i class="fas fa-user"></i>
+            </a>
+        </div>
+        
+        <div class="user-menu">
+            {% if user.is_authenticated %}
+                <a href="{% url 'dashboard:home' %}" class="user-avatar" title="Dashboard">
+                    {{ user.first_name|first|upper|default:'U' }}
+                </a>
+            {% else %}
+                <a href="{% url 'authentication:login' %}" class="user-avatar" title="Giriş Yap">
+                    G
+                </a>
+            {% endif %}
+        </div>
+    </div>
+</header>
+
+<!-- Main Content -->
+<main class="main-container">
+    <!-- Left Sidebar -->
+    <aside class="sidebar slide-in">
+        <div class="sidebar-section">
+            <h3 class="sidebar-title">
+                <i class="fas fa-compass"></i>
+                Keşfet
+            </h3>
+            <a href="{% url 'jobs:list' %}" class="sidebar-item">
+                <i class="fas fa-search sidebar-icon"></i>
+                <span>İş Ara</span>
+            </a>
+            <a href="{% url 'dashboard:home' %}" class="sidebar-item">
+                <i class="fas fa-chart-bar sidebar-icon"></i>
+                <span>İstatistikler</span>
+            </a>
+            <a href="#" class="sidebar-item" onclick="showComingSoon('Kayıtlı ilanlar özelliği yakında!')">
+                <i class="fas fa-bookmark sidebar-icon"></i>
+                <span>Kayıtlı İlanlar</span>
+            </a>
+            <a href="#" class="sidebar-item" onclick="showComingSoon('Etkinlikler özelliği yakında!')">
+                <i class="fas fa-calendar sidebar-icon"></i>
+                <span>Etkinlikler</span>
+            </a>
+        </div>
+        
+        <div class="sidebar-section">
+            <h3 class="sidebar-title">
+                <i class="fas fa-users"></i>
+                Topluluklar
+            </h3>
+            <a href="#" class="sidebar-item" onclick="showComingSoon('Topluluklar özelliği yakında!')">
+                <i class="fas fa-cut sidebar-icon"></i>
+                <span>Kuaför Uzmanları</span>
+            </a>
+            <a href="#" class="sidebar-item" onclick="showComingSoon('Topluluklar özelliği yakında!')">
+                <i class="fas fa-scissors sidebar-icon"></i>
+                <span>Berber Esnafı</span>
+            </a>
+            <a href="#" class="sidebar-item" onclick="showComingSoon('Topluluklar özelliği yakında!')">
+                <i class="fas fa-spa sidebar-icon"></i>
+                <span>Güzellik Uzmanları</span>
+            </a>
+            <a href="#" class="sidebar-item" onclick="showComingSoon('Topluluklar özelliği yakında!')">
+                <i class="fas fa-store sidebar-icon"></i>
+                <span>Salon Sahipleri</span>
+            </a>
+        </div>
+    </aside>
+
+    <!-- Feed -->
+    <section class="feed">
+        <!-- Enhanced Post Composer -->
+        {% if user.is_authenticated %}
+        <div class="post-composer fade-in">
+            <form id="postForm" method="post" action="{% url 'posts:create' %}" enctype="multipart/form-data">
                 {% csrf_token %}
-                <div class="d-flex align-items-start" style="gap: 1rem;">
-                    <div class="user-avatar" style="flex-shrink: 0;">
-                        {{ user.first_name.0|upper|default:"U" }}
+                <div class="composer-header">
+                    <div class="composer-avatar">{{ user.first_name|first|upper|default:'U' }}</div>
+                    <div class="composer-input-container">
+                        <textarea name="content" class="composer-input" placeholder="Neler oluyor? İş deneyimini, becerilerini veya sektörle ilgili düşüncelerini paylaş..." required></textarea>
                     </div>
-                    <div style="flex: 1;">
-                        <textarea 
-                            name="content" 
-                            class="quick-post-textarea"
-                            placeholder="Ne düşünüyorsun? İş deneyimini, becerilerini veya sektörle ilgili düşüncelerini paylaş..."
-                            rows="3"
-                            required></textarea>
-                        
-                        <!-- Media Preview -->
-                        <div id="mediaPreview" class="media-preview hidden"></div>
-                        
-                        <!-- Post Options -->
-                        <div class="d-flex justify-content-between align-items-center" style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--border-color);">
-                            <div class="d-flex align-items-center" style="gap: 0.75rem;">
-                                <!-- Media Upload Buttons -->
-                                <label class="btn btn-outline btn-sm" style="cursor: pointer;" title="Fotoğraf ekle">
-                                    <i class="fas fa-image"></i>
-                                    <input type="file" name="image" accept="image/*" style="display: none;" id="imageInput">
-                                </label>
-                                
-                                <label class="btn btn-outline btn-sm" style="cursor: pointer;" title="Video ekle">
-                                    <i class="fas fa-video"></i>
-                                    <input type="file" name="video" accept="video/*" style="display: none;" id="videoInput">
-                                </label>
-                                
-                                <!-- Category Select -->
-                                {% if categories %}
-                                <select name="category" class="form-control form-select" style="width: auto; min-width: 140px;">
-                                    <option value="">Kategori</option>
-                                    {% for category in categories %}
-                                    <option value="{{ category.id }}">{{ category.name }}</option>
-                                    {% endfor %}
-                                </select>
-                                {% endif %}
-                            </div>
-                            
-                            <!-- Submit Button -->
-                            <button type="submit" class="btn btn-primary" id="submitBtn">
-                                <i class="fas fa-paper-plane"></i>
-                                <span>Paylaş</span>
-                            </button>
-                        </div>
+                </div>
+
+                <!-- Media Upload Area -->
+                <div class="media-upload-area" id="mediaUploadArea">
+                    <div class="upload-icon">
+                        <i class="fas fa-cloud-upload-alt"></i>
                     </div>
+                    <div class="upload-text">Dosyalarınızı buraya sürükleyin veya aşağıdaki butonları kullanın</div>
+                    <div class="upload-buttons">
+                        <label for="imageInput" class="upload-btn">
+                            <i class="fas fa-image"></i>
+                            Görsel Seç
+                        </label>
+                        <label for="videoInput" class="upload-btn">
+                            <i class="fas fa-video"></i>
+                            Video Seç
+                        </label>
+                        <button type="button" class="upload-btn" onclick="openCamera()">
+                            <i class="fas fa-camera"></i>
+                            Kamera
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Hidden file inputs -->
+                <input type="file" id="imageInput" name="image" class="file-input" accept="image/*">
+                <input type="file" id="videoInput" name="video" class="file-input" accept="video/*">
+                <input type="hidden" name="post_type" value="text">
+
+                <div class="composer-actions">
+                    <div class="composer-buttons">
+                        <button type="button" class="composer-btn" onclick="toggleMediaUpload()">
+                            <i class="fas fa-image"></i>
+                            Medya
+                        </button>
+                        <button type="button" class="composer-btn" onclick="showComingSoon('Video paylaşma yakında!')">
+                            <i class="fas fa-video"></i>
+                            Video
+                        </button>
+                        <button type="button" class="composer-btn" onclick="showComingSoon('Etkinlik oluşturma yakında!')">
+                            <i class="fas fa-calendar"></i>
+                            Etkinlik
+                        </button>
+                        <button type="button" class="composer-btn" onclick="showComingSoon('Anket oluşturma yakında!')">
+                            <i class="fas fa-poll"></i>
+                            Anket
+                        </button>
+                        <button type="button" class="composer-btn" onclick="showComingSoon('Belge paylaşma yakında!')">
+                            <i class="fas fa-file-alt"></i>
+                            Belge
+                        </button>
+                    </div>
+                    <button type="submit" class="post-btn">
+                        <span class="btn-text">Paylaş</span>
+                        <span class="btn-loading" style="display: none;">
+                            <span class="loading"></span>
+                        </span>
+                    </button>
                 </div>
             </form>
         </div>
-    {% else %}
-        <div class="welcome-card">
-            <h1 class="h2">Kuaförİlan'a Hoş Geldiniz</h1>
-            <p style="font-size: 1.125rem; margin: 1rem 0 2rem; opacity: 0.9;">
-                Türkiye'nin en büyük kuaför ve berber iş platformu. Sektördeki fırsatları keşfedin, deneyimlerinizi paylaşın.
-            </p>
-            <div class="d-flex justify-content-center" style="gap: 1rem;">
-                <a href="/auth/login/" class="btn btn-secondary btn-lg">
-                    <i class="fas fa-sign-in-alt"></i>
-                    <span>Giriş Yap</span>
-                </a>
-                <a href="/auth/register/" class="btn btn-outline btn-lg" style="color: var(--white); border-color: var(--white);">
-                    <i class="fas fa-user-plus"></i>
-                    <span>Üye Ol</span>
-                </a>
-            </div>
-        </div>
-    {% endif %}
-    
-    <!-- Posts Feed -->
-    <div id="postsContainer">
+        {% endif %}
+
+        <!-- Posts from Database -->
         {% for post_data in posts %}
-            <article class="card post-card" data-post-id="{{ post_data.post.id }}">
-                <!-- Post Header -->
-                <header class="d-flex align-items-center justify-content-between mb-3">
-                    <div class="d-flex align-items-center" style="gap: 1rem;">
-                        <div class="user-avatar" style="flex-shrink: 0;">
-                            {{ post_data.post.author.first_name.0|upper|default:"U" }}
-                        </div>
-                        <div>
-                            <h3 style="margin: 0; font-size: 1rem; font-weight: 600;">
-                                <a href="/profiles/{{ post_data.post.author.pk }}/" 
-                                   class="text-primary" 
-                                   style="text-decoration: none;">
-                                    {{ post_data.post.author.get_full_name|default:post_data.post.author.email }}
-                                </a>
-                            </h3>
-                            <div class="text-muted text-sm" style="margin: 0;">
-                                <time datetime="{{ post_data.post.created_at|date:'c' }}">
-                                    {{ post_data.post.created_at|timesince }} önce
-                                </time>
-                                {% if post_data.post.category %}
-                                    <span style="margin: 0 0.5rem;">•</span>
-                                    <span class="text-primary">{{ post_data.post.category.name }}</span>
-                                {% endif %}
-                                {% if post_data.post.location %}
-                                    <span style="margin: 0 0.5rem;">•</span>
-                                    <i class="fas fa-map-marker-alt"></i>
-                                    <span>{{ post_data.post.location }}</span>
-                                {% endif %}
-                            </div>
+            <article class="post-card fade-in">
+                <div class="post-header">
+                    <div class="post-user">
+                        <div class="post-avatar">{{ post_data.post.author.first_name|first|upper|default:'U' }}</div>
+                        <div class="post-user-info">
+                            <h4>{{ post_data.post.author.get_full_name|default:post_data.post.author.username }}</h4>
+                            <span>{{ post_data.post.location|default:"Türkiye" }} • {{ post_data.post.created_at|timesince }} önce</span>
                         </div>
                     </div>
-                    
                     {% if post_data.can_edit %}
-                    <div class="dropdown" style="position: relative;">
-                        <button class="btn btn-sm" 
-                                style="background: none; border: none; color: var(--text-muted); padding: 8px;"
-                                onclick="toggleDropdown(this)">
-                            <i class="fas fa-ellipsis-h"></i>
-                        </button>
-                        <div class="dropdown-menu" style="right: 0;">
-                            <a href="/posts/{{ post_data.post.id }}/edit/" class="dropdown-item">
-                                <i class="fas fa-edit"></i> Düzenle
-                            </a>
-                            <a href="/posts/{{ post_data.post.id }}/delete/" class="dropdown-item text-danger">
-                                <i class="fas fa-trash"></i> Sil
-                            </a>
-                        </div>
-                    </div>
+                    <button class="post-menu" onclick="showPostMenu({{ post_data.post.id }})">
+                        <i class="fas fa-ellipsis-h"></i>
+                    </button>
                     {% endif %}
-                </header>
-                
-                <!-- Post Content -->
+                </div>
                 <div class="post-content">
                     {% if post_data.post.title %}
-                        <h2 style="font-size: 1.25rem; font-weight: 600; margin-bottom: 0.75rem; color: var(--text-color);">
-                            {{ post_data.post.title }}
-                        </h2>
+                        <h3 style="margin-bottom: 8px; font-size: 18px;">{{ post_data.post.title }}</h3>
                     {% endif %}
+                    <p class="post-text">{{ post_data.post.content|linebreaksbr }}</p>
                     
-                    <div style="white-space: pre-wrap; line-height: 1.6; margin-bottom: 1rem;">
-                        {{ post_data.post.content }}
-                    </div>
-                    
-                    <!-- Media Content -->
                     {% if post_data.post.image %}
-                        <div class="mb-3">
-                            <img src="{{ post_data.post.image.url }}" 
-                                 alt="Post görseli" 
-                                 loading="lazy"
-                                 style="width: 100%; max-height: 500px; object-fit: cover;">
-                        </div>
+                        <img src="{{ post_data.post.image.url }}" alt="Post image" class="post-image">
                     {% endif %}
                     
-                    {% if post_data.post.video %}
-                        <div class="mb-3">
-                            <video controls 
-                                   style="width: 100%; max-height: 500px;"
-                                   preload="metadata">
-                                <source src="{{ post_data.post.video.url }}" type="video/mp4">
-                                <p>Tarayıcınız video oynatmayı desteklemiyor.</p>
-                            </video>
-                        </div>
-                    {% endif %}
-                    
-                    <!-- Tags -->
                     {% if post_data.tags_list %}
-                        <div style="margin: 1rem 0;">
+                        <div class="post-tags">
                             {% for tag in post_data.tags_list %}
-                                <a href="/?search=%23{{ tag }}" class="tag">
-                                    #{{ tag }}
-                                </a>
+                                <span class="post-tag" onclick="searchTag('{{ tag }}')">#{{ tag }}</span>
                             {% endfor %}
                         </div>
                     {% endif %}
                 </div>
-                
-                <!-- Post Actions -->
-                <footer class="post-actions d-flex justify-content-between align-items-center" 
-                        style="padding-top: 1rem; border-top: 1px solid var(--border-color);">
-                    <div class="d-flex align-items-center" style="gap: 0.5rem;">
-                        <!-- Like Button -->
-                        <button class="like-btn {% if post_data.is_liked %}liked active{% endif %}" 
-                                data-post-id="{{ post_data.post.id }}"
-                                title="Beğen">
-                            <i class="fas fa-heart"></i>
-                            <span class="like-count">{{ post_data.post.likes_count }}</span>
-                        </button>
-                        
-                        <!-- Comment Button -->
-                        <button class="comment-btn" 
-                                onclick="window.location.href='/posts/{{ post_data.post.id }}/#comments'"
-                                title="Yorumla">
-                            <i class="fas fa-comment"></i>
-                            <span>{{ post_data.post.comments_count }}</span>
-                        </button>
-                        
-                        <!-- Save Button -->
-                        <button class="save-btn {% if post_data.is_saved %}active{% endif %}" 
-                                data-post-id="{{ post_data.post.id }}"
-                                title="Kaydet">
-                            <i class="fas fa-bookmark"></i>
-                        </button>
-                        
-                        <!-- Share Button -->
-                        <button class="share-btn" 
-                                onclick="sharePost('{{ post_data.post.id }}')"
-                                title="Paylaş">
-                            <i class="fas fa-share"></i>
-                        </button>
-                    </div>
-                    
-                    <a href="/posts/{{ post_data.post.id }}/" 
-                       class="btn btn-outline btn-sm"
-                       style="font-size: 14px;">
-                        Detay
-                    </a>
-                </footer>
+                <div class="post-stats">
+                    <span>{{ post_data.post.likes_count }} beğeni</span>
+                    <span>{{ post_data.post.comments_count }} yorum • {{ post_data.post.shares_count|default:0 }} paylaşım</span>
+                </div>
+                <div class="post-actions">
+                    <button class="action-btn {% if post_data.is_liked %}liked{% endif %}" onclick="toggleLike(this)" data-post-id="{{ post_data.post.id }}">
+                        <i class="fas fa-heart"></i>
+                        <span>{% if post_data.is_liked %}Beğendim{% else %}Beğen{% endif %}</span>
+                    </button>
+                    <button class="action-btn" onclick="toggleComments(this)">
+                        <i class="fas fa-comment"></i>
+                        <span>Yorum</span>
+                    </button>
+                    <button class="action-btn" onclick="sharePost(this)">
+                        <i class="fas fa-share"></i>
+                        <span>Paylaş</span>
+                    </button>
+                    <button class="action-btn {% if post_data.is_saved %}saved{% endif %}" onclick="toggleSave(this)" data-post-id="{{ post_data.post.id }}">
+                        <i class="fas fa-bookmark"></i>
+                        <span>{% if post_data.is_saved %}Kaydedildi{% else %}Kaydet{% endif %}</span>
+                    </button>
+                </div>
             </article>
         {% empty %}
-            <div class="empty-state">
-                <i class="fas fa-comments"></i>
-                <h3 class="h4">Henüz gönderi paylaşılmamış</h3>
-                <p>İlk paylaşımı yaparak topluluğa katılın!</p>
-                {% if user.is_authenticated %}
-                    <button onclick="document.querySelector('.quick-post-textarea').focus()" 
-                            class="btn btn-primary mt-3">
-                        <i class="fas fa-plus"></i>
-                        İlk Gönderiyi Paylaş
+            <!-- Sample Posts if no posts in database -->
+            <article class="post-card fade-in">
+                <div class="post-header">
+                    <div class="post-user">
+                        <div class="post-avatar">ES</div>
+                        <div class="post-user-info">
+                            <h4>Elif Salon</h4>
+                            <span>Kadıköy, İstanbul • 2 saat önce</span>
+                        </div>
+                    </div>
+                    <button class="post-menu">
+                        <i class="fas fa-ellipsis-h"></i>
                     </button>
+                </div>
+                <div class="post-content">
+                    <p class="post-text">
+                        Yeni açtığımız şubemiz için deneyimli kuaför arkadaşlar arıyoruz! 
+                        Modern salonumuzda çalışmak isteyen, müşteri odaklı ve yaratıcı ekip arkadaşları bekliyoruz. 💇‍♀️✨
+                    </p>
+                    <div class="post-tags">
+                        <span class="post-tag" onclick="searchTag('kuaför')">#kuaför</span>
+                        <span class="post-tag" onclick="searchTag('işilanı')">#işilanı</span>
+                        <span class="post-tag" onclick="searchTag('kadıköy')">#kadıköy</span>
+                        <span class="post-tag" onclick="searchTag('deneyimli')">#deneyimli</span>
+                    </div>
+                </div>
+                <div class="post-stats">
+                    <span>24 beğeni</span>
+                    <span>8 yorum • 3 paylaşım</span>
+                </div>
+                <div class="post-actions">
+                    <button class="action-btn" onclick="toggleLike(this)" data-post-id="sample1">
+                        <i class="fas fa-heart"></i>
+                        <span>Beğen</span>
+                    </button>
+                    <button class="action-btn" onclick="toggleComments(this)">
+                        <i class="fas fa-comment"></i>
+                        <span>Yorum</span>
+                    </button>
+                    <button class="action-btn" onclick="sharePost(this)">
+                        <i class="fas fa-share"></i>
+                        <span>Paylaş</span>
+                    </button>
+                    <button class="action-btn" onclick="toggleSave(this)">
+                        <i class="fas fa-bookmark"></i>
+                        <span>Kaydet</span>
+                    </button>
+                </div>
+            </article>
+
+            <article class="post-card fade-in">
+                <div class="post-header">
+                    <div class="post-user">
+                        <div class="post-avatar">MK</div>
+                        <div class="post-user-info">
+                            <h4>Mehmet Kaya</h4>
+                            <span>Berber Uzmanı • 4 saat önce</span>
+                        </div>
+                    </div>
+                    <button class="post-menu">
+                        <i class="fas fa-ellipsis-h"></i>
+                    </button>
+                </div>
+                <div class="post-content">
+                    <p class="post-text">
+                        Bugün gerçekleştirdiğim saç kesimi çalışması. Modern erkek kuaförlüğünde 
+                        trendleri takip etmek ve müşteri memnuniyeti her zaman önceliğim! 💪
+                    </p>
+                    <div class="post-tags">
+                        <span class="post-tag" onclick="searchTag('berber')">#berber</span>
+                        <span class="post-tag" onclick="searchTag('saçkesimi')">#saçkesimi</span>
+                        <span class="post-tag" onclick="searchTag('erkekstili')">#erkekstili</span>
+                        <span class="post-tag" onclick="searchTag('profesyonel')">#profesyonel</span>
+                    </div>
+                </div>
+                <div class="post-stats">
+                    <span>45 beğeni</span>
+                    <span>12 yorum • 7 paylaşım</span>
+                </div>
+                <div class="post-actions">
+                    <button class="action-btn liked" onclick="toggleLike(this)" data-post-id="sample2">
+                        <i class="fas fa-heart"></i>
+                        <span>Beğendim</span>
+                    </button>
+                    <button class="action-btn" onclick="toggleComments(this)">
+                        <i class="fas fa-comment"></i>
+                        <span>Yorum</span>
+                    </button>
+                    <button class="action-btn" onclick="sharePost(this)">
+                        <i class="fas fa-share"></i>
+                        <span>Paylaş</span>
+                    </button>
+                    <button class="action-btn saved" onclick="toggleSave(this)">
+                        <i class="fas fa-bookmark"></i>
+                        <span>Kaydedildi</span>
+                    </button>
+                </div>
+            </article>
+        {% endfor %}
+
+        <!-- Pagination -->
+        {% if posts_page.has_other_pages %}
+            <div class="pagination-container" style="text-align: center; margin-top: 32px;">
+                {% if posts_page.has_previous %}
+                    <a href="?page=1" class="pagination-btn">«« İlk</a>
+                    <a href="?page={{ posts_page.previous_page_number }}" class="pagination-btn">‹ Önceki</a>
+                {% endif %}
+                
+                <span class="pagination-info">
+                    Sayfa {{ posts_page.number }} / {{ posts_page.paginator.num_pages }}
+                </span>
+                
+                {% if posts_page.has_next %}
+                    <a href="?page={{ posts_page.next_page_number }}" class="pagination-btn">Sonraki ›</a>
+                    <a href="?page={{ posts_page.paginator.num_pages }}" class="pagination-btn">Son »»</a>
                 {% endif %}
             </div>
-        {% endfor %}
-    </div>
-    
-    <!-- Pagination -->
-    {% if posts_page.has_other_pages %}
-        <nav class="pagination" aria-label="Sayfa navigasyonu">
-            {% if posts_page.has_previous %}
-                <a href="?page=1{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.category %}&category={{ request.GET.category }}{% endif %}" 
-                   class="page-link" title="İlk sayfa">
-                    <i class="fas fa-angle-double-left"></i>
-                </a>
-                <a href="?page={{ posts_page.previous_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.category %}&category={{ request.GET.category }}{% endif %}" 
-                   class="page-link" title="Önceki sayfa">
-                    <i class="fas fa-angle-left"></i>
-                </a>
-            {% endif %}
-            
-            <span class="page-link active">
-                {{ posts_page.number }} / {{ posts_page.paginator.num_pages }}
-            </span>
-            
-            {% if posts_page.has_next %}
-                <a href="?page={{ posts_page.next_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.category %}&category={{ request.GET.category }}{% endif %}" 
-                   class="page-link" title="Sonraki sayfa">
-                    <i class="fas fa-angle-right"></i>
-                </a>
-                <a href="?page={{ posts_page.paginator.num_pages }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.category %}&category={{ request.GET.category }}{% endif %}" 
-                   class="page-link" title="Son sayfa">
-                    <i class="fas fa-angle-double-right"></i>
-                </a>
-            {% endif %}
-        </nav>
-    {% endif %}
-</div>
-{% endblock %}
+        {% endif %}
+    </section>
 
-{% block extra_js %}
+    <!-- Right Sidebar -->
+    <aside class="right-sidebar slide-in">
+        <!-- Önerilen Kişiler -->
+        <div class="widget fade-in">
+            <h3 class="widget-title">
+                <i class="fas fa-user-plus"></i>
+                Tanıyor Olabileceğiniz Kişiler
+            </h3>
+            <div class="suggestion-item">
+                <div class="suggestion-avatar">AY</div>
+                <div class="suggestion-info">
+                    <div class="suggestion-name">Ayşe Yılmaz</div>
+                    <div class="suggestion-title">Kuaför Uzmanı</div>
+                </div>
+                <button class="follow-btn" onclick="toggleFollow(this)">Takip Et</button>
+            </div>
+            <div class="suggestion-item">
+                <div class="suggestion-avatar">HS</div>
+                <div class="suggestion-info">
+                    <div class="suggestion-name">Hair Studio</div>
+                    <div class="suggestion-title">Güzellik Salonu</div>
+                </div>
+                <button class="follow-btn" onclick="toggleFollow(this)">Takip Et</button>
+            </div>
+            <div class="suggestion-item">
+                <div class="suggestion-avatar">BM</div>
+                <div class="suggestion-info">
+                    <div class="suggestion-name">Berber Mustafa</div>
+                    <div class="suggestion-title">Berber</div>
+                </div>
+                <button class="follow-btn" onclick="toggleFollow(this)">Takip Et</button>
+            </div>
+        </div>
+
+        <!-- Trend Konular -->
+        <div class="widget fade-in">
+            <h3 class="widget-title">
+                <i class="fas fa-fire"></i>
+                Trend Konular
+            </h3>
+            <div class="trending-item" onclick="searchTag('kuaförilanları')">
+                <div class="trending-tag">#kuaförilanları</div>
+                <div class="trending-count">1,234 gönderi</div>
+            </div>
+            <div class="trending-item" onclick="searchTag('berbertrendleri')">
+                <div class="trending-tag">#berbertrendleri</div>
+                <div class="trending-count">892 gönderi</div>
+            </div>
+            <div class="trending-item" onclick="searchTag('saçmodelleri')">
+                <div class="trending-tag">#saçmodelleri</div>
+                <div class="trending-count">756 gönderi</div>
+            </div>
+            <div class="trending-item" onclick="searchTag('güzelliksalonu')">
+                <div class="trending-tag">#güzelliksalonu</div>
+                <div class="trending-count">634 gönderi</div>
+            </div>
+            <div class="trending-item" onclick="searchTag('profesyonelgelişim')">
+                <div class="trending-tag">#profesyonelgelişim</div>
+                <div class="trending-count">523 gönderi</div>
+            </div>
+        </div>
+
+        <!-- Son İş İlanları -->
+        <div class="widget fade-in">
+            <h3 class="widget-title">
+                <i class="fas fa-briefcase"></i>
+                Son İş İlanları
+            </h3>
+            <div class="suggestion-item">
+                <div class="suggestion-avatar">💼</div>
+                <div class="suggestion-info">
+                    <div class="suggestion-name">Kuaför Aranıyor</div>
+                    <div class="suggestion-title">Ataşehir, İstanbul</div>
+                </div>
+            </div>
+            <div class="suggestion-item">
+                <div class="suggestion-avatar">✂️</div>
+                <div class="suggestion-info">
+                    <div class="suggestion-name">Berber Ustası</div>
+                    <div class="suggestion-title">Kadıköy, İstanbul</div>
+                </div>
+            </div>
+            <div class="suggestion-item">
+                <div class="suggestion-avatar">💅</div>
+                <div class="suggestion-info">
+                    <div class="suggestion-name">Nail Art Uzmanı</div>
+                    <div class="suggestion-title">Beşiktaş, İstanbul</div>
+                </div>
+            </div>
+            <a href="{% url 'jobs:list' %}" style="display: block; text-align: center; margin-top: 16px; color: var(--primary-color); text-decoration: none; font-weight: 600;">
+                Tüm İlanları Gör →
+            </a>
+        </div>
+    </aside>
+</main>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/js/all.min.js"></script>
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Quick Post Form
-    const quickPostForm = document.getElementById('quickPostForm');
-    const submitBtn = document.getElementById('submitBtn');
-    const imageInput = document.getElementById('imageInput');
-    const videoInput = document.getElementById('videoInput');
-    const mediaPreview = document.getElementById('mediaPreview');
-    
-    // Media Preview Functionality
-    function showMediaPreview(file, type) {
-        mediaPreview.classList.remove('hidden');
-        const url = URL.createObjectURL(file);
+    // Global variables
+    let mediaUploadActive = false;
+    let currentStream = null;
+
+    // Utility functions
+    function showToast(message, type = 'info') {
+        const toast = document.createElement('div');
+        toast.className = `toast ${type}`;
+        toast.textContent = message;
+        document.body.appendChild(toast);
         
-        if (type === 'image') {
-            mediaPreview.innerHTML = `
-                <img src="${url}" alt="Preview">
-                <button type="button" class="remove-media" onclick="removeMedia()">
-                    <i class="fas fa-times"></i>
-                </button>
-            `;
-        } else if (type === 'video') {
-            mediaPreview.innerHTML = `
-                <video controls src="${url}"></video>
-                <button type="button" class="remove-media" onclick="removeMedia()">
-                    <i class="fas fa-times"></i>
-                </button>
-            `;
+        setTimeout(() => {
+            toast.remove();
+        }, 3000);
+    }
+
+    function showComingSoon(message) {
+        showToast(message, 'info');
+    }
+
+    // Media upload functionality
+    function toggleMediaUpload() {
+        const uploadArea = document.getElementById('mediaUploadArea');
+        const button = event.target;
+        
+        mediaUploadActive = !mediaUploadActive;
+        
+        if (mediaUploadActive) {
+            uploadArea.classList.add('active');
+            button.classList.add('active');
+            button.innerHTML = '<i class="fas fa-times"></i> Kapat';
+        } else {
+            uploadArea.classList.remove('active');
+            button.classList.remove('active');
+            button.innerHTML = '<i class="fas fa-image"></i> Medya';
         }
     }
-    
-    window.removeMedia = function() {
-        mediaPreview.classList.add('hidden');
-        mediaPreview.innerHTML = '';
-        imageInput.value = '';
-        videoInput.value = '';
-    };
-    
-    // File Input Handlers
-    imageInput.addEventListener('change', function(e) {
-        if (e.target.files[0]) {
-            videoInput.value = ''; // Clear video if image selected
-            showMediaPreview(e.target.files[0], 'image');
-        }
-    });
-    
-    videoInput.addEventListener('change', function(e) {
-        if (e.target.files[0]) {
-            imageInput.value = ''; // Clear image if video selected
-            showMediaPreview(e.target.files[0], 'video');
-        }
-    });
-    
-    // Quick Post Submit
-    if (quickPostForm) {
-        quickPostForm.addEventListener('submit', async function(e) {
-            e.preventDefault();
+
+    // Camera functionality
+    async function openCamera() {
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ 
+                video: true, 
+                audio: false 
+            });
             
-            const formData = new FormData(this);
-            const originalBtnText = submitBtn.innerHTML;
+            // Create video element for camera preview
+            const video = document.createElement('video');
+            video.srcObject = stream;
+            video.autoplay = true;
+            video.style.width = '100%';
+            video.style.borderRadius = '8px';
+            video.style.marginTop = '10px';
             
-            try {
-                // Show loading state
-                submitBtn.disabled = true;
-                submitBtn.innerHTML = '<div class="loading"></div> Paylaşılıyor...';
-                
-                const response = await fetch('/posts/create/', {
-                    method: 'POST',
-                    body: formData,
-                    headers: {
-                        'X-CSRFToken': App.getCsrfToken(),
-                    }
-                });
-                
-                if (response.ok) {
-                    App.showToast('Gönderi başarıyla paylaşıldı!', 'success');
-                    this.reset();
-                    removeMedia();
-                    
-                    // Reload page after short delay
-                    setTimeout(() => {
-                        window.location.reload();
-                    }, 1000);
+            const uploadArea = document.getElementById('mediaUploadArea');
+            uploadArea.appendChild(video);
+            
+            // Add capture button
+            const captureBtn = document.createElement('button');
+            captureBtn.textContent = 'Fotoğraf Çek';
+            captureBtn.className = 'upload-btn';
+            captureBtn.style.marginTop = '10px';
+            captureBtn.onclick = () => capturePhoto(video, stream);
+            
+            uploadArea.appendChild(captureBtn);
+            currentStream = stream;
+            
+        } catch (error) {
+            showToast('Kamera erişimi reddedildi veya desteklenmiyor.', 'error');
+        }
+    }
+
+    function capturePhoto(video, stream) {
+        const canvas = document.createElement('canvas');
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(video, 0, 0);
+        
+        // Convert to blob and create file
+        canvas.toBlob((blob) => {
+            const file = new File([blob], 'camera-photo.jpg', { type: 'image/jpeg' });
+            
+            // Update file input
+            const imageInput = document.getElementById('imageInput');
+            const dt = new DataTransfer();
+            dt.items.add(file);
+            imageInput.files = dt.files;
+            
+            showToast('Fotoğraf çekildi!', 'success');
+            
+            // Stop camera and remove video
+            stream.getTracks().forEach(track => track.stop());
+            video.remove();
+            event.target.remove();
+        }, 'image/jpeg', 0.8);
+    }
+
+    // Enhanced like functionality with API
+    async function toggleLike(button) {
+        const postId = button.getAttribute('data-post-id');
+        const icon = button.querySelector('i');
+        const text = button.querySelector('span');
+        
+        button.style.pointerEvents = 'none';
+        
+        try {
+            {% if user.is_authenticated %}
+            const response = await fetch('{% url "posts:like_api" %}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                body: JSON.stringify({ post_id: postId })
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                if (data.is_liked) {
+                    button.classList.add('liked');
+                    text.textContent = 'Beğendim';
+                    icon.style.animation = 'bounce 0.5s ease';
                 } else {
-                    const data = await response.json();
-                    throw new Error(data.message || 'Gönderi paylaşılamadı');
+                    button.classList.remove('liked');
+                    text.textContent = 'Beğen';
                 }
-            } catch (error) {
-                App.showToast(error.message, 'danger');
-            } finally {
-                // Restore button state
-                submitBtn.disabled = false;
-                submitBtn.innerHTML = originalBtnText;
+                showToast(data.is_liked ? 'Beğenildi!' : 'Beğeni kaldırıldı!', 'success');
+            } else {
+                showToast('Bir hata oluştu.', 'error');
             }
-        });
+            {% else %}
+            showToast('Beğenmek için giriş yapmalısınız.', 'info');
+            {% endif %}
+        } catch (error) {
+            showToast('Bağlantı hatası.', 'error');
+        }
+        
+        button.style.pointerEvents = 'auto';
+        setTimeout(() => icon.style.animation = '', 500);
     }
-    
-    // Like Button Functionality
-    document.querySelectorAll('.like-btn').forEach(btn => {
-        btn.addEventListener('click', async function() {
-            if (!{{ user.is_authenticated|yesno:'true,false' }}) {
-                App.showToast('Beğenmek için giriş yapmalısınız', 'warning');
-                return;
-            }
-            
-            const postId = this.dataset.postId;
-            const likeCount = this.querySelector('.like-count');
-            const wasLiked = this.classList.contains('liked');
-            
-            try {
-                const response = await App.request('/posts/api/like/', {
-                    method: 'POST',
-                    body: JSON.stringify({ post_id: postId })
-                });
-                
-                if (response.success) {
-                    if (response.is_liked) {
-                        this.classList.add('liked', 'active');
-                    } else {
-                        this.classList.remove('liked', 'active');
-                    }
-                    likeCount.textContent = response.likes_count;
-                }
-            } catch (error) {
-                // Error handled by App.request
-            }
-        });
-    });
-    
-    // Save Button Functionality
-    document.querySelectorAll('.save-btn').forEach(btn => {
-        btn.addEventListener('click', async function() {
-            if (!{{ user.is_authenticated|yesno:'true,false' }}) {
-                App.showToast('Kaydetmek için giriş yapmalısınız', 'warning');
-                return;
-            }
-            
-            const postId = this.dataset.postId;
-            const wasSaved = this.classList.contains('active');
-            
-            try {
-                const response = await App.request('/posts/api/save/', {
-                    method: 'POST',
-                    body: JSON.stringify({ post_id: postId })
-                });
-                
-                if (response.success) {
-                    if (response.is_saved) {
-                        this.classList.add('active');
-                        App.showToast('Gönderi kaydedildi', 'success');
-                    } else {
-                        this.classList.remove('active');
-                        App.showToast('Kayıt kaldırıldı', 'success');
-                    }
-                }
-            } catch (error) {
-                // Error handled by App.request
-            }
-        });
-    });
-});
 
-// Share Post Function
-function sharePost(postId) {
-    const url = `${window.location.origin}/posts/${postId}/`;
-    
-    if (navigator.share) {
-        navigator.share({
-            title: 'Kuaförİlan - Gönderi',
-            text: 'Bu gönderiyi inceleyin',
-            url: url
-        }).catch(() => {
-            // Fallback to copy
-            copyToClipboard(url);
-        });
-    } else {
-        copyToClipboard(url);
+    // Save functionality
+    async function toggleSave(button) {
+        const postId = button.getAttribute('data-post-id');
+        const icon = button.querySelector('i');
+        const text = button.querySelector('span');
+        
+        button.style.pointerEvents = 'none';
+        
+        try {
+            {% if user.is_authenticated %}
+            const response = await fetch('{% url "posts:save_api" %}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                body: JSON.stringify({ post_id: postId })
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                if (data.is_saved) {
+                    button.classList.add('saved');
+                    text.textContent = 'Kaydedildi';
+                    icon.style.animation = 'bounce 0.5s ease';
+                    showToast('Kaydedildi!', 'success');
+                } else {
+                    button.classList.remove('saved');
+                    text.textContent = 'Kaydet';
+                    showToast('Kaydetme kaldırıldı!', 'info');
+                }
+            } else {
+                showToast('Bir hata oluştu.', 'error');
+            }
+            {% else %}
+            showToast('Kaydetmek için giriş yapmalısınız.', 'info');
+            {% endif %}
+        } catch (error) {
+            showToast('Bağlantı hatası.', 'error');
+        }
+        
+        button.style.pointerEvents = 'auto';
+        setTimeout(() => icon.style.animation = '', 500);
     }
-}
 
-function copyToClipboard(text) {
-    navigator.clipboard.writeText(text).then(() => {
-        App.showToast('Bağlantı kopyalandı', 'success');
-    }).catch(() => {
-        App.showToast('Bağlantı kopyalanamadı', 'danger');
-    });
-}
+    // Share functionality
+    function sharePost(button) {
+        const text = button.querySelector('span');
+        const icon = button.querySelector('i');
+        
+        if (navigator.share) {
+            navigator.share({
+                title: 'Kuaför İlan Paylaşımı',
+                text: 'Bu gönderiyi kontrol et!',
+                url: window.location.href
+            });
+        } else {
+            // Fallback - copy to clipboard
+            navigator.clipboard.writeText(window.location.href);
+            showToast('Link kopyalandı!', 'success');
+            
+            button.classList.add('shared');
+            text.textContent = 'Paylaşıldı';
+            icon.style.animation = 'bounce 0.5s ease';
+            
+            setTimeout(() => {
+                button.classList.remove('shared');
+                text.textContent = 'Paylaş';
+                icon.style.animation = '';
+            }, 2000);
+        }
+    }
 
-// Dropdown Toggle
-function toggleDropdown(button) {
-    const dropdown = button.nextElementSibling;
-    dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
-    
-    // Close on outside click
-    document.addEventListener('click', function closeDropdown(e) {
-        if (!button.contains(e.target) && !dropdown.contains(e.target)) {
-            dropdown.style.display = 'none';
-            document.removeEventListener('click', closeDropdown);
+    // Comments functionality
+    function toggleComments(button) {
+        showComingSoon('Yorum sistemi yakında aktif olacak!');
+    }
+
+    // Follow functionality
+    function toggleFollow(button) {
+        const text = button.textContent;
+        
+        if (text === 'Takip Et') {
+            button.textContent = 'Takip Ediliyor';
+            button.style.background = 'var(--success-color)';
+            showToast('Takip edildi!', 'success');
+        } else {
+            button.textContent = 'Takip Et';
+            button.style.background = 'var(--primary-color)';
+            showToast('Takip bırakıldı!', 'info');
+        }
+    }
+
+    // Search functionality
+    document.getElementById('searchInput').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            const query = this.value.trim();
+            if (query) {
+                window.location.href = `{% url 'jobs:list' %}?search=${encodeURIComponent(query)}`;
+            }
         }
     });
-}
+
+    // Tag search
+    function searchTag(tag) {
+        window.location.href = `{% url 'jobs:list' %}?search=${encodeURIComponent('#' + tag)}`;
+    }
+
+    // Post form submission
+    document.getElementById('postForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        const submitBtn = this.querySelector('.post-btn');
+        const btnText = submitBtn.querySelector('.btn-text');
+        const btnLoading = submitBtn.querySelector('.btn-loading');
+        
+        // Show loading state
+        btnText.style.display = 'none';
+        btnLoading.style.display = 'inline-block';
+        submitBtn.disabled = true;
+        
+        try {
+            const formData = new FormData(this);
+            
+            const response = await fetch(this.action, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}'
+                }
+            });
+            
+            if (response.ok) {
+                showToast('Gönderi başarıyla paylaşıldı!', 'success');
+                this.reset();
+                if (mediaUploadActive) {
+                    toggleMediaUpload(); // Close media upload area
+                }
+                
+                // Reload page after 1 second
+                setTimeout(() => {
+                    window.location.reload();
+                }, 1000);
+            } else {
+                showToast('Gönderi paylaşılamadı. Tekrar deneyin.', 'error');
+            }
+        } catch (error) {
+            showToast('Bağlantı hatası.', 'error');
+        }
+        
+        // Reset button state
+        btnText.style.display = 'inline-block';
+        btnLoading.style.display = 'none';
+        submitBtn.disabled = false;
+    });
+
+    // File input change handlers
+    if (document.getElementById('imageInput')) {
+        document.getElementById('imageInput').addEventListener('change', function() {
+            if (this.files.length > 0) {
+                showToast(`${this.files[0].name} seçildi.`, 'success');
+            }
+        });
+    }
+
+    if (document.getElementById('videoInput')) {
+        document.getElementById('videoInput').addEventListener('change', function() {
+            if (this.files.length > 0) {
+                showToast(`${this.files[0].name} seçildi.`, 'success');
+            }
+        });
+    }
+
+    // Initialize page
+    document.addEventListener('DOMContentLoaded', function() {
+        // Add smooth animations
+        const cards = document.querySelectorAll('.post-card, .widget, .sidebar');
+        cards.forEach((card, index) => {
+            card.style.animationDelay = `${index * 0.1}s`;
+        });
+        
+        // Simulate real-time updates
+        setTimeout(function() {
+            const badges = document.querySelectorAll('.notification-badge');
+            badges.forEach(badge => {
+                const currentCount = parseInt(badge.textContent);
+                if (Math.random() > 0.7) {
+                    badge.textContent = currentCount + 1;
+                    badge.style.animation = 'pulse 0.5s ease-in-out';
+                }
+            });
+        }, 15000);
+
+        // Add drag and drop functionality
+        const uploadArea = document.getElementById('mediaUploadArea');
+        
+        if (uploadArea) {
+            uploadArea.addEventListener('dragover', function(e) {
+                e.preventDefault();
+                this.style.borderColor = 'var(--primary-color)';
+                this.style.backgroundColor = '#f0f9ff';
+            });
+            
+            uploadArea.addEventListener('dragleave', function(e) {
+                e.preventDefault();
+                this.style.borderColor = 'var(--border-color)';
+                this.style.backgroundColor = '#f8fafc';
+            });
+            
+            uploadArea.addEventListener('drop', function(e) {
+                e.preventDefault();
+                this.style.borderColor = 'var(--border-color)';
+                this.style.backgroundColor = '#f8fafc';
+                
+                const files = e.dataTransfer.files;
+                if (files.length > 0) {
+                    const file = files[0];
+                    if (file.type.startsWith('image/')) {
+                        document.getElementById('imageInput').files = files;
+                        showToast(`${file.name} yüklendi.`, 'success');
+                    } else if (file.type.startsWith('video/')) {
+                        document.getElementById('videoInput').files = files;
+                        showToast(`${file.name} yüklendi.`, 'success');
+                    } else {
+                        showToast('Sadece resim ve video dosyaları desteklenir.', 'error');
+                    }
+                }
+            });
+        }
+    });
+
+    // Cleanup function for camera
+    window.addEventListener('beforeunload', function() {
+        if (currentStream) {
+            currentStream.getTracks().forEach(track => track.stop());
+        }
+    });
+
+    // Post menu functionality
+    function showPostMenu(postId) {
+        showComingSoon('Post menüsü yakında eklenecek!');
+    }
 </script>
 {% endblock %}
-
