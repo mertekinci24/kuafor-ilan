@@ -1,1 +1,1 @@
-web: python manage.py makemigrations && python manage.py migrate && python manage.py collectstatic --noinput && gunicorn kuafor_ilan.wsgi:application
+web: python manage.py makemigrations user_notifications && python manage.py makemigrations messaging && python manage.py makemigrations && python manage.py migrate && python manage.py collectstatic --noinput && gunicorn kuafor_ilan.wsgi:application
