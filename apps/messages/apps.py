@@ -7,3 +7,4 @@ class MessagesConfig(AppConfig):
     verbose_name = 'Mesajlaşma'
     label = 'messaging'  # Çakışmayı önlemek için özel etiket
     
+
