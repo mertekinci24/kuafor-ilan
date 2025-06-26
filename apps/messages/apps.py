@@ -7,7 +7,3 @@ class MessagesConfig(AppConfig):
     verbose_name = 'Mesajlaşma'
     label = 'messaging'  # Çakışmayı önlemek için özel etiket
     
-    def ready(self):
-        """App hazır olduğunda çalışacak kod"""
-        import apps.messages.signals
-        
