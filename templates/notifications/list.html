@@ -1,0 +1,152 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Bildirimlerim - Kuaförİlan{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h1 class="h3 mb-0">
+                        <i class="fas fa-bell me-2"></i>
+                        Bildirimlerim
+                    </h1>
+                    <div>
+                        {% if stats.unread > 0 %}
+                            <button class="btn btn-outline-primary btn-sm me-2" onclick="markAllAsRead()">
+                                <i class="fas fa-check-double"></i>
+                                Tümünü Okundu İşaretle
+                            </button>
+                        {% endif %}
+                        <span class="badge bg-primary">{{ stats.unread }} okunmamış</span>
+                    </div>
+                </div>
+                <div class="card-body">
+                    {% if notifications %}
+                        {% for notification in notifications %}
+                            <div class="d-flex align-items-start p-3 border-bottom notification-item {% if not notification.is_read %}unread{% endif %}"
+                                 data-notification-id="{{ notification.id }}">
+                                <div class="notification-icon me-3">
+                                    <i class="{{ notification.get_icon }}" style="color: {{ notification.get_color }};"></i>
+                                </div>
+                                <div class="flex-grow-1">
+                                    <h6 class="mb-1">{{ notification.title }}</h6>
+                                    <p class="mb-1 text-muted">{{ notification.message|truncatewords:20 }}</p>
+                                    <small class="text-muted">{{ notification.created_at|timesince }} önce</small>
+                                </div>
+                                <div class="notification-actions">
+                                    {% if notification.action_url %}
+                                        <a href="{{ notification.action_url }}" class="btn btn-sm btn-outline-primary me-2">
+                                            {{ notification.action_text|default:'Görüntüle' }}
+                                        </a>
+                                    {% endif %}
+                                    {% if not notification.is_read %}
+                                        <button class="btn btn-sm btn-outline-success" onclick="markAsRead('{{ notification.id }}')">
+                                            <i class="fas fa-check"></i>
+                                        </button>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        {% endfor %}
+                        
+                        <!-- Pagination -->
+                        {% if notifications_page.has_other_pages %}
+                            <nav class="mt-4">
+                                <ul class="pagination justify-content-center">
+                                    {% if notifications_page.has_previous %}
+                                        <li class="page-item">
+                                            <a class="page-link" href="?page={{ notifications_page.previous_page_number }}">Önceki</a>
+                                        </li>
+                                    {% endif %}
+                                    
+                                    <li class="page-item active">
+                                        <span class="page-link">{{ notifications_page.number }} / {{ notifications_page.paginator.num_pages }}</span>
+                                    </li>
+                                    
+                                    {% if notifications_page.has_next %}
+                                        <li class="page-item">
+                                            <a class="page-link" href="?page={{ notifications_page.next_page_number }}">Sonraki</a>
+                                        </li>
+                                    {% endif %}
+                                </ul>
+                            </nav>
+                        {% endif %}
+                    {% else %}
+                        <div class="text-center py-5">
+                            <i class="fas fa-bell fa-3x text-muted mb-3"></i>
+                            <h4>Henüz bildiriminiz yok</h4>
+                            <p class="text-muted">Yeni iş fırsatları ve güncellemeler hakkında bildirimler burada görünecek.</p>
+                            <a href="/jobs/" class="btn btn-primary">
+                                <i class="fas fa-search"></i>
+                                İş İlanlarını Keşfet
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.notification-item {
+    transition: background-color 0.2s;
+}
+.notification-item:hover {
+    background-color: #f8f9fa;
+}
+.notification-item.unread {
+    background-color: #f0f9ff;
+    border-left: 4px solid #0a66c2;
+}
+.notification-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: #f8f9fa;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+</style>
+
+<script>
+async function markAsRead(notificationId) {
+    try {
+        const response = await fetch(`/notifications/${notificationId}/read/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+                'Content-Type': 'application/json'
+            }
+        });
+        
+        if (response.ok) {
+            location.reload();
+        }
+    } catch (error) {
+        console.error('Error marking notification as read:', error);
+    }
+}
+
+async function markAllAsRead() {
+    try {
+        const response = await fetch('/notifications/mark-all-read/', {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+                'Content-Type': 'application/json'
+            }
+        });
+        
+        if (response.ok) {
+            location.reload();
+        }
+    } catch (error) {
+        console.error('Error marking all notifications as read:', error);
+    }
+}
+</script>
+{% endblock %}
