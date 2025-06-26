@@ -28,6 +28,8 @@ INSTALLED_APPS = [
     'apps.jobs',
     'apps.profiles',
     'apps.posts',  # Bu satır eklendi
+    'apps.messages',  # YENİ EKLENEN
+    'apps.notifications',  # YENİ EKLENEN
 ]
 
 MIDDLEWARE = [
