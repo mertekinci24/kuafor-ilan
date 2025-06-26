@@ -6,7 +6,7 @@ from django.views.decorators.http import require_http_methods
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from apps.jobs.models import JobListing, JobApplication, SavedJob
-from apps.authentication.models import JobSeekerProfile, BusinessProfile
+from .models import JobSeekerProfile, BusinessProfile
 import json
 
 User = get_user_model()
