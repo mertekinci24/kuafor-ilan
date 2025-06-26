@@ -28,8 +28,8 @@ INSTALLED_APPS = [
     'apps.jobs',
     'apps.profiles',
     'apps.posts',  # Bu satır eklendi
-    'apps.messages',  # YENİ EKLENEN
-    'apps.notifications',  # YENİ EKLENEN
+    'apps.messages.apps.MessagesConfig',  # Config class kullan
+    'apps.notifications.apps.NotificationsConfig',  # Config class kullan
 ]
 
 MIDDLEWARE = [
