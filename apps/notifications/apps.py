@@ -6,8 +6,4 @@ class NotificationsConfig(AppConfig):
     name = 'apps.notifications'
     verbose_name = 'Bildirimler'
     label = 'user_notifications'  # Çakışmayı önlemek için özel etiket
-    
-    def ready(self):
-        """App hazır olduğunda çalışacak kod"""
-        import apps.notifications.signals
-        
+
