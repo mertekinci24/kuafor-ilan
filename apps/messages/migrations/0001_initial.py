@@ -1,0 +1,108 @@
+# Generated manually
+from django.conf import settings
+from django.db import migrations, models
+import django.db.models.deletion
+import uuid
+
+class Migration(migrations.Migration):
+    initial = True
+    
+    dependencies = [
+        migrations.swappable_dependency(settings.AUTH_USER_MODEL),
+        ('jobs', '0001_initial'),
+    ]
+
+    operations = [
+        migrations.CreateModel(
+            name='Conversation',
+            fields=[
+                ('id', models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True, serialize=False)),
+                ('created_at', models.DateTimeField(auto_now_add=True)),
+                ('updated_at', models.DateTimeField(auto_now=True)),
+                ('is_active', models.BooleanField(default=True)),
+                ('last_message', models.TextField(blank=True, null=True)),
+                ('last_message_at', models.DateTimeField(blank=True, null=True)),
+                ('last_message_sender', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='last_messages_sent', to=settings.AUTH_USER_MODEL)),
+                ('participants', models.ManyToManyField(related_name='conversations', to=settings.AUTH_USER_MODEL)),
+            ],
+            options={
+                'verbose_name': 'Sohbet',
+                'verbose_name_plural': 'Sohbetler',
+                'ordering': ['-updated_at'],
+            },
+        ),
+        migrations.CreateModel(
+            name='BlockedUser',
+            fields=[
+                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('blocked_at', models.DateTimeField(auto_now_add=True)),
+                ('reason', models.CharField(blank=True, max_length=200)),
+                ('blocked', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='blocked_by', to=settings.AUTH_USER_MODEL)),
+                ('blocker', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='blocked_users', to=settings.AUTH_USER_MODEL)),
+            ],
+            options={
+                'verbose_name': 'Engellenen Kullanıcı',
+                'verbose_name_plural': 'Engellenen Kullanıcılar',
+                'unique_together': {('blocker', 'blocked')},
+            },
+        ),
+        migrations.CreateModel(
+            name='Message',
+            fields=[
+                ('id', models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True, serialize=False)),
+                ('content', models.TextField()),
+                ('message_type', models.CharField(choices=[('text', 'Metin'), ('image', 'Resim'), ('file', 'Dosya'), ('job_share', 'İş İlanı Paylaşımı')], default='text', max_length=20)),
+                ('image', models.ImageField(blank=True, null=True, upload_to='messages/images/')),
+                ('file', models.FileField(blank=True, null=True, upload_to='messages/files/')),
+                ('is_read', models.BooleanField(default=False)),
+                ('read_at', models.DateTimeField(blank=True, null=True)),
+                ('is_deleted', models.BooleanField(default=False)),
+                ('deleted_at', models.DateTimeField(blank=True, null=True)),
+                ('created_at', models.DateTimeField(auto_now_add=True)),
+                ('updated_at', models.DateTimeField(auto_now=True)),
+                ('conversation', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='messages', to='messages.conversation')),
+                ('sender', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='sent_messages', to=settings.AUTH_USER_MODEL)),
+                ('shared_job', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='shared_in_messages', to='jobs.joblisting')),
+            ],
+            options={
+                'verbose_name': 'Mesaj',
+                'verbose_name_plural': 'Mesajlar',
+                'ordering': ['created_at'],
+            },
+        ),
+        migrations.CreateModel(
+            name='MessageReport',
+            fields=[
+                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('reason', models.CharField(choices=[('spam', 'Spam'), ('harassment', 'Taciz'), ('inappropriate', 'Uygunsuz İçerik'), ('fake_job', 'Sahte İş İlanı'), ('other', 'Diğer')], max_length=20)),
+                ('description', models.TextField(blank=True)),
+                ('reported_at', models.DateTimeField(auto_now_add=True)),
+                ('is_resolved', models.BooleanField(default=False)),
+                ('resolved_at', models.DateTimeField(blank=True, null=True)),
+                ('message', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='reports', to='messages.message')),
+                ('reporter', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='message_reports', to=settings.AUTH_USER_MODEL)),
+            ],
+            options={
+                'verbose_name': 'Mesaj Şikayeti',
+                'verbose_name_plural': 'Mesaj Şikayetleri',
+                'unique_together': {('message', 'reporter')},
+            },
+        ),
+        migrations.CreateModel(
+            name='MessageAttachment',
+            fields=[
+                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('file', models.FileField(upload_to='messages/attachments/')),
+                ('file_name', models.CharField(max_length=255)),
+                ('file_size', models.PositiveIntegerField()),
+                ('file_type', models.CharField(max_length=50)),
+                ('uploaded_at', models.DateTimeField(auto_now_add=True)),
+                ('message', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='attachments', to='messages.message')),
+            ],
+            options={
+                'verbose_name': 'Mesaj Eki',
+                'verbose_name_plural': 'Mesaj Ekleri',
+            },
+        ),
+    ]
+  
