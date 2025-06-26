@@ -1,1 +1,1 @@
-web: python manage.py migrate --run-syncdb && python manage.py collectstatic --noinput && gunicorn kuafor_ilan.wsgi:application
+web: python manage.py makemigrations messages notifications && python manage.py migrate && python manage.py collectstatic --noinput && gunicorn kuafor_ilan.wsgi:application
