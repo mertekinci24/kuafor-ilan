@@ -21,6 +21,10 @@ urlpatterns = [
     path('profiles/', include('apps.profiles.urls')),
     path('dashboard/', include('apps.dashboard.urls')),
     
+    # YENİ EKLENEN APPS
+    path('messages/', include('apps.messages.urls')),
+    path('notifications/', include('apps.notifications.urls')),
+    
     # WordPress bot koruması
     path('wp-admin/', RedirectView.as_view(url='/', permanent=False)),
     path('wp-login.php', RedirectView.as_view(url='/', permanent=False)),
