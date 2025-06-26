@@ -1,0 +1,75 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Mesajlarım - Kuaförİlan{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h1 class="h3 mb-0">
+                        <i class="fas fa-comment-dots me-2"></i>
+                        Mesajlarım
+                    </h1>
+                    <span class="badge bg-primary">{{ total_unread }} okunmamış</span>
+                </div>
+                <div class="card-body">
+                    {% if conversations_data %}
+                        {% for conv_data in conversations_data %}
+                            <div class="d-flex align-items-center p-3 border-bottom conversation-item" 
+                                 onclick="window.location.href='/messages/{{ conv_data.conversation.id }}/'">
+                                <div class="user-avatar me-3">
+                                    {{ conv_data.other_participant.first_name.0|upper|default:'U' }}
+                                </div>
+                                <div class="flex-grow-1">
+                                    <h6 class="mb-1">
+                                        {{ conv_data.other_participant.get_full_name|default:conv_data.other_participant.email }}
+                                    </h6>
+                                    <p class="mb-1 text-muted">{{ conv_data.last_message_preview|default:'Henüz mesaj yok' }}</p>
+                                    <small class="text-muted">{{ conv_data.conversation.updated_at|timesince }} önce</small>
+                                </div>
+                                {% if conv_data.unread_count > 0 %}
+                                    <span class="badge bg-danger">{{ conv_data.unread_count }}</span>
+                                {% endif %}
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="text-center py-5">
+                            <i class="fas fa-comment-dots fa-3x text-muted mb-3"></i>
+                            <h4>Henüz mesajınız yok</h4>
+                            <p class="text-muted">İş fırsatları hakkında konuşmaya başlamak için diğer kullanıcılarla iletişime geçin.</p>
+                            <a href="/jobs/" class="btn btn-primary">
+                                <i class="fas fa-search"></i>
+                                İş İlanlarını Keşfet
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.conversation-item {
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+.conversation-item:hover {
+    background-color: #f8f9fa;
+}
+.user-avatar {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #0a66c2, #4c9eff);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 600;
+}
+</style>
+{% endblock %}
