@@ -116,7 +116,7 @@ STATIC_URL = 'static/'
 STATICFILES_DIRS = [
     BASE_DIR / 'static',
 ]
-# STATIC_ROOT = BASE_DIR / 'staticfiles' # Mevcut
+STATIC_ROOT = BASE_DIR / 'staticfiles' # Mevcut
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
