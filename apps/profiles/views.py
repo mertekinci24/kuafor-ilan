@@ -147,6 +147,87 @@ def profile_edit_view(request):
 
 
 @login_required
+def profile_completion_wizard_view(request):
+    """Profil tamamlama sihirbazı"""
+    
+    # Kullanıcının profil tipini belirle
+    if hasattr(request.user, 'jobseeker_profile'):
+        profile = request.user.jobseeker_profile
+        form_class = JobSeekerProfileForm
+        profile_type = 'jobseeker'
+        steps = {
+            1: ['bio', 'experience_years', 'skills'],
+            2: ['city', 'district', 'address'],
+            3: ['birth_date', 'portfolio_url', 'linkedin_url', 'cv_file', 'profile_image', 'certificates', 'expected_salary_min', 'expected_salary_max', 'is_available'],
+        }
+        step_titles = {
+            1: 'Kişisel Bilgiler',
+            2: 'Konum Bilgileri',
+            3: 'Detaylı Bilgiler ve Dosyalar',
+        }
+    elif hasattr(request.user, 'business_profile'):
+        profile = request.user.business_profile
+        form_class = BusinessProfileForm
+        profile_type = 'business'
+        steps = {
+            1: ['company_name', 'company_description', 'company_size', 'establishment_year'],
+            2: ['city', 'district', 'address', 'contact_phone', 'website', 'contact_person'],
+            3: ['is_verified', 'verification_documents', 'logo', 'cover_image'],
+        }
+        step_titles = {
+            1: 'Şirket Bilgileri',
+            2: 'İletişim Bilgileri',
+            3: 'Doğrulama ve Görseller',
+        }
+    else:
+        messages.error(request, 'Profiliniz bulunamadı.')
+        return redirect('/')
+
+    current_step = int(request.POST.get('current_step', 1)) if request.method == 'POST' else 1
+    
+    if request.method == 'POST':
+        form = form_class(request.POST, request.FILES, instance=profile)
+        
+        # Sadece mevcut adımdaki alanları doğrula
+        form.fields = {k: v for k, v in form.fields.items() if k in steps[current_step]}
+        
+        if form.is_valid():
+            # Form verilerini kaydet
+            for field_name in steps[current_step]:
+                if field_name in request.FILES:
+                    setattr(profile, field_name, request.FILES[field_name])
+                else:
+                    setattr(profile, field_name, form.cleaned_data.get(field_name))
+            profile.save()
+            
+            if current_step < len(steps):
+                current_step += 1
+                messages.success(request, 'Adım başarıyla tamamlandı!')
+            else:
+                messages.success(request, 'Profiliniz başarıyla tamamlandı!')
+                return redirect('profiles:profile')
+        else:
+            messages.error(request, 'Lütfen formdaki hataları düzeltin.')
+    
+    # Mevcut adım için formu yeniden oluştur
+    form = form_class(instance=profile)
+    # Sadece mevcut adımdaki alanları göster
+    form.fields = {k: v for k, v in form.fields.items() if k in steps[current_step]}
+
+    context = {
+        'form': form,
+        'profile': profile,
+        'user': request.user,
+        'current_step': current_step,
+        'total_steps': len(steps),
+        'step_title': step_titles.get(current_step, 'Profil Tamamlama'),
+        'profile_type': profile_type,
+    }
+    
+    return render(request, 'profiles/profile_wizard.html', context)
+
+
+@login_required
 def my_applications_view(request):
     """Başvurularım (sadece iş arayanlar için)"""
     
@@ -512,4 +593,4 @@ def export_profile_data(request):
         logger.error(f"Export profile data error for {request.user.email}: {str(e)}")
         messages.error(request, 'Veri export edilirken hata oluştu.')
         return redirect('profiles:settings')
-        
+
