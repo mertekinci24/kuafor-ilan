@@ -5,5 +5,5 @@ class NotificationsConfig(AppConfig):
     default_auto_field = 'django.db.models.BigAutoField'
     name = 'apps.notifications'
     verbose_name = 'Bildirimler'
-    label = 'user_notifications'  # Çakışmayı önlemek için özel etiket
+    label = 'notifications'  # Çakışmayı önlemek için özel etiket
 
