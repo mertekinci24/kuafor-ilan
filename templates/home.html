@@ -799,7 +799,6 @@
 {% endblock %}
 
 {% block content %}
-<!-- Header -->
 <header class="main-header">
     <div class="header-container">
         <a href="{% url 'home' %}" class="logo-container">
@@ -846,9 +845,7 @@
     </div>
 </header>
 
-<!-- Main Content -->
 <main class="main-container">
-    <!-- Left Sidebar -->
     <aside class="sidebar slide-in">
         <div class="sidebar-section">
             <h3 class="sidebar-title">
@@ -897,9 +894,7 @@
         </div>
     </aside>
 
-    <!-- Feed -->
     <section class="feed">
-        <!-- Enhanced Post Composer -->
         {% if user.is_authenticated %}
         <div class="post-composer fade-in">
             <form id="postForm" method="post" action="{% url 'posts:create' %}" enctype="multipart/form-data">
@@ -911,7 +906,6 @@
                     </div>
                 </div>
 
-                <!-- Media Upload Area -->
                 <div class="media-upload-area" id="mediaUploadArea">
                     <div class="upload-icon">
                         <i class="fas fa-cloud-upload-alt"></i>
@@ -933,14 +927,13 @@
                     </div>
                 </div>
 
-                <!-- Hidden file inputs -->
                 <input type="file" id="imageInput" name="image" class="file-input" accept="image/*">
                 <input type="file" id="videoInput" name="video" class="file-input" accept="video/*">
                 <input type="hidden" name="post_type" value="text">
 
                 <div class="composer-actions">
                     <div class="composer-buttons">
-                        <button type="button" class="composer-btn" onclick="toggleMediaUpload()">
+                        <button type="button" class="composer-btn" onclick="toggleMediaUpload(event)">
                             <i class="fas fa-image"></i>
                             Medya
                         </button>
@@ -972,7 +965,6 @@
         </div>
         {% endif %}
 
-        <!-- Sample Posts with Enhanced Interactions -->
         <article class="post-card fade-in">
             <div class="post-header">
                 <div class="post-user">
@@ -1121,9 +1113,7 @@
         </article>
     </section>
 
-    <!-- Right Sidebar -->
     <aside class="right-sidebar slide-in">
-        <!-- Önerilen Kişiler -->
         <div class="widget fade-in">
             <h3 class="widget-title">
                 <i class="fas fa-user-plus"></i>
@@ -1155,7 +1145,6 @@
             </div>
         </div>
 
-        <!-- Trend Konular -->
         <div class="widget fade-in">
             <h3 class="widget-title">
                 <i class="fas fa-fire"></i>
@@ -1183,7 +1172,6 @@
             </div>
         </div>
 
-        <!-- Son İş İlanları -->
         <div class="widget fade-in">
             <h3 class="widget-title">
                 <i class="fas fa-briefcase"></i>
@@ -1221,11 +1209,14 @@
 {% block extra_js %}
 <script>
     // Global variables
-    let mediaUploadActive = false;
     let currentStream = null;
 
-    // Utility functions
-    function showToast(message, type = 'info') {
+    /**
+     * Displays a temporary toast notification.
+     * @param {string} message - The message to display.
+     * @param {string} type - The type of toast ('info', 'success', 'error').
+     */
+    const showToast = (message, type = 'info') => {
         const toast = document.createElement('div');
         toast.className = `toast ${type}`;
         toast.textContent = message;
@@ -1234,38 +1225,74 @@
         setTimeout(() => {
             toast.remove();
         }, 3000);
-    }
+    };
 
-    function showComingSoon(message) {
+    /**
+     * Shows a "Coming Soon" toast message.
+     * @param {string} message - The specific feature message.
+     */
+    const showComingSoon = (message) => {
         showToast(message, 'info');
-    }
+    };
 
     // Media upload functionality
-    function toggleMediaUpload() {
+    /**
+     * Toggles the visibility of the media upload area.
+     * @param {Event} event - The click event from the button.
+     */
+    const toggleMediaUpload = (event) => {
         const uploadArea = document.getElementById('mediaUploadArea');
-        const button = event.target;
+        const button = event.currentTarget; // Use currentTarget to refer to the element the event listener was attached to
+
+        // Toggle 'active' class on the upload area and button
+        uploadArea.classList.toggle('active');
+        button.classList.toggle('active');
         
-        mediaUploadActive = !mediaUploadActive;
-        
+        const mediaUploadActive = uploadArea.classList.contains('active');
+
+        // Update button text and icon
         if (mediaUploadActive) {
-            uploadArea.classList.add('active');
-            button.classList.add('active');
             button.innerHTML = '<i class="fas fa-times"></i> Kapat';
         } else {
-            uploadArea.classList.remove('active');
-            button.classList.remove('active');
             button.innerHTML = '<i class="fas fa-image"></i> Medya';
+            // If camera was active, stop it when closing media upload area
+            if (currentStream) {
+                currentStream.getTracks().forEach(track => track.stop());
+                currentStream = null; // Clear the stream reference
+                // Remove video element and capture button if they exist
+                const videoElement = uploadArea.querySelector('video');
+                const captureButton = uploadArea.querySelector('.upload-btn[onclick*="capturePhoto"]');
+                if (videoElement) videoElement.remove();
+                if (captureButton) captureButton.remove();
+            }
         }
-    }
+    };
 
     // Camera functionality
-    async function openCamera() {
+    /**
+     * Opens the device camera for video streaming.
+     */
+    const openCamera = async () => {
         try {
+            // Stop any existing stream before starting a new one
+            if (currentStream) {
+                currentStream.getTracks().forEach(track => track.stop());
+            }
+
             const stream = await navigator.mediaDevices.getUserMedia({ 
                 video: true, 
                 audio: false 
             });
+            currentStream = stream; // Store the stream for later cleanup
             
+            const uploadArea = document.getElementById('mediaUploadArea');
+            
+            // Remove any existing video preview or capture button
+            const existingVideo = uploadArea.querySelector('video');
+            const existingCaptureBtn = uploadArea.querySelector('.upload-btn[onclick*="capturePhoto"]');
+            if (existingVideo) existingVideo.remove();
+            if (existingCaptureBtn) existingCaptureBtn.remove();
+
             // Create video element for camera preview
             const video = document.createElement('video');
             video.srcObject = stream;
@@ -1273,8 +1300,8 @@
             video.style.width = '100%';
             video.style.borderRadius = '8px';
             video.style.marginTop = '10px';
+            video.classList.add('camera-preview'); // Add a class for easier selection/removal
             
-            const uploadArea = document.getElementById('mediaUploadArea');
             uploadArea.appendChild(video);
             
             // Add capture button
@@ -1282,52 +1309,70 @@
             captureBtn.textContent = 'Fotoğraf Çek';
             captureBtn.className = 'upload-btn';
             captureBtn.style.marginTop = '10px';
-            captureBtn.onclick = () => capturePhoto(video, stream);
+            captureBtn.onclick = () => capturePhoto(video, stream, uploadArea);
             
             uploadArea.appendChild(captureBtn);
-            currentStream = stream;
             
         } catch (error) {
+            console.error('Kamera erişimi hatası:', error);
             showToast('Kamera erişimi reddedildi veya desteklenmiyor.', 'error');
         }
-    }
+    };
 
-    function capturePhoto(video, stream) {
+    /**
+     * Captures a photo from the video stream.
+     * @param {HTMLVideoElement} video - The video element displaying the camera feed.
+     * @param {MediaStream} stream - The active media stream.
+     * @param {HTMLElement} uploadArea - The media upload area element.
+     */
+    const capturePhoto = (video, stream, uploadArea) => {
         const canvas = document.createElement('canvas');
         canvas.width = video.videoWidth;
         canvas.height = video.videoHeight;
         
         const ctx = canvas.getContext('2d');
-        ctx.drawImage(video, 0, 0);
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height); // Ensure image draws correctly
         
         // Convert to blob and create file
         canvas.toBlob((blob) => {
-            const file = new File([blob], 'camera-photo.jpg', { type: 'image/jpeg' });
-            
-            // Update file input
-            const imageInput = document.getElementById('imageInput');
-            const dt = new DataTransfer();
-            dt.items.add(file);
-            imageInput.files = dt.files;
-            
-            showToast('Fotoğraf çekildi!', 'success');
-            
-            // Stop camera and remove video
-            stream.getTracks().forEach(track => track.stop());
-            video.remove();
-            event.target.remove();
+            if (blob) {
+                const file = new File([blob], `camera-photo-${Date.now()}.jpg`, { type: 'image/jpeg' });
+                
+                // Update file input
+                const imageInput = document.getElementById('imageInput');
+                const dt = new DataTransfer();
+                dt.items.add(file);
+                imageInput.files = dt.files;
+                
+                showToast('Fotoğraf çekildi!', 'success');
+                
+                // Stop camera and remove video/capture button
+                stream.getTracks().forEach(track => track.stop());
+                currentStream = null; // Clear stream reference
+                video.remove();
+                // Remove the capture button by its class/onclick attribute or direct reference
+                const captureButton = uploadArea.querySelector('.upload-btn[onclick*="capturePhoto"]');
+                if (captureButton) captureButton.remove();
+            } else {
+                showToast('Fotoğraf çekilirken bir hata oluştu.', 'error');
+            }
         }, 'image/jpeg', 0.8);
-    }
+    };
 
     // Enhanced like functionality with API
-    async function toggleLike(button) {
+    /**
+     * Toggles the like status of a post via API.
+     * @param {HTMLElement} button - The like button element.
+     */
+    const toggleLike = async (button) => {
         const postId = button.getAttribute('data-post-id');
         const icon = button.querySelector('i');
         const text = button.querySelector('span');
         
-        button.style.pointerEvents = 'none';
+        button.style.pointerEvents = 'none'; // Disable button during API call
         
         try {
+            // Check if user is authenticated (assuming this is handled server-side or via a JS global)
             {% if user.is_authenticated %}
             const response = await fetch('{% url "posts:like_api" %}', {
                 method: 'POST',
@@ -1338,6 +1383,12 @@
                 body: JSON.stringify({ post_id: postId })
             });
             
+            if (!response.ok) {
+                // Handle HTTP errors
+                const errorData = await response.json();
+                throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+            }
+
             const data = await response.json();
             
             if (data.success) {
@@ -1351,21 +1402,26 @@
                 }
                 showToast(data.is_liked ? 'Beğenildi!' : 'Beğeni kaldırıldı!', 'success');
             } else {
-                showToast('Bir hata oluştu.', 'error');
+                showToast(data.message || 'Bir hata oluştu.', 'error');
             }
             {% else %}
             showToast('Beğenmek için giriş yapmalısınız.', 'info');
             {% endif %}
         } catch (error) {
-            showToast('Bağlantı hatası.', 'error');
+            console.error('Beğeni işlemi sırasında hata:', error);
+            showToast(`Bağlantı hatası: ${error.message}`, 'error');
+        } finally {
+            button.style.pointerEvents = 'auto'; // Re-enable button
+            setTimeout(() => icon.style.animation = '', 500); // Clear animation
         }
-        
-        button.style.pointerEvents = 'auto';
-        setTimeout(() => icon.style.animation = '', 500);
-    }
+    };
 
     // Save functionality
-    function toggleSave(button) {
+    /**
+     * Toggles the save status of a post.
+     * @param {HTMLElement} button - The save button element.
+     */
+    const toggleSave = (button) => {
         const icon = button.querySelector('i');
         const text = button.querySelector('span');
         
@@ -1381,10 +1437,14 @@
         }
         
         setTimeout(() => icon.style.animation = '', 500);
-    }
+    };
 
     // Share functionality
-    function sharePost(button) {
+    /**
+     * Shares the post or copies its link to clipboard.
+     * @param {HTMLElement} button - The share button element.
+     */
+    const sharePost = (button) => {
         const text = button.querySelector('span');
         const icon = button.querySelector('i');
         
@@ -1393,31 +1453,47 @@
                 title: 'Kuaför İlan Paylaşımı',
                 text: 'Bu gönderiyi kontrol et!',
                 url: window.location.href
+            }).catch(error => {
+                // User might have cancelled the share action
+                console.log('Share cancelled or failed:', error);
             });
         } else {
             // Fallback - copy to clipboard
-            navigator.clipboard.writeText(window.location.href);
-            showToast('Link kopyalandı!', 'success');
-            
-            button.classList.add('shared');
-            text.textContent = 'Paylaşıldı';
-            icon.style.animation = 'bounce 0.5s ease';
-            
-            setTimeout(() => {
-                button.classList.remove('shared');
-                text.textContent = 'Paylaş';
-                icon.style.animation = '';
-            }, 2000);
+            navigator.clipboard.writeText(window.location.href)
+                .then(() => {
+                    showToast('Link kopyalandı!', 'success');
+                    button.classList.add('shared');
+                    text.textContent = 'Paylaşıldı';
+                    icon.style.animation = 'bounce 0.5s ease';
+                    
+                    setTimeout(() => {
+                        button.classList.remove('shared');
+                        text.textContent = 'Paylaş';
+                        icon.style.animation = '';
+                    }, 2000);
+                })
+                .catch(err => {
+                    console.error('Failed to copy text: ', err);
+                    showToast('Link kopyalanamadı.', 'error');
+                });
         }
-    }
+    };
 
     // Comments functionality
-    function toggleComments(button) {
+    /**
+     * Placeholder for comments feature.
+     * @param {HTMLElement} button - The comment button element.
+     */
+    const toggleComments = (button) => {
         showComingSoon('Yorum sistemi yakında aktif olacak!');
-    }
+    };
 
     // Follow functionality
-    function toggleFollow(button) {
+    /**
+     * Toggles the follow status for a user/entity.
+     * @param {HTMLElement} button - The follow button element.
+     */
+    const toggleFollow = (button) => {
         const text = button.textContent;
         
         if (text === 'Takip Et') {
@@ -1426,10 +1502,10 @@
             showToast('Takip edildi!', 'success');
         } else {
             button.textContent = 'Takip Et';
-            button.style.background = 'var(--primary-color)';
+            button.style.background = 'var(--primary-color)'; // Revert to primary or default button background
             showToast('Takip bırakıldı!', 'info');
         }
-    }
+    };
 
     // Search functionality
     document.getElementById('searchInput').addEventListener('keypress', function(e) {
@@ -1442,9 +1518,13 @@
     });
 
     // Tag search
-    function searchTag(tag) {
+    /**
+     * Redirects to the job list page with a search query for the given tag.
+     * @param {string} tag - The tag to search for.
+     */
+    const searchTag = (tag) => {
         window.location.href = `{% url 'jobs:list' %}?search=${encodeURIComponent('#' + tag)}`;
-    }
+    };
 
     // Post form submission
     document.getElementById('postForm').addEventListener('submit', async function(e) {
@@ -1466,30 +1546,40 @@
                 method: 'POST',
                 body: formData,
                 headers: {
-                    'X-CSRFToken': '{{ csrf_token }}'
+                    'X-CSRFToken': '{{ csrf_token }}' // CSRF token is correctly passed in headers for fetch
                 }
             });
             
             if (response.ok) {
                 showToast('Gönderi başarıyla paylaşıldı!', 'success');
-                this.reset();
-                toggleMediaUpload(); // Close media upload area
+                this.reset(); // Clear form fields
                 
-                // Reload page after 1 second
+                // Manually close media upload area and reset its button
+                const uploadArea = document.getElementById('mediaUploadArea');
+                uploadArea.classList.remove('active');
+                const mediaButton = this.querySelector('.composer-btn[onclick*="toggleMediaUpload"]');
+                if (mediaButton) {
+                    mediaButton.classList.remove('active');
+                    mediaButton.innerHTML = '<i class="fas fa-image"></i> Medya';
+                }
+                
+                // Reload page after 1 second to see the new post (consider dynamic addition for better UX)
                 setTimeout(() => {
                     window.location.reload();
                 }, 1000);
             } else {
-                showToast('Gönderi paylaşılamadı. Tekrar deneyin.', 'error');
+                const errorData = await response.json(); // Attempt to parse error message from response
+                showToast(errorData.message || 'Gönderi paylaşılamadı. Tekrar deneyin.', 'error');
             }
         } catch (error) {
-            showToast('Bağlantı hatası.', 'error');
+            console.error('Gönderi gönderme hatası:', error);
+            showToast('Bağlantı hatası veya sunucuya ulaşılamadı.', 'error');
+        } finally {
+            // Reset button state
+            btnText.style.display = 'inline-block';
+            btnLoading.style.display = 'none';
+            submitBtn.disabled = false;
         }
-        
-        // Reset button state
-        btnText.style.display = 'inline-block';
-        btnLoading.style.display = 'none';
-        submitBtn.disabled = false;
     });
 
     // File input change handlers
@@ -1507,45 +1597,68 @@
 
     // Initialize page
     document.addEventListener('DOMContentLoaded', function() {
-        // Add smooth animations
-        const cards = document.querySelectorAll('.post-card, .widget, .sidebar');
-        cards.forEach((card, index) => {
-            card.style.animationDelay = `${index * 0.1}s`;
+        // Add smooth animations to elements with fade-in or slide-in classes
+        const animateElements = document.querySelectorAll('.fade-in, .slide-in');
+        animateElements.forEach((el, index) => {
+            // Adjust delay for staggered animation if desired
+            el.style.animationDelay = `${index * 0.05}s`; // Slightly reduced delay for faster load
         });
         
-        // Simulate real-time updates
-        setTimeout(function() {
+        // Simulate real-time updates for notification badges
+        // This could be replaced with WebSockets for true real-time updates
+        setInterval(function() {
             const badges = document.querySelectorAll('.notification-badge');
             badges.forEach(badge => {
-                const currentCount = parseInt(badge.textContent);
-                if (Math.random() > 0.7) {
-                    badge.textContent = currentCount + 1;
-                    badge.style.animation = 'pulse 0.5s ease-in-out';
+                let currentCount = parseInt(badge.textContent);
+                // Randomly increment badge count for simulation
+                if (Math.random() > 0.7) { // 30% chance to increment
+                    currentCount++;
+                    badge.textContent = currentCount;
+                    badge.style.animation = 'pulse 0.5s ease-in-out'; // Apply pulse animation
+                    // Remove animation after it completes to allow re-triggering
+                    setTimeout(() => {
+                        badge.style.animation = '';
+                    }, 500);
                 }
             });
-        }, 15000);
+        }, 15000); // Check every 15 seconds
 
-        // Add drag and drop functionality
+        // Add drag and drop functionality for media upload area
         const uploadArea = document.getElementById('mediaUploadArea');
         
-        uploadArea.addEventListener('dragover', function(e) {
-            e.preventDefault();
-            this.style.borderColor = 'var(--primary-color)';
-            this.style.backgroundColor = '#f0f9ff';
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            uploadArea.addEventListener(eventName, preventDefaults, false);
         });
-        
-        uploadArea.addEventListener('dragleave', function(e) {
-            e.preventDefault();
-            this.style.borderColor = 'var(--border-color)';
-            this.style.backgroundColor = '#f8fafc';
+
+        ['dragenter', 'dragover'].forEach(eventName => {
+            uploadArea.addEventListener(eventName, highlight, false);
         });
-        
-        uploadArea.addEventListener('drop', function(e) {
+
+        ['dragleave', 'drop'].forEach(eventName => {
+            uploadArea.addEventListener(eventName, unhighlight, false);
+        });
+
+        uploadArea.addEventListener('drop', handleDrop, false);
+
+        function preventDefaults (e) {
             e.preventDefault();
-            this.style.borderColor = 'var(--border-color)';
-            this.style.backgroundColor = '#f8fafc';
+            e.stopPropagation();
+        }
+
+        function highlight() {
+            uploadArea.style.borderColor = 'var(--primary-color)';
+            uploadArea.style.backgroundColor = '#f0f9ff';
+        }
+
+        function unhighlight() {
+            uploadArea.style.borderColor = 'var(--border-color)';
+            uploadArea.style.backgroundColor = '#f8fafc';
+        }
+
+        function handleDrop(e) {
+            const dt = e.dataTransfer;
+            const files = dt.files;
             
-            const files = e.dataTransfer.files;
             if (files.length > 0) {
                 const file = files[0];
                 if (file.type.startsWith('image/')) {
@@ -1558,13 +1671,14 @@
                     showToast('Sadece resim ve video dosyaları desteklenir.', 'error');
                 }
             }
-        });
+        }
     });
 
-    // Cleanup function for camera
+    // Cleanup function for camera: Stop stream when the user navigates away or closes the tab.
     window.addEventListener('beforeunload', function() {
         if (currentStream) {
             currentStream.getTracks().forEach(track => track.stop());
+            currentStream = null;
         }
     });
 </script>
