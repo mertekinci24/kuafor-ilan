@@ -8,6 +8,7 @@ urlpatterns = [
     path('', views.profile_view, name='profile'),  # Kendi profili
     path('<int:user_id>/', views.profile_view, name='profile_detail'),  # Başka kullanıcı profili
     path('edit/', views.profile_edit_view, name='profile_edit'),  # Profil düzenleme
+    path('complete/', views.profile_completion_wizard_view, name='profile_complete'), # Profil tamamlama sihirbazı
     
     # Job Seeker Specific
     path('applications/', views.my_applications_view, name='my_applications'),  # Başvurularım
