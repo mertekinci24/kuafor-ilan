@@ -1,6 +1,5 @@
 from django.core.management.base import BaseCommand
 from django.contrib.auth import get_user_model
-from apps.authentication.models import BusinessProfile
 
 User = get_user_model()
 
@@ -50,19 +49,6 @@ class Command(BaseCommand):
                 phone_verified=True
             )
 
-            # Business profil oluştur
-            BusinessProfile.objects.get_or_create(
-                user=admin_user,
-                defaults={
-                    'company_name': 'Kuaför İlan Admin',
-                    'city': 'İstanbul',
-                    'district': 'Beşiktaş',
-                    'company_description': 'Platform yönetimi',
-                    'contact_person': 'Admin User',
-                    'contact_phone': '+90 555 000 00 00',
-                    'is_verified': True
-                }
-            )
 
             self.stdout.write(
                 self.style.SUCCESS(
