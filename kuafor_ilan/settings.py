@@ -14,6 +14,7 @@ DEBUG = os.environ.get('DEBUG', 'True') == 'True'
 
 # Allowed hosts
 ALLOWED_HOSTS = ['*'] # Üretimde domain isimlerinizi buraya eklemelisiniz
+CSRF_TRUSTED_ORIGINS = ['https://kuaforilan.com', 'https://*.kuaforilan.com']
 
 
 # Application definition
