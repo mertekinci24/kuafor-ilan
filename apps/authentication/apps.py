@@ -5,18 +5,19 @@ from django.conf import settings
 class AuthenticationConfig(AppConfig):
     default_auto_field = 'django.db.models.BigAutoField'
     name = 'apps.authentication'
+    label = 'authentication'
     verbose_name = 'Authentication'
     
     def ready(self):
-        # Sadece production'da otomatik admin oluştur
-        if not settings.DEBUG:
-            self.create_admin_user()
+        # if not settings.DEBUG: # Admin oluşturma işlemi geçici olarak kapatıldı
+        #    self.create_admin_user()
+        pass # Boş bırakmamak için pass ekleyebiliriz
     
     def create_admin_user(self):
         """Admin kullanıcıyı otomatik oluştur"""
         try:
             from django.contrib.auth import get_user_model
-            from .models import BusinessProfile
+            from apps.profiles.models import BusinessProfile
             
             User = get_user_model()
             

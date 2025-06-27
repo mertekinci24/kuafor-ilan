@@ -1,15 +1,16 @@
 from django.db import models
-from django.contrib.auth import get_user_model
+# from django.contrib.auth import get_user_model
 from django.utils import timezone
 import uuid
+from django.conf import settings
 
-User = get_user_model()
+# User = get_user_model()
 
 
 class Conversation(models.Model):
     """İki kullanıcı arasındaki sohbet"""
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    participants = models.ManyToManyField(User, related_name='conversations')
+    participants = models.ManyToManyField(settings.AUTH_USER_MODEL, related_name='conversations')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     is_active = models.BooleanField(default=True)
@@ -18,8 +19,8 @@ class Conversation(models.Model):
     last_message = models.TextField(blank=True, null=True)
     last_message_at = models.DateTimeField(null=True, blank=True)
     last_message_sender = models.ForeignKey(
-        User, 
-        on_delete=models.SET_NULL, 
+        settings.AUTH_USER_MODEL, 
+        on_delete=models.SET_NULL,
         null=True, 
         blank=True,
         related_name='last_messages_sent'
@@ -70,7 +71,7 @@ class Message(models.Model):
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     conversation = models.ForeignKey(Conversation, on_delete=models.CASCADE, related_name='messages')
-    sender = models.ForeignKey(User, on_delete=models.CASCADE, related_name='sent_messages')
+    sender = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='sent_messages')
     content = models.TextField()
     message_type = models.CharField(max_length=20, choices=MESSAGE_TYPES, default='text')
     
@@ -172,8 +173,8 @@ class MessageAttachment(models.Model):
 
 class BlockedUser(models.Model):
     """Engellenen kullanıcılar"""
-    blocker = models.ForeignKey(User, on_delete=models.CASCADE, related_name='blocked_users')
-    blocked = models.ForeignKey(User, on_delete=models.CASCADE, related_name='blocked_by')
+    blocker = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='blocked_users')
+    blocked = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='blocked_by')
     blocked_at = models.DateTimeField(auto_now_add=True)
     reason = models.CharField(max_length=200, blank=True)
 
@@ -197,7 +198,7 @@ class MessageReport(models.Model):
     ]
 
     message = models.ForeignKey(Message, on_delete=models.CASCADE, related_name='reports')
-    reporter = models.ForeignKey(User, on_delete=models.CASCADE, related_name='message_reports')
+    reporter = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='message_reports')
     reason = models.CharField(max_length=20, choices=REPORT_REASONS)
     description = models.TextField(blank=True)
     reported_at = models.DateTimeField(auto_now_add=True)

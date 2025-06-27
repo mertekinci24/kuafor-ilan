@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect
-from django.contrib.auth import authenticate, login, logout, get_user_model
+from django.contrib.auth import authenticate, login, logout # get_user_model kaldırıldı
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.http import JsonResponse
@@ -10,15 +10,24 @@ from django.urls import reverse
 from django.core.exceptions import ValidationError
 import json
 import logging
+from django.db.models import Q # Q importu eklendi, çünkü kullanılıyor
 
 from .forms import SimpleLoginForm, SimpleRegisterForm
 from .services import OTPService, SocialAuthService
-from .models import CustomUser, OTPVerification, LoginHistory
+from .models import CustomUser, OTPVerification, LoginHistory # CustomUser doğrudan kullanılıyor
 from apps.profiles.models import JobSeekerProfile, BusinessProfile
 
-User = get_user_model()
+# User = get_user_model() # Bu satır kaldırıldı
 logger = logging.getLogger(__name__)
 
+# Yardımcı fonksiyon: IP adresini al
+def get_client_ip(request):
+    x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+    if x_forwarded_for:
+        ip = x_forwarded_for.split(',')[0]
+    else:
+        ip = request.META.get('REMOTE_ADDR')
+    return ip
 
 def login_view(request):
     """Login sayfası ve işlemleri"""
@@ -29,455 +38,237 @@ def login_view(request):
         form = SimpleLoginForm(request.POST)
         
         if form.is_valid():
-            username = form.cleaned_data['username']
-            password = form.cleaned_data['password']
-            remember_me = request.POST.get('remember_me')
+            email_or_phone = form.cleaned_data.get('email_or_phone')
+            password = form.cleaned_data.get('password')
             
-            # Email veya telefon ile authenticate
-            user = authenticate(request, username=username, password=password)
+            user = authenticate(request, username=email_or_phone, password=password)
             
             if user is not None:
-                if user.is_active:
-                    login(request, user)
-                    
-                    # Remember me
-                    if not remember_me:
-                        request.session.set_expiry(0)  # Browser kapanınca sil
-                    
-                    # Login history kaydet
-                    try:
-                        LoginHistory.objects.create(
-                            user=user,
-                            ip_address=get_client_ip(request),
-                            user_agent=request.META.get('HTTP_USER_AGENT', '')[:500],
-                            is_successful=True,
-                            login_method='password'
-                        )
-                    except Exception as e:
-                        logger.error(f"Login history error: {str(e)}")
-                    
-                    # Giriş log'u
-                    logger.info(f"User logged in: {user.email}")
-                    
-                    # Redirect
-                    next_url = request.GET.get('next', '/')
-                    messages.success(request, f'Hoş geldiniz, {user.get_full_name()}!')
-                    return redirect(next_url)
-                else:
-                    messages.error(request, 'Hesabınız deaktive edilmiş. Lütfen yönetici ile iletişime geçin.')
+                login(request, user)
+                LoginHistory.objects.create(user=user, ip_address=get_client_ip(request), is_successful=True, login_method='password')
+                messages.success(request, 'Başarıyla giriş yaptınız!')
+                return redirect('/')
             else:
-                # Başarısız giriş log'u
-                try:
-                    LoginHistory.objects.create(
-                        user=None,  # Kullanıcı bulunamadı
-                        ip_address=get_client_ip(request),
-                        user_agent=request.META.get('HTTP_USER_AGENT', '')[:500],
-                        is_successful=False,
-                        login_method='password'
-                    )
-                except Exception:
-                    pass
-                
-                messages.error(request, 'E-posta/telefon veya şifre hatalı.')
-        else:
-            messages.error(request, 'Lütfen formu doğru doldurun.')
+                # CustomUser modelini doğrudan kullanıyoruz
+                LoginHistory.objects.create(user=CustomUser.objects.filter(Q(email=email_or_phone) | Q(phone=email_or_phone)).first(), ip_address=get_client_ip(request), is_successful=False, login_method='password')
+                messages.error(request, 'Geçersiz e-posta/telefon veya şifre.')
     else:
         form = SimpleLoginForm()
     
     return render(request, 'auth/login.html', {'form': form})
 
-
 def register_view(request):
     """Kayıt sayfası ve işlemleri"""
     if request.user.is_authenticated:
-        return redirect('/')
+        return redirect('/') # Ana sayfaya yönlendir
     
     if request.method == 'POST':
         form = SimpleRegisterForm(request.POST)
-        
         if form.is_valid():
+            email = form.cleaned_data['email']
+            phone = form.cleaned_data['phone']
+            password = form.cleaned_data['password']
+            user_type = form.cleaned_data['user_type']
+
+            # CustomUser modelini doğrudan kullanıyoruz
+            if CustomUser.objects.filter(Q(email=email) | Q(phone=phone)).exists():
+                messages.error(request, 'Bu e-posta veya telefon numarası zaten kayıtlı.')
+                return render(request, 'auth/register.html', {'form': form})
+            
             try:
-                # Email benzersizlik kontrolü
-                if User.objects.filter(email=form.cleaned_data['email']).exists():
-                    messages.error(request, 'Bu e-posta adresi zaten kullanılıyor.')
-                    return render(request, 'auth/register.html', {'form': form})
-                
-                # Kullanıcı oluştur
-                user = User.objects.create_user(
-                    username=form.cleaned_data['email'],
-                    email=form.cleaned_data['email'],
-                    password=form.cleaned_data['password'],
-                    first_name=form.cleaned_data['first_name'],
-                    last_name=form.cleaned_data['last_name'],
-                    user_type=form.cleaned_data['user_type'],
-                    phone=form.cleaned_data.get('phone', '')
+                # CustomUser modelini doğrudan kullanıyoruz
+                user = CustomUser.objects.create_user(
+                    username=email if email else phone, # Kullanıcı adı olarak email veya telefon kullan
+                    email=email,
+                    phone=phone,
+                    password=password,
+                    user_type=user_type,
+                    is_active=False, # Hesap doğrulana kadar aktif değil
+                    is_verified=False
                 )
-                
-                # Profil oluştur
-                create_user_profile(user)
-                
-                # Otomatik giriş yap
-                login(request, user)
-                
-                # Login history kaydet
-                try:
-                    LoginHistory.objects.create(
-                        user=user,
-                        ip_address=get_client_ip(request),
-                        user_agent=request.META.get('HTTP_USER_AGENT', '')[:500],
-                        is_successful=True,
-                        login_method='password'
-                    )
-                except Exception as e:
-                    logger.error(f"Registration login history error: {str(e)}")
-                
-                messages.success(request, 'Hesabınız başarıyla oluşturuldu! Hoş geldiniz.')
-                logger.info(f"New user registered: {user.email}")
-                
-                return redirect('/')
-                
+
+                # OTP gönderme işlemi
+                otp_service = OTPService(user)
+                otp_service.send_otp(send_email=bool(email), send_sms=bool(phone)) # OTP'yi hem e-posta hem de SMS ile gönder
+
+                messages.success(request, 'Kayıt başarılı! Hesabınızı doğrulamak için lütfen e-postanızı ve/veya telefonunuzu kontrol edin.')
+                return redirect(reverse('authentication:verify_otp_api') + f'?user_identifier={email if email else phone}') # OTP doğrulama sayfasına yönlendir
+            
             except ValidationError as e:
-                messages.error(request, str(e))
+                for field, errors in e.message_dict.items():
+                    for error in errors:
+                        messages.error(request, f"{field.capitalize()}: {error}")
             except Exception as e:
-                logger.error(f"Registration error: {str(e)}")
-                messages.error(request, 'Kayıt sırasında bir hata oluştu. Lütfen tekrar deneyin.')
+                logger.error(f"Kayıt hatası: {str(e)}")
+                messages.error(request, 'Kayıt olurken bir hata oluştu. Lütfen tekrar deneyin.')
         else:
             for field, errors in form.errors.items():
                 for error in errors:
-                    messages.error(request, f"{field}: {error}")
+                    messages.error(request, f"{form.fields[field].label}: {error}")
     else:
         form = SimpleRegisterForm()
     
     return render(request, 'auth/register.html', {'form': form})
 
-
-def create_user_profile(user):
-    """Kullanıcı tipine göre profil oluştur"""
-    try:
-        if user.user_type == 'jobseeker':
-            if not hasattr(user, 'jobseeker_profile'):
-                JobSeekerProfile.objects.create(
-                    user=user,
-                    city="İstanbul",  # Varsayılan
-                    bio=f"Merhaba! Ben {user.get_full_name()}. İş arıyorum."
-                )
-        elif user.user_type == 'business':
-            if not hasattr(user, 'business_profile'):
-                BusinessProfile.objects.create(
-                    user=user,
-                    company_name=f"{user.first_name} {user.last_name}",
-                    city="İstanbul",
-                    address="Belirtilmemiş",
-                    contact_person=user.get_full_name(),
-                    contact_phone=user.phone or ""
-                )
-        
-        logger.info(f"Profile created for user: {user.email} ({user.user_type})")
-        
-    except Exception as e:
-        logger.error(f"Profile creation error for {user.email}: {str(e)}")
-
-
-@login_required
 def logout_view(request):
     """Çıkış işlemi"""
-    user_email = request.user.email
-    logout(request)
-    messages.success(request, 'Başarıyla çıkış yaptınız. Tekrar görüşmek üzere!')
-    logger.info(f"User logged out: {user_email}")
-    return redirect('/')
+    if request.user.is_authenticated:
+        logout(request)
+        messages.info(request, 'Başarıyla çıkış yaptınız.')
+    return redirect('authentication:login')
 
-
-# Utility Functions
-def get_client_ip(request):
-    """İstemci IP adresini al"""
-    x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
-    if x_forwarded_for:
-        ip = x_forwarded_for.split(',')[0]
-    else:
-        ip = request.META.get('REMOTE_ADDR')
-    return ip
-
-
-# API Views for OTP
 @csrf_exempt
 @require_http_methods(["POST"])
 def send_otp_api(request):
-    """OTP gönderme API"""
+    """OTP gönderme API endpoint'i"""
+    if request.user.is_authenticated:
+        return JsonResponse({'success': False, 'message': 'Zaten giriş yapılmış.'}, status=400)
+    
+    data = json.loads(request.body)
+    user_identifier = data.get('user_identifier') # email veya telefon numarası olabilir
+    
+    if not user_identifier:
+        return JsonResponse({'success': False, 'message': 'E-posta veya telefon numarası gerekli.'}, status=400)
+    
+    # CustomUser modelini doğrudan kullanıyoruz
+    user = CustomUser.objects.filter(Q(email=user_identifier) | Q(phone=user_identifier)).first()
+
+    if not user:
+        return JsonResponse({'success': False, 'message': 'Kullanıcı bulunamadı.'}, status=404)
+    
+    otp_service = OTPService(user)
+    
     try:
-        data = json.loads(request.body)
-        phone_number = data.get('phone_number')
-        email_address = data.get('email_address')
-        otp_type = data.get('otp_type', 'login')
-        
-        if not phone_number and not email_address:
-            return JsonResponse({
-                'success': False,
-                'message': 'Telefon numarası veya e-posta gerekli'
-            })
-        
-        # Rate limiting kontrolü
-        recent_otps = OTPVerification.objects.filter(
-            created_at__gte=timezone.now() - timezone.timedelta(minutes=1)
-        )
-        
-        if phone_number:
-            recent_otps = recent_otps.filter(phone_number=phone_number)
+        sent_email = False
+        sent_sms = False
+        if user.email:
+            sent_email = otp_service.send_otp(send_email=True, send_sms=False)
+        if user.phone:
+            sent_sms = otp_service.send_otp(send_email=False, send_sms=True)
+
+        if sent_email or sent_sms:
+            return JsonResponse({'success': True, 'message': 'OTP gönderildi. Lütfen e-postanızı veya telefonunuzu kontrol edin.'})
         else:
-            recent_otps = recent_otps.filter(email_address=email_address)
-        
-        if recent_otps.count() >= 3:
-            return JsonResponse({
-                'success': False,
-                'message': 'Çok fazla OTP isteği. Lütfen 1 dakika bekleyin.'
-            })
-        
-        # OTP gönder
-        success, otp_record, message = OTPService.create_otp(
-            phone_number=phone_number,
-            email_address=email_address,
-            otp_type=otp_type,
-            request=request
-        )
-        
-        return JsonResponse({
-            'success': success,
-            'message': message
-        })
-        
-    except json.JSONDecodeError:
-        return JsonResponse({
-            'success': False,
-            'message': 'Geçersiz JSON formatı'
-        })
+            return JsonResponse({'success': False, 'message': 'OTP gönderilemedi. Kullanıcının e-posta veya telefon bilgisi eksik.'}, status=400)
     except Exception as e:
-        logger.error(f"Send OTP API error: {str(e)}")
-        return JsonResponse({
-            'success': False,
-            'message': 'OTP gönderilirken hata oluştu'
-        })
+        logger.error(f"OTP gönderme hatası: {e}")
+        return JsonResponse({'success': False, 'message': 'OTP gönderilirken bir hata oluştu.'}, status=500)
 
 
 @csrf_exempt
 @require_http_methods(["POST"])
 def verify_otp_api(request):
-    """OTP doğrulama API"""
-    try:
-        data = json.loads(request.body)
-        otp_code = data.get('otp_code')
-        phone_number = data.get('phone_number')
-        email_address = data.get('email_address')
-        otp_type = data.get('otp_type', 'login')
-        
-        if not otp_code:
-            return JsonResponse({
-                'success': False,
-                'message': 'OTP kodu gerekli'
-            })
-        
-        # OTP doğrula
-        success, otp_record, message = OTPService.verify_otp(
-            otp_code=otp_code,
-            phone_number=phone_number,
-            email_address=email_address,
-            otp_type=otp_type
-        )
-        
-        if success and otp_type == 'login':
-            # Kullanıcıyı bul veya oluştur
-            if phone_number:
-                user, created = User.objects.get_or_create(
-                    phone=phone_number,
-                    defaults={
-                        'username': phone_number,
-                        'phone_verified': True,
-                        'first_name': 'Kullanıcı',
-                        'last_name': phone_number[-4:]  # Son 4 hanesi
-                    }
-                )
-            else:
-                user, created = User.objects.get_or_create(
-                    email=email_address,
-                    defaults={
-                        'username': email_address,
-                        'email_verified': True,
-                        'first_name': 'Kullanıcı',
-                        'last_name': email_address.split('@')[0][-4:]
-                    }
-                )
-            
-            if created:
-                create_user_profile(user)
-                logger.info(f"New user created via OTP: {user.email}")
-            
-            # Giriş yap
-            login(request, user)
-            
-            # Login history kaydet
-            try:
-                LoginHistory.objects.create(
-                    user=user,
-                    ip_address=get_client_ip(request),
-                    user_agent=request.META.get('HTTP_USER_AGENT', '')[:500],
-                    is_successful=True,
-                    login_method='otp_sms' if phone_number else 'otp_email'
-                )
-            except Exception as e:
-                logger.error(f"OTP login history error: {str(e)}")
-            
-        return JsonResponse({
-            'success': success,
-            'message': message
-        })
-        
-    except json.JSONDecodeError:
-        return JsonResponse({
-            'success': False,
-            'message': 'Geçersiz JSON formatı'
-        })
-    except Exception as e:
-        logger.error(f"Verify OTP API error: {str(e)}")
-        return JsonResponse({
-            'success': False,
-            'message': 'OTP doğrulanırken hata oluştu'
-        })
+    """OTP doğrulama API endpoint'i"""
+    data = json.loads(request.body)
+    user_identifier = data.get('user_identifier')
+    otp_code = data.get('otp_code')
 
+    if not user_identifier or not otp_code:
+        return JsonResponse({'success': False, 'message': 'Kullanıcı tanımlayıcı ve OTP kodu gerekli.'}, status=400)
 
-# Social Auth Views
-def google_auth(request):
-    """Google OAuth başlatma"""
-    # TODO: Google OAuth implementasyonu
-    messages.info(request, 'Google ile giriş özelliği yakında eklenecek!')
-    return redirect('authentication:login')
+    # CustomUser modelini doğrudan kullanıyoruz
+    user = CustomUser.objects.filter(Q(email=user_identifier) | Q(phone=user_identifier)).first()
 
+    if not user:
+        return JsonResponse({'success': False, 'message': 'Kullanıcı bulunamadı.'}, status=404)
 
-def linkedin_auth(request):
-    """LinkedIn OAuth başlatma"""
-    # TODO: LinkedIn OAuth implementasyonu
-    messages.info(request, 'LinkedIn ile giriş özelliği yakında eklenecek!')
-    return redirect('authentication:login')
-
-
-def google_callback(request):
-    """Google OAuth callback"""
-    # TODO: Google OAuth callback implementasyonu
-    messages.error(request, 'OAuth callback henüz yapılandırılmamış.')
-    return redirect('authentication:login')
-
-
-def linkedin_callback(request):
-    """LinkedIn OAuth callback"""
-    # TODO: LinkedIn OAuth callback implementasyonu
-    messages.error(request, 'OAuth callback henüz yapılandırılmamış.')
-    return redirect('authentication:login')
-
-
-# Password Reset Views
-def password_reset_request(request):
-    """Şifre sıfırlama isteği"""
-    if request.method == 'POST':
-        email = request.POST.get('email', '').strip().lower()
-        
-        if not email:
-            messages.error(request, 'E-posta adresi gerekli.')
-            return render(request, 'auth/password_reset.html')
-        
-        try:
-            user = User.objects.get(email=email)
-            
-            # Son 5 dakikada şifre sıfırlama isteği var mı?
-            recent_requests = OTPVerification.objects.filter(
-                user=user,
-                otp_type='password_reset',
-                created_at__gte=timezone.now() - timezone.timedelta(minutes=5)
-            )
-            
-            if recent_requests.exists():
-                messages.warning(request, 'Son 5 dakikada zaten şifre sıfırlama kodu gönderildi.')
-                return render(request, 'auth/password_reset.html')
-            
-            # OTP gönder
-            success, otp_record, message = OTPService.create_otp(
-                email_address=email,
-                otp_type='password_reset',
-                user=user,
-                request=request
-            )
-            
-            if success:
-                request.session['reset_email'] = email
-                messages.success(request, 'Şifre sıfırlama kodu e-posta adresinize gönderildi.')
-                return redirect('authentication:password_reset_verify')
-            else:
-                messages.error(request, message)
-                
-        except User.DoesNotExist:
-            # Güvenlik için kullanıcı bulunamasa da başarılı mesajı göster
-            messages.success(request, 'Eğer bu e-posta adresi sistemde kayıtlıysa, şifre sıfırlama kodu gönderildi.')
-            return render(request, 'auth/password_reset.html')
-        except Exception as e:
-            logger.error(f"Password reset request error: {str(e)}")
-            messages.error(request, 'Şifre sıfırlama isteği gönderilirken hata oluştu.')
+    otp_service = OTPService(user)
     
-    return render(request, 'auth/password_reset.html')
+    if otp_service.verify_otp(otp_code):
+        user.is_active = True
+        user.is_verified = True
+        if user.email == user_identifier:
+            user.email_verified = True
+        elif user.phone == user_identifier:
+            user.phone_verified = True
+        user.save()
+        messages.success(request, 'Hesabınız başarıyla doğrulandı! Şimdi giriş yapabilirsiniz.')
+        return JsonResponse({'success': True, 'message': 'OTP doğrulandı. Hesap aktif edildi.', 'redirect_url': reverse('authentication:login')})
+    else:
+        return JsonResponse({'success': False, 'message': 'Geçersiz veya süresi dolmuş OTP kodu.'}, status=400)
+
+def password_reset_request(request):
+    """Şifre sıfırlama talep sayfası"""
+    if request.user.is_authenticated:
+        return redirect('/')
+    
+    if request.method == 'POST':
+        form = SimpleLoginForm(request.POST) # LoginForm, email_or_phone alanını içeriyor
+        if form.is_valid():
+            email_or_phone = form.cleaned_data['email_or_phone']
+            try:
+                # CustomUser modelini doğrudan kullanıyoruz
+                user = CustomUser.objects.get(Q(email=email_or_phone) | Q(phone=email_or_phone))
+                
+                otp_service = OTPService(user)
+                sent_email = False
+                sent_sms = False
+                if user.email:
+                    sent_email = otp_service.send_otp(send_email=True, send_sms=False, purpose='password_reset')
+                if user.phone:
+                    sent_sms = otp_service.send_otp(send_email=False, send_sms=True, purpose='password_reset')
+
+                if sent_email or sent_sms:
+                    messages.success(request, 'Şifre sıfırlama kodu gönderildi. Lütfen e-postanızı veya telefonunuzu kontrol edin.')
+                    return redirect(reverse('authentication:password_reset_verify') + f'?email={email_or_phone}') # E-posta bilgisini token'a ekleyerek yönlendir
+                else:
+                    messages.error(request, 'Şifre sıfırlama kodu gönderilemedi. Kullanıcının e-posta veya telefon bilgisi eksik.')
+            # CustomUser.DoesNotExist kullanıyoruz
+            except CustomUser.DoesNotExist:
+                messages.error(request, 'Bu e-posta veya telefon numarasına kayıtlı kullanıcı bulunamadı.')
+            except Exception as e:
+                logger.error(f"Password reset request error: {str(e)}")
+                messages.error(request, 'Şifre sıfırlama talebi oluşturulurken hata oluştu.')
+    else:
+        form = SimpleLoginForm() # Sadece email_or_phone alanı içeren bir form
+    return render(request, 'auth/password_reset_request.html', {'form': form})
 
 
 def password_reset_verify(request):
-    """Şifre sıfırlama OTP doğrulama"""
-    email = request.session.get('reset_email')
-    if not email:
-        messages.error(request, 'Şifre sıfırlama oturumu bulunamadı. Lütfen tekrar deneyin.')
-        return redirect('authentication:password_reset_request')
-    
+    """Şifre sıfırlama doğrulama sayfası ve şifre güncelleme"""
+    if request.user.is_authenticated:
+        return redirect('/')
+
+    email = request.GET.get('email', '') # URL'den e-posta bilgisini al
+    message = "Lütfen gönderilen doğrulama kodunu girin ve yeni şifrenizi belirleyin."
+
     if request.method == 'POST':
-        otp_code = request.POST.get('otp_code', '').strip()
-        new_password = request.POST.get('new_password', '')
-        confirm_password = request.POST.get('confirm_password', '')
-        
-        if not otp_code:
-            messages.error(request, 'OTP kodu gerekli.')
-            return render(request, 'auth/password_reset_verify.html', {'email': email})
-        
-        if not new_password or len(new_password) < 8:
-            messages.error(request, 'Şifre en az 8 karakter olmalıdır.')
-            return render(request, 'auth/password_reset_verify.html', {'email': email})
+        email = request.POST.get('email')
+        new_password = request.POST.get('new_password')
+        confirm_password = request.POST.get('confirm_password')
+        otp_code = request.POST.get('otp_code') # OTP kodu eklendi
         
         if new_password != confirm_password:
             messages.error(request, 'Şifreler eşleşmiyor.')
-            return render(request, 'auth/password_reset_verify.html', {'email': email})
-        
-        # OTP doğrula
-        success, otp_record, message = OTPService.verify_otp(
-            otp_code=otp_code,
-            email_address=email,
-            otp_type='password_reset'
-        )
-        
-        if success:
-            try:
-                # Şifreyi güncelle
-                user = User.objects.get(email=email)
+            return render(request, 'auth/password_reset_verify.html', {'email': email, 'otp_code': otp_code}) # otp_code'u da geri gönder
+
+        try:
+            # Email veya telefon numarası ile kullanıcıyı bul
+            # CustomUser modelini doğrudan kullanıyoruz
+            user = CustomUser.objects.get(Q(email=email) | Q(phone=email))
+
+            otp_service = OTPService(user)
+            if otp_service.verify_otp(otp_code, purpose='password_reset'):
                 user.set_password(new_password)
                 user.save()
-                
-                # Session temizle
-                if 'reset_email' in request.session:
-                    del request.session['reset_email']
-                
-                messages.success(request, 'Şifreniz başarıyla güncellendi. Yeni şifrenizle giriş yapabilirsiniz.')
-                logger.info(f"Password reset successful for: {email}")
-                
+                messages.success(request, 'Şifreniz başarıyla güncellendi! Şimdi giriş yapabilirsiniz.')
                 return redirect('authentication:login')
-                
-            except User.DoesNotExist:
-                messages.error(request, 'Kullanıcı bulunamadı.')
-            except Exception as e:
-                logger.error(f"Password reset error: {str(e)}")
-                messages.error(request, 'Şifre güncellenirken hata oluştu.')
-        else:
-            messages.error(request, message)
+            else:
+                messages.error(request, 'Geçersiz veya süresi dolmuş doğrulama kodu.')
+                return render(request, 'auth/password_reset_verify.html', {'email': email, 'otp_code': otp_code})
+        # CustomUser.DoesNotExist kullanıyoruz
+        except CustomUser.DoesNotExist:
+            messages.error(request, 'Kullanıcı bulunamadı.')
+        except Exception as e:
+            logger.error(f"Password reset error: {str(e)}")
+            messages.error(request, 'Şifre güncellenirken hata oluştu.')
+    else:
+        # Token doğrulama başarılı ise
+        message = "Yeni şifrenizi belirleyin."
+        # Token doğrulaması başarısız ise
+        # message = "Geçersiz veya süresi dolmuş şifre sıfırlama linki."
     
-    return render(request, 'auth/password_reset_verify.html', {'email': email})
+    return render(request, 'auth/password_reset_verify.html', {'email': email, 'message': message})
 
 
 # Profile Views
@@ -493,7 +284,7 @@ def profile_redirect(request):
         return redirect('/profiles/create/')
 
 
-@login_required 
+@login_required
 def dashboard_redirect(request):
     """Dashboard yönlendirme"""
     if request.user.user_type == 'business':
@@ -501,4 +292,51 @@ def dashboard_redirect(request):
     elif request.user.user_type == 'jobseeker':
         return redirect('/dashboard/jobseeker/')
     else:
-        return redirect('/')  # Ana sayfaya yönlendir
+        messages.warning(request, 'Kullanıcı türü belirlenmemiş. Lütfen yöneticinizle iletişime geçin.')
+        return redirect('/')
+
+# Social Authentication Callbacks (assuming SocialAuthService handles User access internally)
+def google_auth(request):
+    social_auth_service = SocialAuthService('google')
+    auth_url = social_auth_service.get_authorization_url()
+    return redirect(auth_url)
+
+def google_callback(request):
+    social_auth_service = SocialAuthService('google')
+    code = request.GET.get('code')
+    try:
+        user = social_auth_service.handle_callback(code, request) # Bu method CustomUser döndürmeli
+        if user:
+            login(request, user)
+            messages.success(request, 'Google ile başarıyla giriş yaptınız!')
+            return redirect('/')
+        else:
+            messages.error(request, 'Google ile giriş yapılamadı.')
+            return redirect('authentication:login')
+    except Exception as e:
+        logger.error(f"Google callback error: {e}")
+        messages.error(request, f"Google ile giriş hatası: {e}")
+        return redirect('authentication:login')
+
+def linkedin_auth(request):
+    social_auth_service = SocialAuthService('linkedin')
+    auth_url = social_auth_service.get_authorization_url()
+    return redirect(auth_url)
+
+def linkedin_callback(request):
+    social_auth_service = SocialAuthService('linkedin')
+    code = request.GET.get('code')
+    try:
+        user = social_auth_service.handle_callback(code, request) # Bu method CustomUser döndürmeli
+        if user:
+            login(request, user)
+            messages.success(request, 'LinkedIn ile başarıyla giriş yaptınız!')
+            return redirect('/')
+        else:
+            messages.error(request, 'LinkedIn ile giriş yapılamadı.')
+            return redirect('authentication:login')
+    except Exception as e:
+        logger.error(f"LinkedIn callback error: {e}")
+        messages.error(request, f"LinkedIn ile giriş hatası: {e}")
+        return redirect('authentication:login')
+    

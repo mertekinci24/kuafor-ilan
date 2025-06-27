@@ -18,10 +18,10 @@ urlpatterns = [
     path('api/verify-otp/', views.verify_otp_api, name='verify_otp_api'),
     
     # Social Authentication
-    path('google/', views.google_auth, name='google_auth'),
-    path('linkedin/', views.linkedin_auth, name='linkedin_auth'),
-    path('google/callback/', views.google_callback, name='google_callback'),
-    path('linkedin/callback/', views.linkedin_callback, name='linkedin_callback'),
+    # path('google/', views.google_auth, name='google_auth'),
+    # path('linkedin/', views.linkedin_auth, name='linkedin_auth'),
+    # path('google/callback/', views.google_callback, name='google_callback'),
+    # path('linkedin/callback/', views.linkedin_callback, name='linkedin_callback'),
     
     # Redirects
     path('profile/', views.profile_redirect, name='profile_redirect'),

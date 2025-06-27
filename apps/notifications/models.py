@@ -1,11 +1,12 @@
 from django.db import models
-from django.contrib.auth import get_user_model
+from django.conf import settings
+# from django.contrib.auth import get_user_model
 from django.utils import timezone
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes.fields import GenericForeignKey
 import uuid
 
-User = get_user_model()
+# User = get_user_model()
 
 
 class NotificationType(models.Model):
@@ -78,7 +79,7 @@ class Notification(models.Model):
     ]
     
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    recipient = models.ForeignKey(User, on_delete=models.CASCADE, related_name='notifications')
+    recipient = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='notifications')
     notification_type = models.ForeignKey(NotificationType, on_delete=models.CASCADE)
     
     # Bildirim içeriği
@@ -204,7 +205,7 @@ class Notification(models.Model):
 
 class UserNotificationSettings(models.Model):
     """Kullanıcı bildirim ayarları"""
-    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='notification_settings')
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='notification_settings')
     
     # Genel ayarlar
     email_notifications = models.BooleanField(default=True)
@@ -337,7 +338,7 @@ class NotificationBatch(models.Model):
     sent_at = models.DateTimeField(null=True, blank=True)
     
     created_at = models.DateTimeField(auto_now_add=True)
-    created_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='created_notification_batches')
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='created_notification_batches')
 
     class Meta:
         verbose_name = 'Toplu Bildirim'

@@ -1,36 +1,42 @@
 import os
 from pathlib import Path
+from django.contrib import messages # <<< BU SATIR EKLENDİ
+
 
 # Build paths inside the project
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-kuafor-ilan-test-key-12345')
+SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-kuafor_ilan-test-key-12345')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get('DEBUG', 'True') == 'True'
 
 # Allowed hosts
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = ['*'] # Üretimde domain isimlerinizi buraya eklemelisiniz
+
 
 # Application definition
 INSTALLED_APPS = [
+    'apps.core', # <<< ÖNEMLİ: authentication'dan önce olmalı çünkü CustomUser buradan miras alıyor
+    'apps.authentication.apps.AuthenticationConfig', # authentication hala kendi içindeki modeller için öncelikli olmalı
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'rest_framework',
-    'apps.core',
-    'apps.authentication',
-    'apps.dashboard',
-    'apps.jobs',
-    'apps.profiles',
-    'apps.posts',  # Bu satır eklendi
-    'apps.messages.apps.MessagesConfig',  # Config class kullan
-    'apps.notifications.apps.NotificationsConfig',  # Config class kullan
+    'rest_framework', # Mevcut
+    'apps.dashboard', # Mevcut
+    'apps.jobs', # Mevcut
+    'apps.profiles', # Mevcut
+    'apps.posts',  # Mevcut
+    'apps.messages.apps.MessagesConfig',  # Mevcut
+    'apps.notifications.apps.NotificationsConfig',  # Mevcut
 ]
+
+# Kendi özel kullanıcı modelinizi belirtin (Bu zaten doğru ayarlıydı)
+AUTH_USER_MODEL = 'authentication.CustomUser'
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -41,7 +47,6 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'apps.core.middleware.WordPressProtectionMiddleware',
 ]
 
 ROOT_URLCONF = 'kuafor_ilan.urls'
@@ -62,49 +67,21 @@ TEMPLATES = [
     },
 ]
 
-# WSGI APPLICATION
 WSGI_APPLICATION = 'kuafor_ilan.wsgi.application'
 
+
 # Database
-DATABASE_URL = os.environ.get('DATABASE_URL')
-if DATABASE_URL:
-    import dj_database_url
-    DATABASES = {
-        'default': dj_database_url.parse(DATABASE_URL)
+# https://docs.djangoproject.com/en/5.0/ref/settings/#databases
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
     }
-else:
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': BASE_DIR / 'db.sqlite3',
-        }
-    }
-
-# Custom User Model
-AUTH_USER_MODEL = 'authentication.CustomUser'
-
-# Authentication backends
-AUTHENTICATION_BACKENDS = [
-    'apps.authentication.backends.EmailBackend',
-    'django.contrib.auth.backends.ModelBackend',
-]
-
-# Login URLs
-LOGIN_URL = '/auth/login/'
-LOGIN_REDIRECT_URL = '/'
-LOGOUT_REDIRECT_URL = '/'
-
-# REST Framework
-REST_FRAMEWORK = {
-    'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.AllowAny',
-    ],
-    'DEFAULT_RENDERER_CLASSES': [
-        'rest_framework.renderers.JSONRenderer',
-    ],
 }
 
+
 # Password validation
+# https://docs.djangoproject.com/en/5.0/ref/settings/#auth-password-validators
 AUTH_PASSWORD_VALIDATORS = [
     {
         'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
@@ -120,76 +97,67 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+
 # Internationalization
+# https://docs.djangoproject.com/en/5.0/topics/i18n/
+
 LANGUAGE_CODE = 'tr-tr'
+
 TIME_ZONE = 'Europe/Istanbul'
+
 USE_I18N = True
+
 USE_TZ = True
 
-# Static files (CSS, JavaScript, Images)
-STATIC_URL = '/static/'
-STATIC_ROOT = BASE_DIR / 'staticfiles'
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
-# Media files
+# Static files (CSS, JavaScript, Images)
+# https://docs.djangoproject.com/en/5.0/howto/static-files/
+STATIC_URL = 'static/'
+STATICFILES_DIRS = [
+    BASE_DIR / 'static',
+]
+# STATIC_ROOT = BASE_DIR / 'staticfiles' # Mevcut
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
+
 # Default primary key field type
+# https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# CSRF
-CSRF_TRUSTED_ORIGINS = [
-    'https://*.railway.app',
-    'https://kuaforilan.com',
-    'https://www.kuaforilan.com'
-]
 
-# Email (basic)
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+# Login ve Logout yönlendirmeleri (Mevcut)
+LOGIN_URL = '/login/'
+LOGIN_REDIRECT_URL = '/'
+LOGOUT_REDIRECT_URL = '/login/'
 
-# Logging for debugging
-LOGGING = {
-    'version': 1,
-    'disable_existing_loggers': False,
-    'filters': {
-        'ignore_bots': {
-            '()': 'apps.core.logging_filters.IgnoreBotsFilter',
-        },
-    },
-    'handlers': {
-        'console': {
-            'class': 'logging.StreamHandler',
-            'filters': ['ignore_bots'],
-        },
-    },
-    'root': {
-        'handlers': ['console'],
-        'level': 'INFO',
-    },
-    'loggers': {
-        'django': {
-            'handlers': ['console'],
-            'level': 'INFO',
-            'propagate': False,
-            'filters': ['ignore_bots'],
-        },
-        'django.request': {
-            'handlers': ['console'],
-            'level': 'ERROR',
-            'propagate': False,
-            'filters': ['ignore_bots'],
-        },
-    },
+
+# Email Ayarları (Mevcut)
+DEFAULT_FROM_EMAIL = 'noreply@kuaforilan.com'
+
+
+# OTP ayarları (Mevcut)
+OTP_EXPIRY_MINUTES = 10
+MAX_OTP_ATTEMPTS = 5
+
+
+# Mesaj çerçevesi ayarları (Mevcut)
+MESSAGE_TAGS = {
+    messages.DEBUG: 'alert-info',
+    messages.INFO: 'alert-info',
+    messages.SUCCESS: 'alert-success',
+    messages.WARNING: 'alert-warning',
+    messages.ERROR: 'alert-danger',
 }
 
-# Session settings
+
+# Session settings (Mevcut)
 SESSION_COOKIE_AGE = 86400 * 30
 SESSION_COOKIE_SECURE = not DEBUG
 SESSION_COOKIE_HTTPONLY = True
 SESSION_SAVE_EVERY_REQUEST = True
 
-# Security settings for production
+# Security settings for production (Mevcut)
 if not DEBUG:
     SECURE_BROWSER_XSS_FILTER = True
     SECURE_CONTENT_TYPE_NOSNIFF = True
@@ -199,24 +167,84 @@ if not DEBUG:
     SECURE_SSL_REDIRECT = True
     SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
-# SMS ve Email ayarları
+# SMS ve Email ayarları (Mevcut)
 NETGSM_USERNAME = os.environ.get('NETGSM_USERNAME', '')
 NETGSM_PASSWORD = os.environ.get('NETGSM_PASSWORD', '')
 NETGSM_HEADER = os.environ.get('NETGSM_HEADER', 'KUAFORILAN')
 
-# Email ayarları
-DEFAULT_FROM_EMAIL = 'noreply@kuaforilan.com'
 
-# OTP ayarları
-OTP_EXPIRY_MINUTES = 5
-OTP_MAX_ATTEMPTS = 3
-
-# Sosyal medya authentication ayarları
-GOOGLE_OAUTH2_CLIENT_ID = os.environ.get('GOOGLE_OAUTH2_CLIENT_ID', '')
-GOOGLE_OAUTH2_CLIENT_SECRET = os.environ.get('GOOGLE_OAUTH2_CLIENT_SECRET', '')
-LINKEDIN_CLIENT_ID = os.environ.get('LINKEDIN_CLIENT_ID', '')
-LINKEDIN_CLIENT_SECRET = os.environ.get('LINKEDIN_CLIENT_SECRET', '')
-
-# Rate limiting ayarları
-LOGIN_ATTEMPT_LIMIT = 5
-LOGIN_ATTEMPT_TIMEOUT = 300
+# Loglama Ayarları (Mevcut)
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'filters': {
+        'require_debug_false': {
+            '()': 'django.utils.log.RequireDebugFalse',
+        },
+        'ignore_bots': { # Botları yoksaymak için özel filtre
+            '()': 'django.utils.log.CallbackFilter',
+            'callback': lambda record: 'bot' not in record.getMessage().lower()
+        }
+    },
+    'formatters': {
+        'verbose': {
+            'format': '{levelname} {asctime} {module} {process:d} {thread:d} {message}',
+            'style': '{',
+        },
+        'simple': {
+            'format': '{levelname} {message}',
+            'style': '{',
+        },
+    },
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+            'formatter': 'simple',
+        },
+        'mail_admins': {
+            'level': 'ERROR',
+            'class': 'django.utils.log.AdminEmailHandler',
+            'filters': ['require_debug_false'],
+            'formatter': 'verbose',
+        },
+        'file': {
+            'level': 'INFO',
+            'class': 'logging.handlers.RotatingFileHandler',
+            'filename': BASE_DIR / 'logs' / 'app.log', # log klasörünü oluşturmayı unutmayın
+            'maxBytes': 1024 * 1024 * 5, # 5 MB
+            'backupCount': 5,
+            'formatter': 'verbose',
+        },
+        'error_file': {
+            'level': 'ERROR',
+            'class': 'logging.handlers.RotatingFileHandler',
+            'filename': BASE_DIR / 'logs' / 'error.log', # log klasörünü oluşturmayı unutmayın
+            'maxBytes': 1024 * 1024 * 5, # 5 MB
+            'backupCount': 5,
+            'formatter': 'verbose',
+        },
+    },
+    'root': {
+        'handlers': ['console', 'file'],
+        'level': 'INFO',
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['console', 'mail_admins', 'error_file'],
+            'level': os.getenv('DJANGO_LOG_LEVEL', 'INFO'),
+            'propagate': False,
+            'filters': ['ignore_bots'],
+        },
+        'django.db.backends': {
+            'handlers': ['console'],
+            'level': 'DEBUG',
+            'propagate': False,
+        },
+        'django.request': {
+            'handlers': ['console'],
+            'level': 'ERROR',
+            'propagate': False,
+            'filters': ['ignore_bots'],
+        },
+    },
+}
