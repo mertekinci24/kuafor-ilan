@@ -1,3 +1,5 @@
+# kuafor_ilan/urls.py
+
 from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
@@ -8,23 +10,26 @@ from apps.posts.views import posts_list_view
 urlpatterns = [
     # Admin panel
     path('admin/', admin.site.urls),
-    
-    # Ana sayfa - post feed
-    path('', posts_list_view, name='home'),
-    
+
+    # Ana URL'i ('/') doğrudan giriş sayfasına yönlendirir
+    path('', RedirectView.as_view(url='/auth/login/', permanent=False), name='login_redirect'),
+    # NOT: Yukarıdaki satırı ekledikten sonra, eski ana sayfa yönlendirme satırını (yani aşağıdaki satırı) kaldırabilir veya yorum satırı yapabilirsiniz:
+    # path('', posts_list_view, name='home'),
+
+
     # Authentication
     path('auth/', include('apps.authentication.urls')),
-    
+
     # Ana uygulamalar
     path('posts/', include('apps.posts.urls')),
     path('jobs/', include('apps.jobs.urls')),
     path('profiles/', include('apps.profiles.urls')),
     path('dashboard/', include('apps.dashboard.urls')),
-    
+
     # YENİ EKLENEN APPS
     path('messages/', include('apps.messages.urls')),
     path('notifications/', include('apps.notifications.urls')),
-    
+
     # WordPress bot koruması
     path('wp-admin/', RedirectView.as_view(url='/', permanent=False)),
     path('wp-login.php', RedirectView.as_view(url='/', permanent=False)),
@@ -35,4 +40,3 @@ urlpatterns = [
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
     urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
-    
