@@ -347,7 +347,7 @@
                     </div>
                     <label for="rememberMe">Beni hatırla</label>
                 </div>
-                <a href="{% url 'authentication:password_reset_request' %}" class="forgot-password">Şifremi unuttum</a>
+                <a href="{% url 'auth:password_reset_request' %}" class="forgot-password">Şifremi unuttum</a>
             </div>
 
             <button type="submit" class="btn btn-primary btn-login">
@@ -363,7 +363,7 @@
     <div class="auth-footer">
         <p>
             Hesabınız yok mu? 
-            <a href="{% url 'authentication:register' %}">Hemen üye olun</a>
+            <a href="{% url 'auth:register' %}">Hemen üye olun</a>
         </p>
     </div>
 </div>

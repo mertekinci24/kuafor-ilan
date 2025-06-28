@@ -47,7 +47,7 @@
                     {{ user.first_name|first|upper|default:'U' }}
                 </a>
             {% else %}
-                <a href="{% url 'authentication:login' %}" class="user-avatar" title="Giriş Yap">
+                <a href="{% url 'auth:login' %}" class="user-avatar" title="Giriş Yap">
                     G
                 </a>
             {% endif %}
