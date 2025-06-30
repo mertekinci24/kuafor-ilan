@@ -13,9 +13,62 @@
     
     <!-- Base CSS -->
     <style>
+        /* FORCE our navbar to always be visible and on top */
+        #navbar {
+            display: flex !important;
+            visibility: visible !important;
+            opacity: 1 !important;
+            z-index: 9999 !important;
+            position: fixed !important;
+            top: 0 !important;
+            left: 0 !important;
+            right: 0 !important;
+        }
+        
+        /* ULTRA AGGRESSIVE: Hide ALL navbars except ours on posts page */
+        body[class*="posts"] nav:not(#navbar),
+        body[data-page="posts"] nav:not(#navbar),
+        .posts-container nav:not(#navbar),
+        .posts-content nav:not(#navbar),
+        .main-content nav:not(#navbar),
+        .content nav:not(#navbar),
+        .container nav:not(#navbar),
+        main nav:not(#navbar),
+        section nav:not(#navbar),
+        article nav:not(#navbar),
+        div nav:not(#navbar):not(.mobile-nav),
+        nav.navbar:not(#navbar),
+        .navbar:not(#navbar) {
+            display: none !important;
+            visibility: hidden !important;
+            opacity: 0 !important;
+            position: absolute !important;
+            top: -9999px !important;
+        }
+        
+        /* Exception for mobile nav and dropdowns */
+        .mobile-nav,
+        .dropdown-menu,
+        .search-overlay {
+            display: block !important;
+        }
+        
+        .mobile-nav.show {
+            display: block !important;
+        }
+        
+        .dropdown.show .dropdown-menu {
+            display: block !important;
+        }
+        
+        .search-overlay.show {
+            display: flex !important;
+        }
+        
         :root {
             --primary-color: #0a66c2;
             --primary-dark: #004182;
+            --primary-light: #e8f4fd;
             --secondary-color: #64748b;
             --success-color: #16a34a;
             --warning-color: #d97706;
@@ -33,7 +86,11 @@
             --shadow-lg: 0 10px 30px rgba(0, 0, 0, 0.2);
             --border-radius: 12px;
             --border-radius-sm: 8px;
-            --transition: all 0.3s ease;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            --navbar-height: 72px;
+            --navbar-height-mobile: 64px;
+            --container-max-width: 1400px;
+            --container-padding: 24px;
         }
 
         * {
@@ -44,6 +101,7 @@
 
         html {
             scroll-behavior: smooth;
+            font-size: 16px;
         }
 
         body {
@@ -53,35 +111,788 @@
             background: var(--light-color);
             -webkit-font-smoothing: antialiased;
             -moz-osx-font-smoothing: grayscale;
+            padding-top: var(--navbar-height) !important;
+            overflow-x: hidden;
         }
 
-        /* Utility Classes */
-        .container {
-            max-width: 1200px;
+        /* Enhanced Navigation Styles */
+        .navbar {
+            position: fixed !important;
+            top: 0 !important;
+            left: 0 !important;
+            right: 0 !important;
+            background: var(--white);
+            box-shadow: var(--shadow-sm);
+            z-index: 9999 !important;
+            height: var(--navbar-height);
+            transition: var(--transition);
+            border-bottom: 1px solid var(--border-color);
+            backdrop-filter: blur(20px);
+            display: flex !important; /* Force display */
+            visibility: visible !important; /* Force visibility */
+        }
+
+        /* Only hide specific duplicate navbars on posts page */
+        .posts-page nav.navbar:not(#navbar),
+        nav.navbar.duplicate:not(#navbar),
+        nav.secondary-navbar:not(#navbar) {
+            display: none !important;
+        }
+
+        /* Ensure our main navbar is always visible */
+        #navbar {
+            display: flex !important;
+            visibility: visible !important;
+            opacity: 1 !important;
+            z-index: 1000 !important;
+        }
+
+        .navbar.scrolled {
+            box-shadow: var(--shadow-md);
+            background: rgba(255, 255, 255, 0.95);
+        }
+
+        .navbar-container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 100%;
+            max-width: var(--container-max-width);
             margin: 0 auto;
-            padding: 0 20px;
+            padding: 0 var(--container-padding);
+            gap: 2rem;
+        }
+
+        /* Center Navigation */
+        .navbar-center {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex: 1;
+            justify-content: center;
+            max-width: 700px;
+        }
+
+        .nav-icon-btn {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            padding: 8px 12px;
+            color: var(--text-muted);
+            text-decoration: none;
+            border-radius: var(--border-radius-sm);
+            transition: var(--transition);
+            min-width: 70px;
+            height: 56px;
+            position: relative;
+        }
+
+        .nav-icon-btn:hover {
+            color: var(--primary-color);
+            background: var(--primary-light);
+            transform: translateY(-1px);
+        }
+
+        .nav-icon-btn.active {
+            color: var(--primary-color);
+            background: var(--primary-light);
+            border: 2px solid var(--primary-color);
+        }
+
+        .nav-icon-btn.active::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 24px;
+            height: 3px;
+            background: var(--primary-color);
+            border-radius: 2px;
+        }
+
+        .nav-icon-btn i {
+            font-size: 18px;
+            margin-bottom: 2px;
+        }
+
+        .nav-label {
+            font-size: 11px;
+            font-weight: 500;
+            text-align: center;
+            line-height: 1;
+        }
+
+        /* Inline Search Container */
+        .search-container-inline {
+            margin-left: 16px;
+            min-width: 300px;
+            max-width: 400px;
+        }
+
+        .search-form-inline {
+            width: 100%;
+        }
+
+        .search-input-wrapper {
+            position: relative;
+            width: 100%;
+        }
+
+        .search-input-inline {
+            width: 100%;
+            padding: 10px 16px 10px 40px;
+            border: 2px solid var(--border-color);
+            border-radius: 20px;
+            font-size: 14px;
+            background: var(--white);
+            transition: var(--transition);
+            outline: none;
+        }
+
+        .search-input-inline:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(10, 102, 194, 0.1);
+        }
+
+        .search-icon-inline {
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+            pointer-events: none;
+            font-size: 14px;
+        }
+
+        .navbar-brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--primary-color);
+            text-decoration: none;
+            transition: var(--transition);
+            flex-shrink: 0;
+        }
+
+        .navbar-brand:hover {
+            transform: scale(1.02);
+        }
+
+        .navbar-brand .brand-icon {
+            width: 40px;
+            height: 40px;
+            background: var(--gradient-primary);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 18px;
+            box-shadow: var(--shadow-sm);
+        }
+
+        /* Right Side Navigation */
+        .navbar-actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-shrink: 0;
+        }
+
+        .action-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 44px;
+            height: 44px;
+            border: none;
+            background: transparent;
+            color: var(--text-color);
+            border-radius: var(--border-radius-sm);
+            transition: var(--transition);
+            cursor: pointer;
+            position: relative;
+        }
+
+        .action-btn:hover {
+            background: var(--primary-light);
+            color: var(--primary-color);
+            transform: translateY(-1px);
+        }
+
+        /* Enhanced Dropdown Styles */
+        .dropdown {
+            position: relative;
+        }
+
+        .dropdown-menu {
+            position: absolute;
+            top: calc(100% + 12px);
+            right: 0;
+            background: var(--white);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-lg);
+            min-width: 240px;
+            padding: 12px 0;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-10px) scale(0.95);
+            transition: var(--transition);
+            border: 1px solid var(--border-color);
+            backdrop-filter: blur(20px);
+        }
+
+        .dropdown.show .dropdown-menu {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0) scale(1);
+        }
+
+        .dropdown-header {
+            padding: 12px 20px;
+            font-weight: 600;
+            color: var(--text-color);
+            border-bottom: 1px solid var(--border-color);
+            background: var(--light-color);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* Enhanced User Dropdown */
+        .dropdown-menu-user {
+            min-width: 280px;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 4px 0;
+        }
+
+        .user-avatar-small {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: var(--gradient-primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 12px;
+            flex-shrink: 0;
+        }
+
+        .user-avatar-small img {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        .user-details {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .user-details strong {
+            display: block;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-color);
+            margin-bottom: 2px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .user-details p {
+            margin: 0;
+            font-size: 12px;
+            color: var(--text-muted);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .dropdown-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 20px;
+            color: var(--text-color);
+            text-decoration: none;
+            transition: var(--transition);
+            font-size: 14px;
+        }
+
+        .dropdown-item:hover {
+            background: var(--primary-light);
+            color: var(--primary-color);
+        }
+
+        .dropdown-item i {
+            width: 18px;
+            text-align: center;
+            color: var(--text-muted);
+        }
+
+        .dropdown-item:hover i {
+            color: var(--primary-color);
+        }
+
+        .dropdown-divider {
+            height: 1px;
+            background: var(--border-color);
+            margin: 8px 0;
+        }
+
+        /* Enhanced Notification Badge */
+        .notification-badge {
+            position: absolute;
+            top: -6px;
+            right: -6px;
+            background: var(--danger-color);
+            color: white;
+            font-size: 10px;
+            font-weight: 700;
+            min-width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: pulse 2s infinite;
+            border: 2px solid var(--white);
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.7); }
+            70% { transform: scale(1.1); box-shadow: 0 0 0 10px rgba(220, 38, 38, 0); }
+            100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(220, 38, 38, 0); }
+        }
+
+        /* Enhanced User Avatar */
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--gradient-primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            transition: var(--transition);
+            position: relative;
+            border: 3px solid var(--white);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .user-avatar:hover {
+            transform: scale(1.05);
+            box-shadow: var(--shadow-md);
+        }
+
+        .user-avatar img {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        .online-indicator {
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            width: 12px;
+            height: 12px;
+            background: var(--success-color);
+            border: 2px solid white;
+            border-radius: 50%;
+            animation: pulse-green 2s infinite;
+        }
+
+        @keyframes pulse-green {
+            0% { box-shadow: 0 0 0 0 rgba(22, 163, 74, 0.7); }
+            70% { box-shadow: 0 0 0 6px rgba(22, 163, 74, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(22, 163, 74, 0); }
+        }
+
+        /* Enhanced Mobile Menu */
+        .mobile-menu-toggle {
+            display: none;
+            flex-direction: column;
+            justify-content: space-between;
+            width: 28px;
+            height: 20px;
+            cursor: pointer;
+            position: relative;
+            z-index: 1001;
+        }
+
+        .mobile-menu-toggle span {
+            width: 100%;
+            height: 3px;
+            background: var(--text-color);
+            border-radius: 2px;
+            transition: var(--transition);
+            transform-origin: center;
+        }
+
+        .mobile-menu-toggle.active span:nth-child(1) {
+            transform: rotate(45deg) translate(5px, 5px);
+        }
+
+        .mobile-menu-toggle.active span:nth-child(2) {
+            opacity: 0;
+        }
+
+        .mobile-menu-toggle.active span:nth-child(3) {
+            transform: rotate(-45deg) translate(7px, -6px);
+        }
+
+        .mobile-nav {
+            display: none; /* Hidden by default */
+            position: fixed;
+            top: 0;
+            right: 0;
+            width: 320px;
+            height: 100vh;
+            background: var(--white);
+            box-shadow: -10px 0 30px rgba(0, 0, 0, 0.15);
+            transition: var(--transition);
+            z-index: 1000;
+            padding: 80px 0 20px;
+            overflow-y: auto;
+            backdrop-filter: blur(20px);
+        }
+
+        .mobile-nav.show {
+            display: block; /* Show when toggled */
+        }
+
+        /* Ultra specific mobile nav hide - DISPLAY NONE approach */
+        #mobileNav {
+            display: none !important;
+        }
+
+        #mobileNav.show {
+            display: block !important;
+            position: fixed !important;
+            top: 0 !important;
+            right: 0 !important;
+            width: 320px !important;
+            height: 100vh !important;
+            transform: translateX(0) !important;
+            opacity: 1 !important;
+            visibility: visible !important;
+            z-index: 1000 !important;
+            background: var(--white) !important;
+            box-shadow: -10px 0 30px rgba(0, 0, 0, 0.15) !important;
+            padding: 80px 0 20px !important;
+            overflow-y: auto !important;
+            transition: all 0.3s ease !important;
+        }
+
+        .mobile-nav-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.6);
+            display: none; /* Hidden by default */
+            transition: var(--transition);
+            z-index: 999;
+            backdrop-filter: blur(4px);
+        }
+
+        .mobile-nav-overlay.show {
+            display: block; /* Show when mobile nav is open */
+        }
+
+        .mobile-nav-header {
+            padding: 0 24px 24px;
+            border-bottom: 1px solid var(--border-color);
+            margin-bottom: 24px;
+            background: var(--light-color);
+        }
+
+        .mobile-nav-user {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .mobile-nav-user-info h4 {
+            margin: 0;
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text-color);
+        }
+
+        .mobile-nav-user-info p {
+            margin: 4px 0 0;
+            font-size: 14px;
+            color: var(--text-muted);
+        }
+
+        .mobile-nav-item {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 16px 24px;
+            color: var(--text-color);
+            text-decoration: none;
+            transition: var(--transition);
+            border-left: 4px solid transparent;
+        }
+
+        .mobile-nav-item:hover,
+        .mobile-nav-item.active {
+            background: var(--primary-light);
+            color: var(--primary-color);
+            border-left-color: var(--primary-color);
+        }
+
+        .mobile-nav-item i {
+            width: 20px;
+            text-align: center;
+            font-size: 18px;
+        }
+
+        /* Enhanced Search Overlay */
+        .search-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 2000;
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+            padding-top: 120px;
+            opacity: 0;
+            visibility: hidden;
+            transition: var(--transition);
+            backdrop-filter: blur(8px);
+        }
+
+        .search-overlay.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .search-container {
+            background: var(--white);
+            border-radius: var(--border-radius);
+            padding: 48px;
+            width: 90%;
+            max-width: 700px;
+            transform: translateY(-30px) scale(0.9);
+            transition: var(--transition);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .search-overlay.show .search-container {
+            transform: translateY(0) scale(1);
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 20px 24px;
+            border: 3px solid var(--border-color);
+            border-radius: var(--border-radius);
+            font-size: 20px;
+            outline: none;
+            transition: var(--transition);
+            background: var(--white);
+        }
+
+        .search-input:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 6px rgba(10, 102, 194, 0.1);
+        }
+
+        .search-close {
+            position: absolute;
+            top: 24px;
+            right: 24px;
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            font-size: 24px;
+            color: white;
+            cursor: pointer;
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: var(--transition);
+            backdrop-filter: blur(10px);
+        }
+
+        .search-close:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: scale(1.1);
+        }
+
+        /* Enhanced Auth Buttons */
+        .auth-buttons {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-auth {
+            padding: 8px 16px;
+            border-radius: var(--border-radius-sm);
+            font-weight: 600;
+            text-decoration: none;
+            transition: var(--transition);
+            font-size: 14px;
+            min-height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            white-space: nowrap;
+        }
+
+        .btn-login {
+            color: var(--primary-color);
+            border: 2px solid var(--primary-color);
+            background: transparent;
+        }
+
+        .btn-login:hover {
+            background: var(--primary-color);
+            color: white;
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .btn-register {
+            background: var(--gradient-primary);
+            color: white;
+            border: 2px solid transparent;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .btn-register:hover {
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-md);
+        }
+
+        /* Dropdown Item Enhancements */
+        .dropdown-item.text-danger {
+            color: var(--danger-color);
+        }
+
+        .dropdown-item.text-danger:hover {
+            background: #fef2f2;
+            color: var(--danger-color);
+        }
+
+        /* Enhanced Container System */
+        .container {
+            max-width: var(--container-max-width);
+            margin: 0 auto;
+            padding: 0 var(--container-padding);
+            width: 100%;
+        }
+
+        .container-fluid {
+            max-width: 100%;
+            margin: 0 auto;
+            padding: 0 var(--container-padding);
+            width: 100%;
         }
 
         .container-sm {
-            max-width: 600px;
+            max-width: 768px;
             margin: 0 auto;
-            padding: 0 20px;
+            padding: 0 var(--container-padding);
+            width: 100%;
         }
 
+        .container-md {
+            max-width: 992px;
+            margin: 0 auto;
+            padding: 0 var(--container-padding);
+            width: 100%;
+        }
+
+        .container-lg {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 var(--container-padding);
+            width: 100%;
+        }
+
+        /* Enhanced Grid System */
+        .row {
+            display: flex;
+            flex-wrap: wrap;
+            margin: 0 -12px;
+        }
+
+        .col {
+            flex: 1;
+            padding: 0 12px;
+        }
+
+        .col-auto {
+            flex: 0 0 auto;
+            padding: 0 12px;
+        }
+
+        /* Enhanced Utility Classes */
         .text-center { text-align: center; }
         .text-left { text-align: left; }
         .text-right { text-align: right; }
 
         .d-flex { display: flex; }
+        .d-grid { display: grid; }
+        .d-block { display: block; }
+        .d-inline-block { display: inline-block; }
+        .d-none { display: none; }
+
+        .align-items-start { align-items: flex-start; }
         .align-items-center { align-items: center; }
+        .align-items-end { align-items: flex-end; }
+        .align-items-stretch { align-items: stretch; }
+
+        .justify-content-start { justify-content: flex-start; }
         .justify-content-center { justify-content: center; }
+        .justify-content-end { justify-content: flex-end; }
         .justify-content-between { justify-content: space-between; }
+        .justify-content-around { justify-content: space-around; }
+
         .flex-column { flex-direction: column; }
+        .flex-row { flex-direction: row; }
         .flex-wrap { flex-wrap: wrap; }
+        .flex-nowrap { flex-wrap: nowrap; }
 
         .w-100 { width: 100%; }
         .h-100 { height: 100%; }
+        .w-auto { width: auto; }
+        .h-auto { height: auto; }
 
+        /* Enhanced Spacing */
         .mb-1 { margin-bottom: 0.5rem; }
         .mb-2 { margin-bottom: 1rem; }
         .mb-3 { margin-bottom: 1.5rem; }
@@ -94,20 +905,39 @@
         .mt-4 { margin-top: 2rem; }
         .mt-5 { margin-top: 3rem; }
 
+        .mx-auto { margin-left: auto; margin-right: auto; }
+        .my-auto { margin-top: auto; margin-bottom: auto; }
+
         .p-1 { padding: 0.5rem; }
         .p-2 { padding: 1rem; }
         .p-3 { padding: 1.5rem; }
         .p-4 { padding: 2rem; }
         .p-5 { padding: 3rem; }
 
+        .px-1 { padding-left: 0.5rem; padding-right: 0.5rem; }
+        .px-2 { padding-left: 1rem; padding-right: 1rem; }
+        .px-3 { padding-left: 1.5rem; padding-right: 1.5rem; }
+        .px-4 { padding-left: 2rem; padding-right: 2rem; }
+
+        .py-1 { padding-top: 0.5rem; padding-bottom: 0.5rem; }
+        .py-2 { padding-top: 1rem; padding-bottom: 1rem; }
+        .py-3 { padding-top: 1.5rem; padding-bottom: 1.5rem; }
+        .py-4 { padding-top: 2rem; padding-bottom: 2rem; }
+
+        .gap-1 { gap: 0.5rem; }
+        .gap-2 { gap: 1rem; }
+        .gap-3 { gap: 1.5rem; }
+        .gap-4 { gap: 2rem; }
+
         .hidden { display: none !important; }
         .visible { display: block !important; }
 
-        /* Typography */
+        /* Enhanced Typography */
         .h1, .h2, .h3, .h4, .h5, .h6 {
             font-weight: 700;
             line-height: 1.2;
             margin-bottom: 0.5em;
+            color: var(--text-color);
         }
 
         .h1 { font-size: 2.5rem; }
@@ -118,8 +948,15 @@
         .h6 { font-size: 1.125rem; }
 
         .text-sm { font-size: 0.875rem; }
+        .text-base { font-size: 1rem; }
         .text-lg { font-size: 1.125rem; }
         .text-xl { font-size: 1.25rem; }
+        .text-2xl { font-size: 1.5rem; }
+
+        .font-normal { font-weight: 400; }
+        .font-medium { font-weight: 500; }
+        .font-semibold { font-weight: 600; }
+        .font-bold { font-weight: 700; }
 
         .text-primary { color: var(--primary-color); }
         .text-secondary { color: var(--secondary-color); }
@@ -127,8 +964,9 @@
         .text-warning { color: var(--warning-color); }
         .text-danger { color: var(--danger-color); }
         .text-muted { color: var(--text-muted); }
+        .text-white { color: var(--white); }
 
-        /* Buttons */
+        /* Enhanced Buttons */
         .btn {
             display: inline-flex;
             align-items: center;
@@ -144,8 +982,9 @@
             transition: var(--transition);
             user-select: none;
             line-height: 1;
-            min-height: 44px;
+            min-height: 48px;
             white-space: nowrap;
+            text-align: center;
         }
 
         .btn:disabled {
@@ -172,6 +1011,7 @@
 
         .btn-secondary:hover:not(:disabled) {
             background: #475569;
+            transform: translateY(-1px);
         }
 
         .btn-outline {
@@ -183,6 +1023,7 @@
         .btn-outline:hover:not(:disabled) {
             background: var(--primary-color);
             color: var(--white);
+            transform: translateY(-1px);
         }
 
         .btn-success {
@@ -192,6 +1033,7 @@
 
         .btn-success:hover:not(:disabled) {
             background: #15803d;
+            transform: translateY(-1px);
         }
 
         .btn-danger {
@@ -201,6 +1043,7 @@
 
         .btn-danger:hover:not(:disabled) {
             background: #b91c1c;
+            transform: translateY(-1px);
         }
 
         .btn-sm {
@@ -212,14 +1055,14 @@
         .btn-lg {
             padding: 16px 32px;
             font-size: 18px;
-            min-height: 52px;
+            min-height: 56px;
         }
 
         .btn-block {
             width: 100%;
         }
 
-        /* Forms */
+        /* Enhanced Forms */
         .form-group {
             margin-bottom: 1.5rem;
         }
@@ -315,7 +1158,7 @@
             margin-top: 0.25rem;
         }
 
-        /* Cards */
+        /* Enhanced Cards */
         .card {
             background: var(--white);
             border-radius: var(--border-radius);
@@ -323,6 +1166,12 @@
             box-shadow: var(--shadow-sm);
             border: 1px solid var(--border-color);
             margin-bottom: 1.5rem;
+            transition: var(--transition);
+        }
+
+        .card:hover {
+            box-shadow: var(--shadow-md);
+            transform: translateY(-2px);
         }
 
         .card-header {
@@ -348,7 +1197,7 @@
             border-top: 1px solid var(--border-color);
         }
 
-        /* Alerts */
+        /* Enhanced Alerts */
         .alert {
             padding: 1rem 1.25rem;
             border-radius: var(--border-radius-sm);
@@ -357,6 +1206,7 @@
             display: flex;
             align-items: center;
             gap: 0.75rem;
+            position: relative;
         }
 
         .alert-success {
@@ -383,7 +1233,28 @@
             border-color: #bfdbfe;
         }
 
-        /* Loading */
+        .alert-dismissible {
+            padding-right: 3rem;
+        }
+
+        .alert .close {
+            position: absolute;
+            top: 0.5rem;
+            right: 0.75rem;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: inherit;
+            opacity: 0.7;
+            transition: var(--transition);
+        }
+
+        .alert .close:hover {
+            opacity: 1;
+        }
+
+        /* Enhanced Loading */
         .loading {
             display: inline-block;
             width: 20px;
@@ -409,6 +1280,7 @@
             align-items: center;
             justify-content: center;
             z-index: 9999;
+            backdrop-filter: blur(4px);
         }
 
         .loading-spinner {
@@ -420,13 +1292,17 @@
             animation: spin 1s ease-in-out infinite;
         }
 
-        /* Animations */
+        /* Enhanced Animations */
         .fade-in {
-            animation: fadeIn 0.5s ease-out;
+            animation: fadeIn 0.6s ease-out;
         }
 
         .slide-up {
-            animation: slideUp 0.5s ease-out;
+            animation: slideUp 0.6s ease-out;
+        }
+
+        .slide-in-right {
+            animation: slideInRight 0.6s ease-out;
         }
 
         @keyframes fadeIn {
@@ -437,7 +1313,7 @@
         @keyframes slideUp {
             from { 
                 opacity: 0; 
-                transform: translateY(20px); 
+                transform: translateY(30px); 
             }
             to { 
                 opacity: 1; 
@@ -445,13 +1321,84 @@
             }
         }
 
-        /* Responsive */
-        @media (max-width: 768px) {
-            .container {
-                padding: 0 16px;
+        @keyframes slideInRight {
+            from { 
+                opacity: 0; 
+                transform: translateX(30px); 
+            }
+            to { 
+                opacity: 1; 
+                transform: translateX(0); 
+            }
+        }
+
+        /* Enhanced Responsive Design */
+        @media (max-width: 1200px) {
+            :root {
+                --container-padding: 20px;
             }
             
-            .container-sm {
+            .navbar-container {
+                padding: 0 20px;
+            }
+            
+            .search-container-inline {
+                min-width: 250px;
+                max-width: 300px;
+            }
+        }
+
+        @media (max-width: 992px) {
+            .search-container-inline {
+                display: none;
+            }
+            
+            .navbar-center {
+                max-width: 400px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            :root {
+                --container-padding: 16px;
+                --navbar-height: var(--navbar-height-mobile);
+            }
+
+            body {
+                padding-top: var(--navbar-height-mobile);
+            }
+
+            .navbar-center {
+                display: none;
+            }
+
+            .mobile-menu-toggle {
+                display: flex;
+            }
+
+            .navbar-container {
+                padding: 0 16px;
+                gap: 1rem;
+            }
+            
+            .btn-auth {
+                padding: 6px 12px;
+                font-size: 13px;
+                min-height: 36px;
+            }
+            
+            .btn-auth i {
+                display: none;
+            }
+            
+            .auth-buttons {
+                flex-shrink: 0;
+            }
+            
+            .container,
+            .container-sm,
+            .container-md,
+            .container-lg {
                 padding: 0 16px;
             }
             
@@ -463,29 +1410,62 @@
             .btn {
                 padding: 14px 20px;
                 font-size: 16px;
+                min-height: 44px;
             }
             
             .btn-sm {
                 padding: 10px 16px;
                 font-size: 14px;
+                min-height: 36px;
             }
             
             .btn-lg {
                 padding: 18px 28px;
                 font-size: 18px;
+                min-height: 52px;
             }
             
             .h1 { font-size: 2rem; }
             .h2 { font-size: 1.75rem; }
             .h3 { font-size: 1.5rem; }
+            .h4 { font-size: 1.25rem; }
+
+            .mobile-nav {
+                width: 300px;
+            }
+
+            .search-container {
+                padding: 24px;
+                width: 95%;
+            }
+
+            .search-input {
+                font-size: 16px;
+                padding: 16px 20px;
+            }
+
+            .dropdown-menu {
+                min-width: 200px;
+            }
         }
 
         @media (max-width: 480px) {
-            .container {
+            :root {
+                --container-padding: 12px;
+            }
+
+            .navbar-container {
                 padding: 0 12px;
             }
             
-            .container-sm {
+            .navbar-center {
+                display: none;
+            }
+            
+            .container,
+            .container-sm,
+            .container-md,
+            .container-lg {
                 padding: 0 12px;
             }
             
@@ -496,9 +1476,34 @@
             .h1 { font-size: 1.75rem; }
             .h2 { font-size: 1.5rem; }
             .h3 { font-size: 1.25rem; }
+            .h4 { font-size: 1.125rem; }
+
+            .mobile-nav {
+                width: 100%;
+                right: -100%;
+            }
+
+            .mobile-nav.show {
+                right: 0;
+            }
+
+            .search-container {
+                padding: 20px;
+                width: 95%;
+            }
+
+            .search-input {
+                font-size: 16px;
+                padding: 14px 18px;
+            }
+
+            .btn {
+                padding: 12px 18px;
+                font-size: 15px;
+            }
         }
 
-        /* Dark mode support (for future) */
+        /* Enhanced Dark Mode Support */
         @media (prefers-color-scheme: dark) {
             :root {
                 --light-color: #0f172a;
@@ -506,23 +1511,92 @@
                 --text-color: #f8fafc;
                 --text-muted: #94a3b8;
                 --border-color: #334155;
+                --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.3);
+                --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.4);
+                --shadow-lg: 0 10px 30px rgba(0, 0, 0, 0.5);
             }
         }
 
-        /* Print styles */
+        /* Print Styles */
         @media print {
+            .navbar,
+            .mobile-nav,
+            .mobile-nav-overlay,
+            .search-overlay,
             .no-print {
                 display: none !important;
+            }
+            
+            body {
+                padding-top: 0;
+                font-size: 12pt;
+                line-height: 1.4;
+                color: #000;
+                background: #fff;
             }
             
             .card {
                 box-shadow: none;
                 border: 1px solid #ddd;
+                break-inside: avoid;
             }
             
-            body {
-                font-size: 12pt;
-                line-height: 1.4;
+            .btn {
+                border: 1px solid #ddd;
+                background: #fff !important;
+                color: #000 !important;
+            }
+        }
+
+        /* Enhanced Accessibility */
+        @media (prefers-reduced-motion: reduce) {
+            *,
+            *::before,
+            *::after {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
+        }
+
+        /* Focus Management */
+        .focus-outline {
+            outline: 2px solid var(--primary-color);
+            outline-offset: 2px;
+        }
+
+        :focus-visible {
+            outline: 2px solid var(--primary-color);
+            outline-offset: 2px;
+        }
+
+        /* Skip Links */
+        .skip-link {
+            position: absolute;
+            top: -40px;
+            left: 6px;
+            background: var(--primary-color);
+            color: white;
+            padding: 8px;
+            text-decoration: none;
+            z-index: 10000;
+            border-radius: 4px;
+        }
+
+        .skip-link:focus {
+            top: 6px;
+        }
+
+        /* High Contrast Mode */
+        @media (prefers-contrast: high) {
+            :root {
+                --border-color: #000;
+                --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.8);
+                --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.8);
+            }
+            
+            .btn {
+                border: 2px solid currentColor;
             }
         }
     </style>
@@ -530,60 +1604,507 @@
     {% block extra_css %}{% endblock %}
 </head>
 <body>
+    <!-- Skip to main content link -->
+    <a href="#main-content" class="skip-link">Ana içeriğe geç</a>
+
+    <!-- Single Modern Navigation - All Features Combined -->
+    <nav class="navbar" id="navbar" role="navigation" aria-label="Ana navigasyon">
+        <div class="navbar-container">
+            <!-- Brand -->
+            <a href="/" class="navbar-brand" aria-label="Kuaför İlan ana sayfa">
+                <div class="brand-icon">
+                    <i class="fas fa-cut" aria-hidden="true"></i>
+                </div>
+                <span>Kuaför İlan</span>
+            </a>
+
+            <!-- Center Navigation + Search -->
+            <div class="navbar-center">
+                {% if user.is_authenticated %}
+                    {% if user.user_type == 'jobseeker' %}
+                        <!-- İş Arayan Navigation -->
+                        <a href="{% url 'jobs:list' %}" 
+                           class="nav-icon-btn {% if request.resolver_match.url_name == 'list' %}active{% endif %}"
+                           aria-label="İş İlanları"
+                           title="İş İlanları">
+                            <i class="fas fa-briefcase" aria-hidden="true"></i>
+                            <span class="nav-label">İş İlanları</span>
+                        </a>
+                        <a href="/dashboard/" 
+                           class="nav-icon-btn {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}"
+                           aria-label="Dashboard"
+                           title="Dashboard">
+                            <i class="fas fa-tachometer-alt" aria-hidden="true"></i>
+                            <span class="nav-label">Dashboard</span>
+                        </a>
+                        <a href="/profiles/" 
+                           class="nav-icon-btn {% if 'profiles' in request.path %}active{% endif %}"
+                           aria-label="Profiller"
+                           title="Profiller">
+                            <i class="fas fa-bookmark" aria-hidden="true"></i>
+                            <span class="nav-label">Profiller</span>
+                        </a>
+                    {% elif user.user_type == 'business' %}
+                        <!-- İş Veren Navigation -->
+                        <a href="/dashboard/" 
+                           class="nav-icon-btn {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}"
+                           aria-label="Dashboard"
+                           title="Dashboard">
+                            <i class="fas fa-tachometer-alt" aria-hidden="true"></i>
+                            <span class="nav-label">Dashboard</span>
+                        </a>
+                        <a href="/" 
+                           class="nav-icon-btn {% if request.resolver_match.url_name == 'posts_list_view' %}active{% endif %}"
+                           aria-label="İlanlarım"
+                           title="İlanlarım">
+                            <i class="fas fa-list-ul" aria-hidden="true"></i>
+                            <span class="nav-label">İlanlarım</span>
+                        </a>
+                        <a href="/profiles/" 
+                           class="nav-icon-btn {% if 'profiles' in request.path %}active{% endif %}"
+                           aria-label="Adaylar"
+                           title="Adaylar">
+                            <i class="fas fa-users" aria-hidden="true"></i>
+                            <span class="nav-label">Adaylar</span>
+                        </a>
+                    {% endif %}
+                {% else %}
+                    <!-- Misafir Navigation -->
+                    <a href="{% url 'jobs:list' %}" 
+                       class="nav-icon-btn {% if request.resolver_match.url_name == 'list' %}active{% endif %}"
+                       aria-label="İş İlanları"
+                       title="İş İlanları">
+                        <i class="fas fa-briefcase" aria-hidden="true"></i>
+                        <span class="nav-label">İş İlanları</span>
+                    </a>
+                    <a href="/profiles/" 
+                       class="nav-icon-btn {% if 'profiles' in request.path %}active{% endif %}"
+                       aria-label="Şirketler"
+                       title="Şirketler">
+                        <i class="fas fa-building" aria-hidden="true"></i>
+                        <span class="nav-label">Şirketler</span>
+                    </a>
+                {% endif %}
+
+                <!-- Integrated Search -->
+                <div class="search-container-inline">
+                    <form method="GET" action="{% url 'jobs:list' %}" class="search-form-inline">
+                        <div class="search-input-wrapper">
+                            <i class="fas fa-search search-icon-inline" aria-hidden="true"></i>
+                            <input type="text" 
+                                   name="search" 
+                                   class="search-input-inline" 
+                                   placeholder="İş ara..." 
+                                   aria-label="İş ilanlarında ara"
+                                   autocomplete="off">
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Right Side Actions -->
+            <div class="navbar-actions">
+                {% if user.is_authenticated %}
+                    <!-- Quick Actions for Authenticated Users -->
+                    <button class="action-btn" 
+                            onclick="openSearchOverlay()" 
+                            aria-label="Gelişmiş arama"
+                            title="Gelişmiş Arama"
+                            type="button">
+                        <i class="fas fa-search-plus" aria-hidden="true"></i>
+                    </button>
+
+                    <!-- Messages -->
+                    <a href="/messages/" class="action-btn" 
+                       aria-label="Mesajlar"
+                       title="Mesajlar">
+                        <i class="fas fa-comments" aria-hidden="true"></i>
+                        <span class="notification-badge" style="display: none;">0</span>
+                    </a>
+
+                    <!-- Notifications -->
+                    <div class="dropdown" id="notificationDropdown">
+                        <button class="action-btn" 
+                                onclick="toggleDropdown('notificationDropdown')" 
+                                aria-label="Bildirimler"
+                                title="Bildirimler"
+                                aria-expanded="false"
+                                aria-haspopup="true"
+                                type="button">
+                            <i class="fas fa-bell" aria-hidden="true"></i>
+                            {% if unread_notifications_count %}
+                                <span class="notification-badge" aria-label="{{ unread_notifications_count }} okunmamış bildirim">
+                                    {{ unread_notifications_count }}
+                                </span>
+                            {% endif %}
+                        </button>
+                        <div class="dropdown-menu" role="menu">
+                            <div class="dropdown-header">
+                                <i class="fas fa-bell"></i>
+                                Bildirimler
+                            </div>
+                            {% if notifications %}
+                                {% for notification in notifications|slice:":5" %}
+                                    <a href="{{ notification.url|default:'#' }}" 
+                                       class="dropdown-item" 
+                                       role="menuitem">
+                                        <div>
+                                            <strong>{{ notification.title|default:'Yeni Bildirim' }}</strong>
+                                            <p style="margin: 0; font-size: 12px; color: var(--text-muted);">
+                                                {{ notification.created_at|timesince|default:'Az önce' }} önce
+                                            </p>
+                                        </div>
+                                    </a>
+                                {% endfor %}
+                                <div class="dropdown-divider"></div>
+                                <a href="/notifications/" class="dropdown-item text-center" role="menuitem">
+                                    <i class="fas fa-list"></i>
+                                    <small>Tümünü Gör</small>
+                                </a>
+                            {% else %}
+                                <div class="dropdown-item text-center text-muted">
+                                    <i class="fas fa-inbox"></i>
+                                    <small>Yeni bildirim yok</small>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- User Menu -->
+                    <div class="dropdown" id="userDropdown">
+                        <button class="user-avatar" 
+                                onclick="toggleDropdown('userDropdown')"
+                                aria-label="Kullanıcı menüsü"
+                                title="Profil menüsü"
+                                aria-expanded="false"
+                                aria-haspopup="true"
+                                type="button">
+                            {% if user.jobseeker_profile.profile_photo %}
+                                <img src="{{ user.jobseeker_profile.profile_photo.url }}" 
+                                     alt="{{ user.get_full_name|default:user.username }}">
+                            {% elif user.business_profile.logo %}
+                                <img src="{{ user.business_profile.logo.url }}" 
+                                     alt="{{ user.get_full_name|default:user.username }}">
+                            {% else %}
+                                {{ user.first_name.0|upper|default:user.username.0|upper }}{{ user.last_name.0|upper }}
+                            {% endif %}
+                            <div class="online-indicator" aria-hidden="true"></div>
+                        </button>
+                        <div class="dropdown-menu dropdown-menu-user" role="menu">
+                            <div class="dropdown-header">
+                                <div class="user-info">
+                                    <div class="user-avatar-small">
+                                        {% if user.jobseeker_profile.profile_photo %}
+                                            <img src="{{ user.jobseeker_profile.profile_photo.url }}" 
+                                                 alt="{{ user.get_full_name|default:user.username }}">
+                                        {% elif user.business_profile.logo %}
+                                            <img src="{{ user.business_profile.logo.url }}" 
+                                                 alt="{{ user.get_full_name|default:user.username }}">
+                                        {% else %}
+                                            {{ user.first_name.0|upper|default:user.username.0|upper }}{{ user.last_name.0|upper }}
+                                        {% endif %}
+                                    </div>
+                                    <div class="user-details">
+                                        <strong>{{ user.get_full_name|default:user.username }}</strong>
+                                        <p>{{ user.email }}</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <a href="/profiles/" class="dropdown-item" role="menuitem">
+                                <i class="fas fa-user" aria-hidden="true"></i>
+                                Profil
+                            </a>
+                            <a href="/dashboard/" class="dropdown-item" role="menuitem">
+                                <i class="fas fa-tachometer-alt" aria-hidden="true"></i>
+                                Dashboard
+                            </a>
+                            {% if user.user_type == 'business' %}
+                                <a href="/profiles/" class="dropdown-item" role="menuitem">
+                                    <i class="fas fa-building" aria-hidden="true"></i>
+                                    Şirket Profili
+                                </a>
+                            {% endif %}
+                            <a href="/dashboard/" class="dropdown-item" role="menuitem">
+                                <i class="fas fa-cog" aria-hidden="true"></i>
+                                Ayarlar
+                            </a>
+                            <div class="dropdown-divider"></div>
+                            <a href="/auth/logout/" class="dropdown-item text-danger" role="menuitem">
+                                <i class="fas fa-sign-out-alt" aria-hidden="true"></i>
+                                Çıkış Yap
+                            </a>
+                        </div>
+                    </div>
+                {% else %}
+                    <!-- Guest Actions -->
+                    <button class="action-btn" 
+                            onclick="openSearchOverlay()" 
+                            aria-label="Arama yap"
+                            title="Ara"
+                            type="button">
+                        <i class="fas fa-search" aria-hidden="true"></i>
+                    </button>
+
+                    <!-- Auth Buttons for Guests -->
+                    <a href="/auth/login/" class="btn-auth btn-login">
+                        <i class="fas fa-sign-in-alt"></i>
+                        Giriş Yap
+                    </a>
+                    <a href="/auth/register/" class="btn-auth btn-register">
+                        <i class="fas fa-user-plus"></i>
+                        Kayıt Ol
+                    </a>
+                {% endif %}
+
+                <!-- Mobile Menu Toggle -->
+                <button class="mobile-menu-toggle" 
+                        onclick="toggleMobileMenu()"
+                        aria-label="Mobil menüyü aç/kapat"
+                        aria-expanded="false"
+                        type="button">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Mobile Navigation Overlay -->
+    <div class="mobile-nav-overlay" id="mobileNavOverlay" onclick="closeMobileMenu()"></div>
+
+    <!-- Enhanced Mobile Navigation -->
+    <nav class="mobile-nav" id="mobileNav" role="navigation" aria-label="Mobil navigasyon">
+        {% if user.is_authenticated %}
+            <!-- Mobile User Header -->
+            <div class="mobile-nav-header">
+                <div class="mobile-nav-user">
+                    <div class="user-avatar">
+                        {% if user.jobseeker_profile.profile_photo %}
+                            <img src="{{ user.jobseeker_profile.profile_photo.url }}" 
+                                 alt="{{ user.get_full_name|default:user.username }}">
+                        {% elif user.business_profile.logo %}
+                            <img src="{{ user.business_profile.logo.url }}" 
+                                 alt="{{ user.get_full_name|default:user.username }}">
+                        {% else %}
+                            {{ user.first_name.0|upper|default:user.username.0|upper }}{{ user.last_name.0|upper }}
+                        {% endif %}
+                    </div>
+                    <div class="mobile-nav-user-info">
+                        <h4>{{ user.get_full_name|default:user.username }}</h4>
+                        <p>{{ user.email }}</p>
+                    </div>
+                </div>
+            </div>
+
+            {% if user.user_type == 'jobseeker' %}
+                <!-- İş Arayan Mobile Menu -->
+                <a href="{% url 'jobs:list' %}" 
+                   class="mobile-nav-item {% if request.resolver_match.url_name == 'list' %}active{% endif %}">
+                    <i class="fas fa-briefcase" aria-hidden="true"></i>
+                    İş İlanları
+                </a>
+                <a href="/dashboard/" 
+                   class="mobile-nav-item {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
+                    <i class="fas fa-tachometer-alt" aria-hidden="true"></i>
+                    Dashboard
+                </a>
+                <a href="/profiles/" 
+                   class="mobile-nav-item {% if 'profiles' in request.path %}active{% endif %}">
+                    <i class="fas fa-bookmark" aria-hidden="true"></i>
+                    Profiller
+                </a>
+            {% elif user.user_type == 'business' %}
+                <!-- İş Veren Mobile Menu -->
+                <a href="/dashboard/" 
+                   class="mobile-nav-item {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
+                    <i class="fas fa-tachometer-alt" aria-hidden="true"></i>
+                    Dashboard
+                </a>
+                <a href="/" 
+                   class="mobile-nav-item {% if request.resolver_match.url_name == 'posts_list_view' %}active{% endif %}">
+                    <i class="fas fa-list-ul" aria-hidden="true"></i>
+                    İlanlarım
+                </a>
+                <a href="/profiles/" 
+                   class="mobile-nav-item {% if 'profiles' in request.path %}active{% endif %}">
+                    <i class="fas fa-users" aria-hidden="true"></i>
+                    Adaylar
+                </a>
+            {% endif %}
+
+            <!-- Common Authenticated Links -->
+            <a href="/profiles/" class="mobile-nav-item">
+                <i class="fas fa-user" aria-hidden="true"></i>
+                Profil
+            </a>
+            <a href="/notifications/" class="mobile-nav-item">
+                <i class="fas fa-bell" aria-hidden="true"></i>
+                Bildirimler
+                {% if unread_notifications_count %}
+                    <span class="notification-badge">{{ unread_notifications_count }}</span>
+                {% endif %}
+            </a>
+            <a href="/dashboard/" class="mobile-nav-item">
+                <i class="fas fa-cog" aria-hidden="true"></i>
+                Ayarlar
+            </a>
+            <a href="/auth/logout/" class="mobile-nav-item">
+                <i class="fas fa-sign-out-alt" aria-hidden="true"></i>
+                Çıkış Yap
+            </a>
+        {% else %}
+            <!-- Misafir Mobile Menu -->
+            <a href="{% url 'jobs:list' %}" 
+               class="mobile-nav-item {% if request.resolver_match.url_name == 'list' %}active{% endif %}">
+                <i class="fas fa-briefcase" aria-hidden="true"></i>
+                İş İlanları
+            </a>
+            <a href="/profiles/" 
+               class="mobile-nav-item {% if 'profiles' in request.path %}active{% endif %}">
+                <i class="fas fa-building" aria-hidden="true"></i>
+                Şirketler
+            </a>
+            <a href="/auth/login/" class="mobile-nav-item">
+                <i class="fas fa-sign-in-alt" aria-hidden="true"></i>
+                Giriş Yap
+            </a>
+            <a href="/auth/register/" class="mobile-nav-item">
+                <i class="fas fa-user-plus" aria-hidden="true"></i>
+                Kayıt Ol
+            </a>
+        {% endif %}
+    </nav>
+
+    <!-- Enhanced Search Overlay -->
+    <div class="search-overlay" id="searchOverlay" role="dialog" aria-labelledby="search-title" aria-modal="true">
+        <button class="search-close" 
+                onclick="closeSearchOverlay()" 
+                aria-label="Aramayı kapat"
+                type="button">
+            <i class="fas fa-times" aria-hidden="true"></i>
+        </button>
+        <div class="search-container">
+            <h3 id="search-title" style="margin-bottom: 24px; text-align: center;">İş İlanlarında Ara</h3>
+            <form method="GET" action="{% url 'jobs:list' %}">
+                <input type="text" 
+                       name="search" 
+                       class="search-input" 
+                       placeholder="Pozisyon, şirket veya lokasyon ara..." 
+                       autocomplete="off" 
+                       autofocus
+                       aria-label="Arama sorgusu">
+                <div style="margin-top: 24px; text-align: center;">
+                    <button type="submit" class="btn btn-primary btn-lg">
+                        <i class="fas fa-search" aria-hidden="true"></i>
+                        Ara
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Enhanced Messages Container -->
+    <div class="messages-container" 
+         style="position: fixed; top: 80px; right: 20px; z-index: 1050; max-width: 400px;"
+         aria-live="polite">
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade-in" 
+                 role="alert" 
+                 style="margin-bottom: 12px;">
+                <span>{{ message }}</span>
+                <button type="button" 
+                        class="close" 
+                        onclick="this.parentElement.style.display='none';" 
+                        aria-label="Mesajı kapat">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+        {% endfor %}
+    </div>
+
     <!-- Main Content -->
-    <main id="main-content">
+    <main id="main-content" class="fade-in" role="main">
         {% block content %}{% endblock %}
     </main>
 
-    <!-- Loading Overlay -->
-    <div id="loadingOverlay" class="loading-overlay hidden">
+    <!-- Enhanced Loading Overlay -->
+    <div id="loadingOverlay" 
+         class="loading-overlay hidden" 
+         aria-hidden="true" 
+         role="status" 
+         aria-label="Yükleniyor">
         <div class="loading-spinner"></div>
     </div>
 
-    <!-- Toast Container -->
-    <div id="toastContainer" style="position: fixed; top: 20px; right: 20px; z-index: 10000;"></div>
+    <!-- Enhanced Toast Container -->
+    <div id="toastContainer" 
+         style="position: fixed; top: 80px; right: 20px; z-index: 10000; max-width: 400px;"
+         aria-live="polite"></div>
 
     <!-- Base JavaScript -->
     <script>
-        // Global utilities
+        // Enhanced Global utilities
         window.App = {
-            // Show loading
+            // Show loading with accessibility
             showLoading() {
-                document.getElementById('loadingOverlay').classList.remove('hidden');
+                const overlay = document.getElementById('loadingOverlay');
+                overlay.classList.remove('hidden');
+                overlay.setAttribute('aria-hidden', 'false');
+                document.body.style.overflow = 'hidden';
             },
             
             // Hide loading
             hideLoading() {
-                document.getElementById('loadingOverlay').classList.add('hidden');
+                const overlay = document.getElementById('loadingOverlay');
+                overlay.classList.add('hidden');
+                overlay.setAttribute('aria-hidden', 'true');
+                document.body.style.overflow = '';
             },
             
-            // Show toast notification
+            // Enhanced toast notification with accessibility
             showToast(message, type = 'info', duration = 5000) {
                 const toast = document.createElement('div');
                 toast.className = `alert alert-${type} fade-in`;
+                toast.setAttribute('role', 'alert');
+                toast.setAttribute('aria-live', 'polite');
                 toast.style.cssText = `
-                    margin-bottom: 10px;
+                    margin-bottom: 12px;
                     box-shadow: var(--shadow-md);
                     max-width: 400px;
+                    border-left: 4px solid currentColor;
                 `;
                 
                 const icon = {
-                    success: '✅',
-                    danger: '❌',
-                    warning: '⚠️',
-                    info: 'ℹ️'
-                }[type] || 'ℹ️';
+                    success: '<i class="fas fa-check-circle" aria-hidden="true"></i>',
+                    danger: '<i class="fas fa-exclamation-circle" aria-hidden="true"></i>',
+                    warning: '<i class="fas fa-exclamation-triangle" aria-hidden="true"></i>',
+                    info: '<i class="fas fa-info-circle" aria-hidden="true"></i>'
+                }[type] || '<i class="fas fa-info-circle" aria-hidden="true"></i>';
                 
                 toast.innerHTML = `
-                    <span>${icon}</span>
-                    <span>${message}</span>
+                    <span style="display: flex; align-items: center; gap: 8px;">
+                        ${icon}
+                        <span>${message}</span>
+                    </span>
                 `;
                 
-                document.getElementById('toastContainer').appendChild(toast);
+                const container = document.getElementById('toastContainer');
+                container.appendChild(toast);
                 
+                // Auto-remove with fade out
                 setTimeout(() => {
-                    toast.remove();
+                    toast.style.opacity = '0';
+                    toast.style.transform = 'translateX(100%)';
+                    setTimeout(() => toast.remove(), 300);
                 }, duration);
+
+                // Click to dismiss
+                toast.addEventListener('click', () => {
+                    toast.style.opacity = '0';
+                    toast.style.transform = 'translateX(100%)';
+                    setTimeout(() => toast.remove(), 300);
+                });
             },
             
             // CSRF token for forms
@@ -591,7 +2112,7 @@
                 return document.querySelector('[name=csrfmiddlewaretoken]')?.value || '';
             },
             
-            // Form validation helper
+            // Enhanced form validation
             validateForm(formElement) {
                 const inputs = formElement.querySelectorAll('.form-control[required]');
                 let isValid = true;
@@ -603,6 +2124,7 @@
                     if (!value) {
                         input.classList.add('is-invalid');
                         input.classList.remove('is-valid');
+                        input.setAttribute('aria-invalid', 'true');
                         if (feedback) {
                             feedback.textContent = 'Bu alan gereklidir.';
                         }
@@ -610,6 +2132,7 @@
                     } else {
                         input.classList.remove('is-invalid');
                         input.classList.add('is-valid');
+                        input.setAttribute('aria-invalid', 'false');
                         if (feedback) {
                             feedback.textContent = '';
                         }
@@ -619,7 +2142,7 @@
                 return isValid;
             },
             
-            // API request helper
+            // Enhanced API request helper
             async request(url, options = {}) {
                 const defaultOptions = {
                     headers: {
@@ -643,12 +2166,278 @@
                     this.showToast(error.message, 'danger');
                     throw error;
                 }
+            },
+
+            // Debounce function for search
+            debounce(func, wait) {
+                let timeout;
+                return function executedFunction(...args) {
+                    const later = () => {
+                        clearTimeout(timeout);
+                        func(...args);
+                    };
+                    clearTimeout(timeout);
+                    timeout = setTimeout(later, wait);
+                };
+            },
+
+            // Focus management
+            trapFocus(element) {
+                const focusableElements = element.querySelectorAll(
+                    'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+                );
+                const firstElement = focusableElements[0];
+                const lastElement = focusableElements[focusableElements.length - 1];
+
+                element.addEventListener('keydown', (e) => {
+                    if (e.key === 'Tab') {
+                        if (e.shiftKey) {
+                            if (document.activeElement === firstElement) {
+                                lastElement.focus();
+                                e.preventDefault();
+                            }
+                        } else {
+                            if (document.activeElement === lastElement) {
+                                firstElement.focus();
+                                e.preventDefault();
+                            }
+                        }
+                    }
+                });
+
+                firstElement.focus();
             }
         };
 
-        // Initialize when DOM is ready
+        // Enhanced Navigation Functions
+        function toggleDropdown(dropdownId) {
+            const dropdown = document.getElementById(dropdownId);
+            const button = dropdown.querySelector('button, .user-avatar');
+            const isOpen = dropdown.classList.contains('show');
+            
+            // Close all dropdowns
+            document.querySelectorAll('.dropdown').forEach(d => {
+                d.classList.remove('show');
+                const btn = d.querySelector('button, .user-avatar');
+                if (btn) btn.setAttribute('aria-expanded', 'false');
+            });
+            
+            // Toggle current dropdown
+            if (!isOpen) {
+                dropdown.classList.add('show');
+                if (button) {
+                    button.setAttribute('aria-expanded', 'true');
+                    // Focus first menu item
+                    const firstItem = dropdown.querySelector('.dropdown-item');
+                    if (firstItem) {
+                        setTimeout(() => firstItem.focus(), 100);
+                    }
+                }
+                
+                // Trap focus in dropdown
+                App.trapFocus(dropdown);
+            }
+        }
+
+        function toggleMobileMenu() {
+            const mobileNav = document.getElementById('mobileNav');
+            const overlay = document.getElementById('mobileNavOverlay');
+            const toggle = document.querySelector('.mobile-menu-toggle');
+            
+            const isOpen = mobileNav.classList.contains('show');
+            
+            if (isOpen) {
+                closeMobileMenu();
+            } else {
+                // Show mobile menu with display block
+                mobileNav.classList.add('show');
+                overlay.classList.add('show');
+                toggle.classList.add('active');
+                toggle.setAttribute('aria-expanded', 'true');
+                document.body.style.overflow = 'hidden';
+                
+                // Show with display block (CSS will handle the rest)
+                mobileNav.style.display = 'block';
+                overlay.style.display = 'block';
+                
+                console.log('Mobile nav SHOWN with display: block');
+                
+                // Focus first navigation item
+                const firstNavItem = mobileNav.querySelector('.mobile-nav-item');
+                if (firstNavItem) {
+                    setTimeout(() => firstNavItem.focus(), 300);
+                }
+                
+                // Trap focus in mobile menu
+                App.trapFocus(mobileNav);
+            }
+        }
+
+        function closeMobileMenu() {
+            const mobileNav = document.getElementById('mobileNav');
+            const overlay = document.getElementById('mobileNavOverlay');
+            const toggle = document.querySelector('.mobile-menu-toggle');
+            
+            mobileNav.classList.remove('show');
+            overlay.classList.remove('show');
+            toggle.classList.remove('active');
+            toggle.setAttribute('aria-expanded', 'false');
+            document.body.style.overflow = '';
+            
+            // Hide with display none
+            mobileNav.style.display = 'none';
+            overlay.style.display = 'none';
+            
+            console.log('Mobile nav HIDDEN with display: none');
+            
+            // Return focus to toggle button
+            toggle.focus();
+        }
+
+        function openSearchOverlay() {
+            const searchOverlay = document.getElementById('searchOverlay');
+            searchOverlay.classList.add('show');
+            searchOverlay.setAttribute('aria-hidden', 'false');
+            document.body.style.overflow = 'hidden';
+            
+            // Focus search input after animation
+            setTimeout(() => {
+                const searchInput = searchOverlay.querySelector('.search-input');
+                if (searchInput) {
+                    searchInput.focus();
+                    App.trapFocus(searchOverlay);
+                }
+            }, 300);
+        }
+
+        function closeSearchOverlay() {
+            const searchOverlay = document.getElementById('searchOverlay');
+            searchOverlay.classList.remove('show');
+            searchOverlay.setAttribute('aria-hidden', 'true');
+            document.body.style.overflow = '';
+            
+            // Return focus to search button
+            const searchButton = document.querySelector('.action-btn');
+            if (searchButton) searchButton.focus();
+        }
+
+        // Enhanced Initialize when DOM is ready
         document.addEventListener('DOMContentLoaded', function() {
-            // Add focus states to form controls
+            // DISPLAY NONE APPROACH: Force mobile navigation completely hidden
+            const forceMobileNavHidden = () => {
+                const mobileNav = document.getElementById('mobileNav');
+                const mobileOverlay = document.getElementById('mobileNavOverlay');
+                const mobileToggle = document.querySelector('.mobile-menu-toggle');
+
+                if (mobileNav) {
+                    // Remove show class
+                    mobileNav.classList.remove('show');
+                    
+                    // Force with display none (most aggressive)
+                    mobileNav.style.display = 'none';
+                    
+                    console.log('Mobile nav COMPLETELY HIDDEN with display: none');
+                    console.log('Mobile nav display:', window.getComputedStyle(mobileNav).display);
+                }
+
+                if (mobileOverlay) {
+                    mobileOverlay.classList.remove('show');
+                    mobileOverlay.style.display = 'none';
+                }
+
+                if (mobileToggle) {
+                    mobileToggle.classList.remove('active');
+                    mobileToggle.setAttribute('aria-expanded', 'false');
+                }
+
+                // Ensure body overflow is normal
+                document.body.style.overflow = '';
+            };
+
+            // Run immediately
+            forceMobileNavHidden();
+            
+            // Run again with delays to override any other scripts
+            setTimeout(forceMobileNavHidden, 50);
+            setTimeout(forceMobileNavHidden, 200);
+
+            // Enhanced navbar scroll effect
+            const navbar = document.getElementById('navbar');
+            if (navbar) {
+                let lastScrollY = window.scrollY;
+                
+                const handleScroll = App.debounce(() => {
+                    const currentScrollY = window.scrollY;
+                    
+                    if (currentScrollY > 50) {
+                        navbar.classList.add('scrolled');
+                    } else {
+                        navbar.classList.remove('scrolled');
+                    }
+                    
+                    lastScrollY = currentScrollY;
+                }, 10);
+                
+                window.addEventListener('scroll', handleScroll, { passive: true });
+            }
+
+            // Enhanced click outside to close dropdowns
+            document.addEventListener('click', function(e) {
+                if (!e.target.closest('.dropdown')) {
+                    document.querySelectorAll('.dropdown').forEach(d => {
+                        d.classList.remove('show');
+                        const btn = d.querySelector('button, .user-avatar');
+                        if (btn) btn.setAttribute('aria-expanded', 'false');
+                    });
+                }
+            });
+
+            // Enhanced keyboard navigation
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape') {
+                    // Close mobile menu
+                    if (document.getElementById('mobileNav').classList.contains('show')) {
+                        closeMobileMenu();
+                        return;
+                    }
+                    
+                    // Close search overlay
+                    if (document.getElementById('searchOverlay').classList.contains('show')) {
+                        closeSearchOverlay();
+                        return;
+                    }
+                    
+                    // Close dropdowns
+                    document.querySelectorAll('.dropdown.show').forEach(d => {
+                        d.classList.remove('show');
+                        const btn = d.querySelector('button, .user-avatar');
+                        if (btn) {
+                            btn.setAttribute('aria-expanded', 'false');
+                            btn.focus();
+                        }
+                    });
+                }
+                
+                // Arrow key navigation in dropdowns
+                if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+                    const openDropdown = document.querySelector('.dropdown.show');
+                    if (openDropdown) {
+                        e.preventDefault();
+                        const items = openDropdown.querySelectorAll('.dropdown-item');
+                        const currentIndex = Array.from(items).indexOf(document.activeElement);
+                        
+                        if (e.key === 'ArrowDown') {
+                            const nextIndex = currentIndex < items.length - 1 ? currentIndex + 1 : 0;
+                            items[nextIndex].focus();
+                        } else {
+                            const prevIndex = currentIndex > 0 ? currentIndex - 1 : items.length - 1;
+                            items[prevIndex].focus();
+                        }
+                    }
+                }
+            });
+
+            // Enhanced form controls with accessibility
             document.querySelectorAll('.form-control').forEach(input => {
                 input.addEventListener('focus', function() {
                     this.parentNode.classList.add('focused');
@@ -657,41 +2446,150 @@
                 input.addEventListener('blur', function() {
                     this.parentNode.classList.remove('focused');
                     
-                    // Real-time validation
+                    // Real-time validation with accessibility
                     if (this.hasAttribute('required') && !this.value.trim()) {
                         this.classList.add('is-invalid');
                         this.classList.remove('is-valid');
+                        this.setAttribute('aria-invalid', 'true');
                     } else if (this.value.trim()) {
                         this.classList.remove('is-invalid');
                         this.classList.add('is-valid');
+                        this.setAttribute('aria-invalid', 'false');
                     }
                 });
+
+                // Add aria-describedby for form text
+                const formText = input.parentNode.querySelector('.form-text');
+                if (formText && !formText.id) {
+                    formText.id = 'help-' + Math.random().toString(36).substr(2, 9);
+                    input.setAttribute('aria-describedby', formText.id);
+                }
             });
 
-            // Auto-hide alerts after 5 seconds
+            // Auto-hide alerts with accessibility
             document.querySelectorAll('.alert').forEach(alert => {
                 setTimeout(() => {
                     alert.style.opacity = '0';
-                    setTimeout(() => alert.remove(), 300);
+                    alert.style.transform = 'translateY(-10px)';
+                    setTimeout(() => {
+                        alert.remove();
+                    }, 300);
                 }, 5000);
             });
 
-            // Smooth scroll for anchor links
+            // Enhanced smooth scroll for anchor links
             document.querySelectorAll('a[href^="#"]').forEach(anchor => {
                 anchor.addEventListener('click', function (e) {
                     e.preventDefault();
-                    const target = document.querySelector(this.getAttribute('href'));
+                    const targetId = this.getAttribute('href').substring(1);
+                    const target = document.getElementById(targetId);
                     if (target) {
                         target.scrollIntoView({
                             behavior: 'smooth',
                             block: 'start'
                         });
+                        // Set focus for accessibility
+                        target.focus();
                     }
                 });
             });
+
+            // Handle search overlay form submission
+            const searchForm = document.querySelector('#searchOverlay form');
+            if (searchForm) {
+                searchForm.addEventListener('submit', function() {
+                    closeSearchOverlay();
+                });
+            }
+
+            // Enhanced mobile touch support
+            if ('ontouchstart' in window) {
+                document.body.classList.add('touch-device');
+                
+                // Improve tap targets on mobile
+                document.querySelectorAll('.btn, .nav-link, .dropdown-item').forEach(element => {
+                    element.style.minHeight = '44px';
+                });
+            }
+
+            // Enhanced search functionality
+            const searchInputs = document.querySelectorAll('.search-input-inline, .search-input');
+            searchInputs.forEach(input => {
+                const debouncedSearch = App.debounce((value) => {
+                    // Implement live search suggestions here if needed
+                    console.log('Searching for:', value);
+                }, 300);
+
+                input.addEventListener('input', (e) => {
+                    debouncedSearch(e.target.value);
+                });
+            });
+
+            // Initialize tooltips or other components here
+            // This is where you'd initialize any third-party components
+
+            // Performance optimization: Lazy load images
+            if ('IntersectionObserver' in window) {
+                const imageObserver = new IntersectionObserver((entries, observer) => {
+                    entries.forEach(entry => {
+                        if (entry.isIntersecting) {
+                            const img = entry.target;
+                            img.src = img.dataset.src;
+                            img.classList.remove('lazy');
+                            observer.unobserve(img);
+                        }
+                    });
+                });
+
+                document.querySelectorAll('img[data-src]').forEach(img => {
+                    imageObserver.observe(img);
+                });
+            }
+
+            // Service Worker registration removed to prevent 404 errors
+            // Enable this only when you have a sw.js file
+            /*
+            if ('serviceWorker' in navigator) {
+                window.addEventListener('load', () => {
+                    navigator.serviceWorker.register('/sw.js')
+                        .then(registration => console.log('SW registered: ', registration))
+                        .catch(error => console.log('SW registration failed: ', error));
+                });
+            }
+            */
+        });
+
+        // Enhanced window load event
+        window.addEventListener('load', () => {
+            // Hide initial loading animation
+            document.body.classList.add('loaded');
+            
+            // FINAL DISPLAY NONE check
+            const mobileNav = document.getElementById('mobileNav');
+            if (mobileNav && !mobileNav.classList.contains('show')) {
+                mobileNav.style.display = 'none';
+                console.log('FINAL mobile nav hidden with display: none');
+                console.log('Final display value:', window.getComputedStyle(mobileNav).display);
+            }
+            
+            // Initialize analytics or other tracking
+            // App.initAnalytics();
+        });
+
+        // Enhanced error handling
+        window.addEventListener('error', (e) => {
+            console.error('Global error:', e.error);
+            App.showToast('Bir hata oluştu. Lütfen sayfayı yenileyin.', 'danger');
+        });
+
+        // Enhanced unhandled promise rejection
+        window.addEventListener('unhandledrejection', (e) => {
+            console.error('Unhandled promise rejection:', e.reason);
+            App.showToast('Bir bağlantı hatası oluştu.', 'warning');
         });
     </script>
     
     {% block extra_js %}{% endblock %}
 </body>
 </html>
+

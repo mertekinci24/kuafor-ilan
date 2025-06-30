@@ -6,7 +6,7 @@ User = get_user_model()
 
 class SimpleLoginForm(forms.Form):
     """Basit giriş formu"""
-    username = email_or_phone = forms.EmailField(
+    username = forms.EmailField(
         label='E-posta',
         widget=forms.EmailInput(attrs={
             'class': 'form-input',

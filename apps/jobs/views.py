@@ -1,12 +1,16 @@
 from django.shortcuts import render, get_object_or_404
 from django.core.paginator import Paginator
-from django.db.models import Q
+from django.db.models import Q, Count, Avg, Min, Max, Sum
 from .models import JobListing, JobCategory, JobApplication
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
+from django.core.cache import cache
+from django.utils import timezone
+from datetime import timedelta
+from django.db import models
 import json
 import logging
 
@@ -278,7 +282,7 @@ def cities_api(request):
     cities = JobListing.objects.filter(
         status='active'
     ).values('city').annotate(
-        job_count=models.Count('id')
+        job_count=Count('id')
     ).order_by('city')
     
     results = []
@@ -368,4 +372,339 @@ def job_recommendations_api(request):
         'success': True,
         'recommendations': results
     })
+
+# ======================== ADVANCED SEARCH SYSTEM ========================
+
+def advanced_search_api(request):
+    """Advanced search with autocomplete and suggestions"""
+    query = request.GET.get('q', '').strip()
+    category = request.GET.get('category', '')
+    city = request.GET.get('city', '')
+    salary_min = request.GET.get('salary_min', '')
+    salary_max = request.GET.get('salary_max', '')
+    sort_by = request.GET.get('sort', 'newest')
+    limit = int(request.GET.get('limit', 10))
+    
+    # Cache key for performance
+    cache_key = f"search_{hash(str(request.GET))}"
+    cached_result = cache.get(cache_key)
+    
+    if cached_result:
+        return JsonResponse(cached_result)
+    
+    # Base queryset
+    jobs = JobListing.objects.filter(status='active').select_related('business', 'category')
+    
+    # Search query
+    if query:
+        jobs = jobs.filter(
+            Q(title__icontains=query) | 
+            Q(description__icontains=query) |
+            Q(category__name__icontains=query) |
+            Q(business__first_name__icontains=query) |
+            Q(business__last_name__icontains=query)
+        )
+    
+    # Filters
+    if category:
+        jobs = jobs.filter(category_id=category)
+    
+    if city:
+        jobs = jobs.filter(city__icontains=city)
+    
+    if salary_min:
+        try:
+            jobs = jobs.filter(
+                Q(salary_min__gte=int(salary_min)) | 
+                Q(salary_max__gte=int(salary_min))
+            )
+        except ValueError:
+            pass
+    
+    if salary_max:
+        try:
+            jobs = jobs.filter(
+                Q(salary_max__lte=int(salary_max)) | 
+                Q(salary_min__lte=int(salary_max))
+            )
+        except ValueError:
+            pass
+    
+    # Sorting
+    if sort_by == 'newest':
+        jobs = jobs.order_by('-created_at')
+    elif sort_by == 'oldest':
+        jobs = jobs.order_by('created_at')
+    elif sort_by == 'salary_high':
+        jobs = jobs.order_by('-salary_max', '-salary_min')
+    elif sort_by == 'salary_low':
+        jobs = jobs.order_by('salary_min', 'salary_max')
+    elif sort_by == 'popular':
+        jobs = jobs.order_by('-views_count')
+    
+    # Limit results
+    jobs = jobs[:limit]
+    
+    # Build results
+    results = []
+    for job in jobs:
+        salary_display = "Maaş görüşülür"
+        if job.salary_min and job.salary_max:
+            salary_display = f"₺{job.salary_min:,} - ₺{job.salary_max:,}"
+        elif job.salary_min:
+            salary_display = f"₺{job.salary_min:,}+"
+        
+        results.append({
+            'id': job.id,
+            'title': job.title,
+            'company': job.business.get_full_name() or job.business.email,
+            'city': job.city,
+            'district': job.district,
+            'category': {
+                'id': job.category.id,
+                'name': job.category.name
+            },
+            'salary_display': salary_display,
+            'salary_min': job.salary_min,
+            'salary_max': job.salary_max,
+            'is_urgent': job.is_urgent,
+            'views_count': job.views_count,
+            'created_at': job.created_at.isoformat(),
+            'url': f'/jobs/{job.id}/',
+            'description_preview': job.description[:150] + '...' if len(job.description) > 150 else job.description
+        })
+    
+    response_data = {
+        'success': True,
+        'results': results,
+        'count': len(results),
+        'query': query,
+        'filters_applied': {
+            'category': category,
+            'city': city,
+            'salary_min': salary_min,
+            'salary_max': salary_max,
+            'sort_by': sort_by
+        }
+    }
+    
+    # Cache for 5 minutes
+    cache.set(cache_key, response_data, 300)
+    
+    return JsonResponse(response_data)
+
+def search_suggestions_api(request):
+    """Search autocomplete suggestions"""
+    query = request.GET.get('q', '').strip()
+    
+    if len(query) < 2:
+        return JsonResponse({'suggestions': []})
+    
+    cache_key = f"suggestions_{query}"
+    cached_suggestions = cache.get(cache_key)
+    
+    if cached_suggestions:
+        return JsonResponse({'suggestions': cached_suggestions})
+    
+    suggestions = []
+    
+    # Job titles
+    job_titles = JobListing.objects.filter(
+        title__icontains=query,
+        status='active'
+    ).values_list('title', flat=True).distinct()[:5]
+    
+    for title in job_titles:
+        suggestions.append({
+            'type': 'job_title',
+            'text': title,
+            'display': title,
+            'icon': 'briefcase'
+        })
+    
+    # Categories
+    categories = JobCategory.objects.filter(
+        name__icontains=query
+    ).values_list('name', flat=True)[:3]
+    
+    for category in categories:
+        suggestions.append({
+            'type': 'category',
+            'text': category,
+            'display': f"Kategori: {category}",
+            'icon': 'tag'
+        })
+    
+    # Cities
+    cities = JobListing.objects.filter(
+        city__icontains=query,
+        status='active'
+    ).values_list('city', flat=True).distinct()[:3]
+    
+    for city in cities:
+        suggestions.append({
+            'type': 'city',
+            'text': city,
+            'display': f"Şehir: {city}",
+            'icon': 'map-marker-alt'
+        })
+    
+    # Companies
+    companies = JobListing.objects.filter(
+        Q(business__first_name__icontains=query) |
+        Q(business__last_name__icontains=query),
+        status='active'
+    ).select_related('business').distinct()[:3]
+    
+    for job in companies:
+        company_name = job.business.get_full_name() or job.business.email
+        suggestions.append({
+            'type': 'company',
+            'text': company_name,
+            'display': f"Şirket: {company_name}",
+            'icon': 'building'
+        })
+    
+    # Cache for 10 minutes
+    cache.set(cache_key, suggestions, 600)
+    
+    return JsonResponse({'suggestions': suggestions})
+
+def search_filters_api(request):
+    """Get available filters for search"""
+    cache_key = "search_filters"
+    cached_filters = cache.get(cache_key)
+    
+    if cached_filters:
+        return JsonResponse(cached_filters)
+    
+    # Categories with job counts
+    categories = JobCategory.objects.annotate(
+        job_count=Count('joblisting', filter=Q(joblisting__status='active'))
+    ).filter(job_count__gt=0).order_by('name')
+    
+    # Cities with job counts
+    cities = JobListing.objects.filter(
+        status='active'
+    ).values('city').annotate(
+        job_count=Count('id')
+    ).order_by('city')
+    
+    # Salary ranges
+    salary_stats = JobListing.objects.filter(
+        status='active',
+        salary_min__isnull=False,
+        salary_max__isnull=False
+    ).aggregate(
+        min_salary=Min('salary_min'),
+        max_salary=Max('salary_max'),
+        avg_salary=Avg('salary_min')
+    )
+    
+    filters_data = {
+        'success': True,
+        'categories': [
+            {
+                'id': cat.id,
+                'name': cat.name,
+                'job_count': cat.job_count
+            } for cat in categories
+        ],
+        'cities': [
+            {
+                'name': city['city'],
+                'job_count': city['job_count']
+            } for city in cities
+        ],
+        'salary_ranges': [
+            {'label': '0 - 5.000 TL', 'min': 0, 'max': 5000},
+            {'label': '5.000 - 10.000 TL', 'min': 5000, 'max': 10000},
+            {'label': '10.000 - 20.000 TL', 'min': 10000, 'max': 20000},
+            {'label': '20.000+ TL', 'min': 20000, 'max': None},
+        ],
+        'salary_stats': salary_stats,
+        'sort_options': [
+            {'value': 'newest', 'label': 'En Yeni'},
+            {'value': 'oldest', 'label': 'En Eski'},
+            {'value': 'salary_high', 'label': 'Maaş (Yüksek→Düşük)'},
+            {'value': 'salary_low', 'label': 'Maaş (Düşük→Yüksek)'},
+            {'value': 'popular', 'label': 'En Çok Görüntülenen'},
+        ]
+    }
+    
+    # Cache for 1 hour
+    cache.set(cache_key, filters_data, 3600)
+    
+    return JsonResponse(filters_data)
+
+def search_analytics_api(request):
+    """Search analytics and trending"""
+    cache_key = "search_analytics"
+    cached_analytics = cache.get(cache_key)
+    
+    if cached_analytics:
+        return JsonResponse(cached_analytics)
+    
+    # Most popular categories
+    popular_categories = JobCategory.objects.annotate(
+        job_count=Count('joblisting', filter=Q(joblisting__status='active')),
+        total_views=Sum('joblisting__views_count', filter=Q(joblisting__status='active'))
+    ).filter(job_count__gt=0).order_by('-total_views')[:5]
+    
+    # Trending cities
+    trending_cities = JobListing.objects.filter(
+        status='active',
+        created_at__gte=timezone.now() - timedelta(days=7)
+    ).values('city').annotate(
+        new_jobs=Count('id')
+    ).order_by('-new_jobs')[:5]
+    
+    # Recent searches (would need to implement search logging)
+    trending_searches = JobListing.objects.filter(
+        status='active',
+        views_count__gt=10
+    ).order_by('-views_count')[:10].values_list('title', flat=True)
+    
+    analytics_data = {
+        'success': True,
+        'popular_categories': [
+            {
+                'name': cat.name,
+                'job_count': cat.job_count or 0,
+                'total_views': cat.total_views or 0
+            } for cat in popular_categories
+        ],
+        'trending_cities': [
+            {
+                'name': city['city'],
+                'new_jobs': city['new_jobs']
+            } for city in trending_cities
+        ],
+        'trending_searches': list(trending_searches),
+        'total_active_jobs': JobListing.objects.filter(status='active').count(),
+        'total_categories': JobCategory.objects.count(),
+    }
+    
+    # Cache for 1 hour
+    cache.set(cache_key, analytics_data, 3600)
+    
+    return JsonResponse(analytics_data)
+
+@require_http_methods(["POST"])
+def log_search_api(request):
+    """Log search queries for analytics"""
+    try:
+        data = json.loads(request.body)
+        query = data.get('query', '').strip()
+        filters = data.get('filters', {})
+        results_count = data.get('results_count', 0)
+        
+        if query:
+            logger.info(f"Search logged: '{query}' - {results_count} results")
+        
+        return JsonResponse({'success': True})
+    
+    except Exception as e:
+        logger.error(f"Search logging error: {str(e)}")
+        return JsonResponse({'success': False})
     

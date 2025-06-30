@@ -1,7 +1,11 @@
 import os
 from pathlib import Path
-from django.contrib import messages # <<< BU SATIR EKLENDİ
+from django.contrib import messages
+import os
+import sys
 
+# Projenin kök dizinini (manage.py'nin bir üstü) yola ekle
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 # Build paths inside the project
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -16,10 +20,10 @@ DEBUG = os.environ.get('DEBUG', 'True') == 'True'
 ALLOWED_HOSTS = ['*'] # Üretimde domain isimlerinizi buraya eklemelisiniz
 CSRF_TRUSTED_ORIGINS = ['https://kuaforilan.com', 'https://*.kuaforilan.com']
 
-
 # Application definition
 INSTALLED_APPS = [
-    'apps.core', # <<< ÖNEMLİ: authentication'dan önce olmalı çünkü CustomUser buradan miras alıyor
+    'kuafor_ilan',
+    'apps.core', # ÖNEMLİ: authentication'dan önce olmalı çünkü CustomUser buradan miras alıyor
     'apps.authentication.apps.AuthenticationConfig', # authentication hala kendi içindeki modeller için öncelikli olmalı
     'django.contrib.admin',
     'django.contrib.auth',
@@ -27,17 +31,36 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'rest_framework', # Mevcut
-    'apps.dashboard', # Mevcut
-    'apps.jobs', # Mevcut
-    'apps.profiles', # Mevcut
-    'apps.posts',  # Mevcut
-    'apps.messages.apps.MessagesConfig',  # Mevcut
-    'apps.notifications.apps.NotificationsConfig',  # Mevcut
+    'rest_framework',
+    'apps.dashboard',
+    'apps.jobs',
+    'apps.profiles',
+    'apps.posts',
+    'apps.messages.apps.MessagesConfig',
+    'apps.notifications.apps.NotificationsConfig',
 ]
 
-# Kendi özel kullanıcı modelinizi belirtin (Bu zaten doğru ayarlıydı)
+# Authentication settings
 AUTH_USER_MODEL = 'authentication.CustomUser'
+
+# Authentication backends - Email ile giriş için
+AUTHENTICATION_BACKENDS = [
+    'apps.authentication.backends.EmailBackend',  # Custom backend'imiz
+    'django.contrib.auth.backends.ModelBackend',  # Varsayılan backend
+]
+
+# Login/Logout yönlendirmeleri
+LOGIN_URL = '/auth/login/'
+LOGIN_REDIRECT_URL = '/'  # Fallback
+LOGOUT_REDIRECT_URL = '/auth/login/'
+
+# User type redirect mapping (Gelecekteki dashboard'lar için)
+USER_TYPE_REDIRECT_MAP = {
+    'admin': '/admin/',
+    'business': '/dashboard/business/',
+    'jobseeker': '/posts/',  # Dashboard hazır olunca '/dashboard/jobseeker/' olacak
+    'default': '/posts/'
+}
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -70,9 +93,7 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'kuafor_ilan.wsgi.application'
 
-
 # Database
-# https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
@@ -80,9 +101,7 @@ DATABASES = {
     }
 }
 
-
 # Password validation
-# https://docs.djangoproject.com/en/5.0/ref/settings/#auth-password-validators
 AUTH_PASSWORD_VALIDATORS = [
     {
         'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
@@ -98,51 +117,32 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
 # Internationalization
-# https://docs.djangoproject.com/en/5.0/topics/i18n/
-
 LANGUAGE_CODE = 'tr-tr'
-
 TIME_ZONE = 'Europe/Istanbul'
-
 USE_I18N = True
-
 USE_TZ = True
 
-
 # Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/5.0/howto/static-files/
 STATIC_URL = 'static/'
 STATICFILES_DIRS = [
     BASE_DIR / 'static',
 ]
-STATIC_ROOT = BASE_DIR / 'staticfiles' # Mevcut
+STATIC_ROOT = BASE_DIR / 'staticfiles'
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
-
 # Default primary key field type
-# https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-
-# Login ve Logout yönlendirmeleri (Mevcut)
-LOGIN_URL = '/auth/login/'
-LOGIN_REDIRECT_URL = '/posts/'
-LOGOUT_REDIRECT_URL = '/auth/login/'
-
-
-# Email Ayarları (Mevcut)
+# Email Ayarları
 DEFAULT_FROM_EMAIL = 'noreply@kuaforilan.com'
 
-
-# OTP ayarları (Mevcut)
+# OTP ayarları
 OTP_EXPIRY_MINUTES = 10
 MAX_OTP_ATTEMPTS = 5
 
-
-# Mesaj çerçevesi ayarları (Mevcut)
+# Mesaj çerçevesi ayarları
 MESSAGE_TAGS = {
     messages.DEBUG: 'alert-info',
     messages.INFO: 'alert-info',
@@ -151,14 +151,13 @@ MESSAGE_TAGS = {
     messages.ERROR: 'alert-danger',
 }
 
-
-# Session settings (Mevcut)
-SESSION_COOKIE_AGE = 86400 * 30
+# Session settings
+SESSION_COOKIE_AGE = 86400 * 30  # 30 gün
 SESSION_COOKIE_SECURE = not DEBUG
 SESSION_COOKIE_HTTPONLY = True
 SESSION_SAVE_EVERY_REQUEST = True
 
-# Security settings for production (Mevcut)
+# Security settings for production
 if not DEBUG:
     SECURE_BROWSER_XSS_FILTER = True
     SECURE_CONTENT_TYPE_NOSNIFF = True
@@ -168,13 +167,12 @@ if not DEBUG:
     SECURE_SSL_REDIRECT = True
     SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
-# SMS ve Email ayarları (Mevcut)
+# SMS ve Email ayarları
 NETGSM_USERNAME = os.environ.get('NETGSM_USERNAME', '')
 NETGSM_PASSWORD = os.environ.get('NETGSM_PASSWORD', '')
 NETGSM_HEADER = os.environ.get('NETGSM_HEADER', 'KUAFORILAN')
 
-
-# Loglama Ayarları (Mevcut)
+# Loglama Ayarları
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
@@ -182,7 +180,7 @@ LOGGING = {
         'require_debug_false': {
             '()': 'django.utils.log.RequireDebugFalse',
         },
-        'ignore_bots': { # Botları yoksaymak için özel filtre
+        'ignore_bots': {
             '()': 'django.utils.log.CallbackFilter',
             'callback': lambda record: 'bot' not in record.getMessage().lower()
         }
@@ -211,16 +209,16 @@ LOGGING = {
         'file': {
             'level': 'INFO',
             'class': 'logging.handlers.RotatingFileHandler',
-            'filename': BASE_DIR / 'logs' / 'app.log', # log klasörünü oluşturmayı unutmayın
-            'maxBytes': 1024 * 1024 * 5, # 5 MB
+            'filename': BASE_DIR / 'logs' / 'app.log',
+            'maxBytes': 1024 * 1024 * 5,  # 5 MB
             'backupCount': 5,
             'formatter': 'verbose',
         },
         'error_file': {
             'level': 'ERROR',
             'class': 'logging.handlers.RotatingFileHandler',
-            'filename': BASE_DIR / 'logs' / 'error.log', # log klasörünü oluşturmayı unutmayın
-            'maxBytes': 1024 * 1024 * 5, # 5 MB
+            'filename': BASE_DIR / 'logs' / 'error.log',
+            'maxBytes': 1024 * 1024 * 5,  # 5 MB
             'backupCount': 5,
             'formatter': 'verbose',
         },

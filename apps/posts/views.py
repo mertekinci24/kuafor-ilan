@@ -14,7 +14,7 @@ from .models import Post, PostCategory, PostLike, PostComment, PostSave
 User = get_user_model()
 logger = logging.getLogger(__name__)
 
-
+@login_required
 def posts_list_view(request):
     """Post listesi - Ana sayfa feed'i"""
     # Get filter parameters
@@ -430,3 +430,31 @@ def feed_api(request):
         'has_more': len(posts) == page_size
     })
     
+    # ANA SAYFA VIEW - Public (login gerekmez)
+def home_page_view(request):
+    """Ana sayfa - Kuaför İlan platform tanıtımı"""
+    from apps.jobs.models import JobListing, JobCategory
+    
+    # Öne çıkan iş ilanları (son 6 ilan)
+    featured_jobs = JobListing.objects.filter(
+        status='active'
+    ).select_related('business', 'category').order_by('-created_at')[:6]
+    
+    # İstatistikler
+    total_jobs = JobListing.objects.filter(status='active').count()
+    total_companies = JobListing.objects.filter(status='active').values('business').distinct().count()
+    total_categories = JobCategory.objects.count()
+    
+    # Kategoriler (ana sayfa için)
+    categories = JobCategory.objects.all()[:8]  # İlk 8 kategori
+    
+    context = {
+        'featured_jobs': featured_jobs,
+        'total_jobs': total_jobs,
+        'total_companies': total_companies,
+        'total_categories': total_categories,
+        'categories': categories,
+        'is_home_page': True,  # Template için flag
+    }
+    
+    return render(request, 'home/index.html', context)

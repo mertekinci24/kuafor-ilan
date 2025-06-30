@@ -25,6 +25,52 @@
         --gradient-primary: linear-gradient(135deg, var(--primary-color), var(--primary-light));
     }
 
+    /* Dashboard - Birincil aksiyon (en üstte, vurgulu) */
+.dropdown-item.primary {
+    background: linear-gradient(135deg, #f0f9ff, #e0f2fe);
+    color: var(--primary-color);
+    font-weight: 600;
+    border-left: 3px solid var(--primary-color);
+}
+
+.dropdown-item.primary:hover {
+    background: linear-gradient(135deg, #dbeafe, #bae6fd);
+    transform: translateX(4px);
+    box-shadow: 0 2px 8px rgba(10, 102, 194, 0.15);
+}
+
+.dropdown-item.primary i {
+    color: var(--primary-color);
+    font-size: 16px;
+}
+
+/* Ayarlar - eğer varsa */
+.dropdown-item.settings {
+    color: var(--text-muted);
+}
+
+.dropdown-item.settings:hover {
+    background: #f1f5f9;
+    color: var(--text-muted);
+    border-left-color: var(--text-muted);
+}
+
+.icon-wrapper {
+    width: 20px;
+    display: flex;
+    justify-content: center;
+}
+
+/* Improved dropdown item styling */
+.dropdown-item {
+    border-left: 3px solid transparent;
+}
+
+.dropdown-item:hover {
+    border-left-color: var(--primary-color);
+    transform: translateX(2px);
+}
+
     * {
         margin: 0;
         padding: 0;
@@ -232,6 +278,63 @@
         color: var(--white);
     }
 
+    /* User Dropdown Menu */
+    .user-dropdown {
+        position: relative;
+        display: inline-block;
+    }
+
+    .dropdown-menu {
+        display: none;
+        position: absolute;
+        right: 0;
+        top: 100%;
+        background: var(--white);
+        border-radius: var(--border-radius);
+        box-shadow: var(--shadow-md);
+        border: 1px solid var(--border-color);
+        min-width: 200px;
+        z-index: 1000;
+        padding: 8px 0;
+        margin-top: 8px;
+        animation: fadeIn 0.2s ease-out;
+    }
+
+    .user-dropdown:hover .dropdown-menu {
+        display: block;
+    }
+
+    .dropdown-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px 20px;
+        color: var(--text-color);
+        text-decoration: none;
+        transition: var(--transition);
+        font-size: 14px;
+        font-weight: 500;
+    }
+
+    .dropdown-item:hover {
+        background: #f8fafc;
+        color: var(--primary-color);
+    }
+
+    .dropdown-item.logout-btn {
+        color: var(--danger-color);
+    }
+
+    .dropdown-item.logout-btn:hover {
+        background: #ffebee;
+        color: var(--danger-color);
+    }
+
+    .dropdown-divider {
+        height: 1px;
+        background: var(--border-color);
+        margin: 8px 0;
+    }
     /* Main Layout */
     .main-container {
         max-width: 1200px;
@@ -858,6 +961,16 @@
         .composer-buttons {
             grid-template-columns: repeat(2, 1fr);
         }
+
+        /* Mobile dropdown adjustments */
+        .dropdown-menu {
+            right: -10px;
+            min-width: 180px;
+        }
+
+        .user-dropdown:hover .dropdown-menu {
+            display: none; /* Disable hover on mobile */
+        }
     }
 
     @media (max-width: 480px) {
@@ -886,7 +999,6 @@
 {% endblock %}
 
 {% block content %}
-<!-- Header -->
 <header class="main-header">
     <div class="header-container">
         <a href="{% url 'home' %}" class="logo-container">
@@ -919,23 +1031,59 @@
             </a>
         </div>
         
-        <div class="user-menu">
-            {% if user.is_authenticated %}
-                <a href="{% url 'dashboard:home' %}" class="user-avatar" title="Dashboard">
-                    {{ user.first_name|first|upper|default:'U' }}
-                </a>
-            {% else %}
-                <a href="{% url 'auth:login' %}" class="user-avatar" title="Giriş Yap">
-                    G
-                </a>
-            {% endif %}
+<div class="user-menu">
+    {% if user.is_authenticated %}
+        <div class="user-dropdown">
+            <a href="{% url 'dashboard:home' %}" class="user-avatar" title="Dashboard">
+                {{ user.first_name|first|upper|default:'U' }}
+            </a>
+<div class="dropdown-menu">
+    <!-- 1. Dashboard - En üste, birincil aksiyon -->
+    <a href="{% url 'dashboard:home' %}" class="dropdown-item primary">
+        <div class="icon-wrapper">
+            <i class="fas fa-chart-bar"></i>
         </div>
+        Dashboard
+    </a>
+    
+    <!-- 2. Profil - Kişisel bilgiler -->
+    <a href="{% url 'profiles:profile' %}" class="dropdown-item">
+        <div class="icon-wrapper">
+            <i class="fas fa-user"></i>
+        </div>
+        Profilim
+    </a>
+    
+    <!-- 3. Ayarlar - Hesap ayarları (eğer varsa) -->
+    <a href="#" class="dropdown-item settings" onclick="showComingSoon('Ayarlar sayfası yakında eklenecek!')">
+        <div class="icon-wrapper">
+            <i class="fas fa-cog"></i>
+        </div>
+        Ayarlar
+    </a>
+    
+    <div class="dropdown-divider"></div>
+    
+    <!-- 4. Çıkış - En altta -->
+    <a href="{% url 'auth:logout' %}" class="dropdown-item logout-btn">
+        <div class="icon-wrapper">
+            <i class="fas fa-sign-out-alt"></i>
+        </div>
+        Çıkış Yap
+    </a>
+</div>
+            </div>
+        </div>
+    {% else %}
+        <a href="{% url 'authentication:login' %}" class="user-avatar" title="Giriş Yap">
+            G
+        </a>
+    {% endif %}
+</div>
     </div>
 </header>
 
-<!-- Main Content -->
 <main class="main-container">
-    <!-- Left Sidebar -->
     <aside class="sidebar slide-in">
         <div class="sidebar-section">
             <h3 class="sidebar-title">
@@ -984,9 +1132,7 @@
         </div>
     </aside>
 
-    <!-- Feed -->
     <section class="feed">
-        <!-- Enhanced Post Composer -->
         {% if user.is_authenticated %}
         <div class="post-composer fade-in">
             <form id="postForm" method="post" action="{% url 'posts:create' %}" enctype="multipart/form-data">
@@ -998,7 +1144,6 @@
                     </div>
                 </div>
 
-                <!-- Media Upload Area -->
                 <div class="media-upload-area" id="mediaUploadArea">
                     <div class="upload-icon">
                         <i class="fas fa-cloud-upload-alt"></i>
@@ -1020,7 +1165,6 @@
                     </div>
                 </div>
 
-                <!-- Hidden file inputs -->
                 <input type="file" id="imageInput" name="image" class="file-input" accept="image/*">
                 <input type="file" id="videoInput" name="video" class="file-input" accept="video/*">
                 <input type="hidden" name="post_type" value="text">
@@ -1059,7 +1203,6 @@
         </div>
         {% endif %}
 
-        <!-- Posts from Database -->
         {% for post_data in posts %}
             <article class="post-card fade-in">
                 <div class="post-header">
@@ -1118,7 +1261,6 @@
                 </div>
             </article>
         {% empty %}
-            <!-- Sample Posts if no posts in database -->
             <article class="post-card fade-in">
                 <div class="post-header">
                     <div class="post-user">
@@ -1218,7 +1360,6 @@
             </article>
         {% endfor %}
 
-        <!-- Pagination -->
         {% if posts_page.has_other_pages %}
             <div class="pagination-container" style="text-align: center; margin-top: 32px;">
                 {% if posts_page.has_previous %}
@@ -1238,9 +1379,7 @@
         {% endif %}
     </section>
 
-    <!-- Right Sidebar -->
     <aside class="right-sidebar slide-in">
-        <!-- Önerilen Kişiler -->
         <div class="widget fade-in">
             <h3 class="widget-title">
                 <i class="fas fa-user-plus"></i>
@@ -1272,7 +1411,6 @@
             </div>
         </div>
 
-        <!-- Trend Konular -->
         <div class="widget fade-in">
             <h3 class="widget-title">
                 <i class="fas fa-fire"></i>
@@ -1300,7 +1438,6 @@
             </div>
         </div>
 
-        <!-- Son İş İlanları -->
         <div class="widget fade-in">
             <h3 class="widget-title">
                 <i class="fas fa-briefcase"></i>

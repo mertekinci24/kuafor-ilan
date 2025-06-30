@@ -31,8 +31,9 @@ def profile_view(request, user_id=None):
             
             # Profil görüntüleme sayısını artır (kendi profili değilse)
             if not is_own_profile:
-                user.profile_views += 1
-                user.save(update_fields=['profile_views'])
+                if hasattr(user, 'profile_views'):
+                    user.profile_views += 1
+                    user.save(update_fields=['profile_views'])
             
         except User.DoesNotExist:
             messages.error(request, 'Kullanıcı bulunamadı.')
@@ -45,29 +46,35 @@ def profile_view(request, user_id=None):
     # Profil tipine göre template ve context hazırla
     if hasattr(user, 'jobseeker_profile'):
         profile = user.jobseeker_profile
-        template = 'profiles/jobseeker_detail.html'
+        template = 'profiles/profile.html'
         
         # İş arayan için ek bilgiler
         context = {
             'user': user,
             'profile': profile,
             'is_own_profile': is_own_profile,
-            'skills_list': profile.get_skills_list(),
-            'experience_text': profile.get_experience_display_text(),
+            'skills_list': profile.get_skills_list() if hasattr(profile, 'get_skills_list') else (profile.skills.split(',') if hasattr(profile, 'skills') and profile.skills else []),
+            'experience_text': profile.get_experience_display_text() if hasattr(profile, 'get_experience_display_text') else f"{getattr(profile, 'experience_years', 0)} yıl deneyim",
         }
         
         # Kendi profiliyse başvuru istatistikleri ekle
         if is_own_profile:
             context.update({
-                'total_applications': profile.total_applications,
-                'recent_applications': JobApplication.objects.filter(
-                    applicant=user
-                ).select_related('job')[:5],
+                'total_applications': getattr(profile, 'total_applications', 0),
             })
+            
+            # JobApplication modeliniz varsa bu satırları aktif edin:
+            try:
+                recent_applications = JobApplication.objects.filter(
+                    applicant=user
+                ).select_related('job')[:5]
+                context['recent_applications'] = recent_applications
+            except:
+                context['recent_applications'] = []
             
     elif hasattr(user, 'business_profile'):
         profile = user.business_profile
-        template = 'profiles/business_detail.html'
+        template = 'profiles/profile.html'
         
         # İş veren için ek bilgiler
         context = {
@@ -78,26 +85,57 @@ def profile_view(request, user_id=None):
         
         # Kendi profiliyse iş ilanları ve başvurular ekle
         if is_own_profile:
-            recent_jobs = JobListing.objects.filter(
-                business=user
-            ).order_by('-created_at')[:5]
-            
             context.update({
-                'recent_jobs': recent_jobs,
-                'total_job_posts': profile.total_job_posts,
-                'active_job_posts': profile.active_job_posts,
+                'total_job_posts': getattr(profile, 'total_job_posts', 0),
+                'active_job_posts': getattr(profile, 'active_job_posts', 0),
             })
+            
+            # JobListing modeliniz varsa bu satırları aktif edin:
+            try:
+                recent_jobs = JobListing.objects.filter(
+                    business=user
+                ).order_by('-created_at')[:5]
+                context['recent_jobs'] = recent_jobs
+            except:
+                context['recent_jobs'] = []
         else:
             # Başkasının profili - sadece aktif iş ilanlarını göster
-            public_jobs = JobListing.objects.filter(
-                business=user,
-                status='active'
-            ).order_by('-created_at')[:5]
-            context['public_jobs'] = public_jobs
+            try:
+                public_jobs = JobListing.objects.filter(
+                    business=user,
+                    status='active'
+                ).order_by('-created_at')[:5]
+                context['public_jobs'] = public_jobs
+            except:
+                context['public_jobs'] = []
     else:
-        # Profil oluşturulmamış
-        messages.warning(request, 'Profil bulunamadı.')
-        return redirect('/')
+        # Profil oluşturulmamış - varsayılan profil bilgileri
+        template = 'profiles/profile.html'
+        context = {
+            'user': user,
+            'profile': None,
+            'is_own_profile': is_own_profile,
+            'skills_list': [],
+            'experience_text': 'Henüz profil oluşturulmamış',
+        }
+
+    # Template için profil verilerini hazırla (YENİ ÖZELLIKLER)
+    profile_data = get_profile_data(user)
+    user_stats = calculate_user_stats(user)
+    profile_completion_percentage = calculate_profile_completion(user, profile_data)
+    completion_items = get_completion_items(user, profile_data)
+    recent_activities = get_recent_activities(user)
+    
+    # Context'e yeni template verileri ekle (MEVCUT ÖZELLIKLERE EK OLARAK)
+    context.update({
+        'profile_user': user,
+        'profile_data': profile_data,
+        'user_stats': user_stats,
+        'profile_completion_percentage': profile_completion_percentage,
+        'completion_items': completion_items,
+        'recent_activities': recent_activities,
+        'monthly_growth': "+12%",
+    })
     
     return render(request, template, context)
 
@@ -109,12 +147,12 @@ def profile_edit_view(request):
     if hasattr(request.user, 'jobseeker_profile'):
         profile = request.user.jobseeker_profile
         form_class = JobSeekerProfileForm
-        template = 'profiles/jobseeker_edit.html'
+        template = 'profiles/profile_edit.html'
         
     elif hasattr(request.user, 'business_profile'):
         profile = request.user.business_profile
         form_class = BusinessProfileForm
-        template = 'profiles/business_edit.html'
+        template = 'profiles/profile_edit.html'
     else:
         messages.error(request, 'Profiliniz bulunamadı.')
         return redirect('/')
@@ -137,10 +175,26 @@ def profile_edit_view(request):
     else:
         form = form_class(instance=profile)
     
+    # Template için profil verilerini hazırla
+    profile_data = get_profile_data(request.user)
+    user_stats = calculate_user_stats(request.user)
+    profile_completion_percentage = calculate_profile_completion(request.user, profile_data)
+    completion_items = get_completion_items(request.user, profile_data)
+    recent_activities = get_recent_activities(request.user)
+    
     context = {
         'form': form,
         'profile': profile,
         'user': request.user,
+        'profile_user': request.user,
+        'profile_data': profile_data,
+        'user_stats': user_stats,
+        'profile_completion_percentage': profile_completion_percentage,
+        'completion_items': completion_items,
+        'recent_activities': recent_activities,
+        'is_own_profile': True,
+        'monthly_growth': "+12%",
+        'profile_type': 'jobseeker' if hasattr(request.user, 'jobseeker_profile') else 'business',
     }
     
     return render(request, template, context)
@@ -541,17 +595,14 @@ def export_profile_data(request):
     """Profil verilerini export et (GDPR uyumluluğu için)"""
     
     try:
-        import json
-        from django.http import HttpResponse
-        
         # Kullanıcı verileri
         user_data = {
             'user_info': {
                 'email': request.user.email,
                 'first_name': request.user.first_name,
                 'last_name': request.user.last_name,
-                'phone': request.user.phone,
-                'user_type': request.user.user_type,
+                'phone': getattr(request.user, 'phone', ''),
+                'user_type': getattr(request.user, 'user_type', ''),
                 'date_joined': request.user.date_joined.isoformat(),
                 'last_login': request.user.last_login.isoformat() if request.user.last_login else None,
             }
@@ -562,21 +613,21 @@ def export_profile_data(request):
             profile = request.user.jobseeker_profile
             user_data['profile'] = {
                 'type': 'jobseeker',
-                'city': profile.city,
-                'bio': profile.bio,
-                'skills': profile.skills,
-                'experience_years': profile.experience_years,
-                'is_available': profile.is_available,
+                'city': getattr(profile, 'city', ''),
+                'bio': getattr(profile, 'bio', ''),
+                'skills': getattr(profile, 'skills', ''),
+                'experience_years': getattr(profile, 'experience_years', 0),
+                'is_available': getattr(profile, 'is_available', True),
             }
             
         elif hasattr(request.user, 'business_profile'):
             profile = request.user.business_profile
             user_data['profile'] = {
                 'type': 'business',
-                'company_name': profile.company_name,
-                'city': profile.city,
-                'address': profile.address,
-                'website': profile.website,
+                'company_name': getattr(profile, 'company_name', ''),
+                'city': getattr(profile, 'city', ''),
+                'address': getattr(profile, 'address', ''),
+                'website': getattr(profile, 'website', ''),
             }
         
         # JSON olarak export et
@@ -594,3 +645,229 @@ def export_profile_data(request):
         messages.error(request, 'Veri export edilirken hata oluştu.')
         return redirect('profiles:settings')
 
+
+# Template entegrasyonu için HELPER fonksiyonlar
+def get_profile_data(user):
+    """Kullanıcının profil verilerini template için hazırla"""
+    
+    try:
+        if hasattr(user, 'jobseeker_profile'):
+            profile = user.jobseeker_profile
+            profile_type = 'jobseeker'
+            data = {
+                'type': profile_type,
+                'full_name': getattr(profile, 'full_name', user.get_full_name()),
+                'city': getattr(profile, 'city', ''),
+                'district': getattr(profile, 'district', ''),
+                'experience_years': getattr(profile, 'experience_years', 0),
+                'bio': getattr(profile, 'bio', ''),
+                'skills': getattr(profile, 'skills', ''),
+                'skills_list': getattr(profile, 'skills', '').split(',') if getattr(profile, 'skills', '') else [],
+                'is_available': getattr(profile, 'is_available', True),
+                'is_verified': getattr(profile, 'is_verified', False),
+            }
+        elif hasattr(user, 'business_profile'):
+            profile = user.business_profile
+            profile_type = 'business'
+            data = {
+                'type': profile_type,
+                'business_name': getattr(profile, 'company_name', '') or getattr(profile, 'business_name', ''),
+                'city': getattr(profile, 'city', ''),
+                'district': getattr(profile, 'district', ''),
+                'phone': getattr(profile, 'phone', ''),
+                'address': getattr(profile, 'address', ''),
+                'description': getattr(profile, 'description', ''),
+                'website': getattr(profile, 'website', ''),
+                'contact_person': getattr(profile, 'contact_person', user.get_full_name()),
+                'is_verified': getattr(profile, 'is_verified', False),
+            }
+        else:
+            # Varsayılan profil
+            data = {
+                'type': 'jobseeker',
+                'full_name': user.get_full_name(),
+                'city': '',
+                'district': '',
+                'experience_years': 0,
+                'bio': '',
+                'skills': '',
+                'skills_list': [],
+                'is_available': True,
+                'is_verified': False,
+            }
+    except Exception as e:
+        # Hata durumunda varsayılan veri
+        data = {
+            'type': 'jobseeker',
+            'full_name': user.get_full_name(),
+            'city': '',
+            'district': '',
+            'experience_years': 0,
+            'bio': '',
+            'skills': '',
+            'skills_list': [],
+            'is_available': True,
+            'is_verified': False,
+        }
+    
+    return data
+
+
+def calculate_user_stats(user):
+    """Kullanıcı istatistiklerini hesapla"""
+    
+    stats = {
+        'join_date': user.date_joined,
+        'last_active': getattr(user, 'last_login', None),
+        'total_views': getattr(user, 'profile_views', 0),
+    }
+    
+    profile_data = get_profile_data(user)
+    
+    if profile_data['type'] == 'jobseeker':
+        # İş arayan istatistikleri
+        try:
+            total_applications = JobApplication.objects.filter(applicant=user).count()
+            successful_applications = JobApplication.objects.filter(applicant=user, status='hired').count()
+        except:
+            total_applications = 0
+            successful_applications = 0
+            
+        stats.update({
+            'total_applications': total_applications,
+            'successful_applications': successful_applications,
+        })
+    else:
+        # İş veren istatistikleri
+        try:
+            total_job_posts = JobListing.objects.filter(business=user).count()
+            active_job_posts = JobListing.objects.filter(business=user, status='active').count()
+            total_applications_received = JobApplication.objects.filter(job__business=user).count()
+        except:
+            total_job_posts = 0
+            active_job_posts = 0
+            total_applications_received = 0
+            
+        stats.update({
+            'total_job_posts': total_job_posts,
+            'active_job_posts': active_job_posts,
+            'total_applications_received': total_applications_received,
+        })
+    
+    return stats
+
+
+def calculate_profile_completion(user, profile_data):
+    """Profil tamamlanma yüzdesini hesapla"""
+    
+    completed_fields = 0
+    total_fields = 10
+    
+    # Temel alanları kontrol et
+    if user.first_name: completed_fields += 1
+    if user.last_name: completed_fields += 1
+    if user.email: completed_fields += 1
+    if profile_data.get('city'): completed_fields += 1
+    
+    if profile_data['type'] == 'jobseeker':
+        if profile_data.get('full_name'): completed_fields += 1
+        if profile_data.get('bio'): completed_fields += 1
+        if profile_data.get('skills'): completed_fields += 1
+        if profile_data.get('experience_years', 0) > 0: completed_fields += 1
+        # İsteğe bağlı: profil fotoğrafı kontrolü
+        # if hasattr(user, 'avatar') and user.avatar: completed_fields += 1
+    else:
+        if profile_data.get('business_name'): completed_fields += 1
+        if profile_data.get('description'): completed_fields += 1
+        if profile_data.get('address'): completed_fields += 1
+        if profile_data.get('phone'): completed_fields += 1
+    
+    return min(int((completed_fields / total_fields) * 100), 100)
+
+
+def get_completion_items(user, profile_data):
+    """Tamamlanma öğelerini döndür"""
+    
+    items = []
+    
+    # Temel kontroller
+    items.append({
+        'label': 'Temel bilgiler tamamlandı',
+        'completed': bool(user.first_name and user.last_name and user.email)
+    })
+    
+    if profile_data['type'] == 'jobseeker':
+        items.extend([
+            {
+                'label': 'Hakkımda bölümü dolduruldu',
+                'completed': bool(profile_data.get('bio'))
+            },
+            {
+                'label': 'Yetenekler eklendi',
+                'completed': bool(profile_data.get('skills'))
+            },
+            {
+                'label': 'Profil fotoğrafı ekle',
+                'completed': False  # Bu kontrol için avatar alanınızı kontrol edin
+            }
+        ])
+    else:
+        items.extend([
+            {
+                'label': 'İşletme bilgileri tamamlandı',
+                'completed': bool(profile_data.get('business_name') and profile_data.get('description'))
+            },
+            {
+                'label': 'İletişim bilgileri eklendi',
+                'completed': bool(profile_data.get('phone') and profile_data.get('address'))
+            },
+            {
+                'label': 'Profil fotoğrafı ekle',
+                'completed': False
+            }
+        ])
+    
+    return items
+
+
+def get_recent_activities(user):
+    """Son aktiviteleri döndür"""
+    
+    activities = []
+    
+    try:
+        if hasattr(user, 'jobseeker_profile'):
+            # İş arayan aktiviteleri
+            recent_applications = JobApplication.objects.filter(
+                applicant=user
+            ).select_related('job').order_by('-applied_at')[:3]
+            
+            for app in recent_applications:
+                activities.append({
+                    'type': 'application',
+                    'title': f"{app.job.title} pozisyonuna başvuru",
+                    'company': app.job.business.get_full_name() if hasattr(app.job.business, 'get_full_name') else str(app.job.business),
+                    'location': getattr(app.job, 'location', ''),
+                    'status': app.status,
+                    'date': app.applied_at
+                })
+        elif hasattr(user, 'business_profile'):
+            # İş veren aktiviteleri
+            recent_jobs = JobListing.objects.filter(
+                business=user
+            ).order_by('-created_at')[:3]
+            
+            for job in recent_jobs:
+                activities.append({
+                    'type': 'job_post',
+                    'title': f"{job.title} ilanı yayınlandı",
+                    'company': user.get_full_name(),
+                    'location': getattr(job, 'location', ''),
+                    'status': job.status,
+                    'date': job.created_at
+                })
+    except:
+        # Model bulunamazsa boş liste döndür
+        pass
+    
+    return activities

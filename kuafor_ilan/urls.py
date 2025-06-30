@@ -5,17 +5,14 @@ from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
 from django.views.generic import RedirectView
-from apps.posts.views import posts_list_view
+from apps.posts.views import home_page_view
 
 urlpatterns = [
     # Admin panel
     path('admin/', admin.site.urls),
 
-    # Ana URL'i ('/') doğrudan giriş sayfasına yönlendirir
-    path('', RedirectView.as_view(url='/auth/login/', permanent=False), name='login_redirect'),
-    # NOT: Yukarıdaki satırı ekledikten sonra, eski ana sayfa yönlendirme satırını (yani aşağıdaki satırı) kaldırabilir veya yorum satırı yapabilirsiniz:
-    # path('', posts_list_view, name='home'),
-
+    # Ana sayfa - İş ilanları listesi
+    path('', home_page_view, name='home'),
 
     # Authentication
     path('auth/', include('apps.authentication.urls')),
@@ -26,7 +23,7 @@ urlpatterns = [
     path('profiles/', include('apps.profiles.urls')),
     path('dashboard/', include('apps.dashboard.urls')),
 
-    # YENİ EKLENEN APPS
+    # İletişim ve bildirim uygulamaları
     path('messages/', include('apps.messages.urls')),
     path('notifications/', include('apps.notifications.urls')),
 

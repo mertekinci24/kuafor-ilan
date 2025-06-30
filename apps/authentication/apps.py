@@ -9,9 +9,9 @@ class AuthenticationConfig(AppConfig):
     verbose_name = 'Authentication'
     
     def ready(self):
+        import apps.authentication.signals
         # if not settings.DEBUG: # Admin oluşturma işlemi geçici olarak kapatıldı
         #    self.create_admin_user()
-        pass # Boş bırakmamak için pass ekleyebiliriz
     
     def create_admin_user(self):
         """Admin kullanıcıyı otomatik oluştur"""

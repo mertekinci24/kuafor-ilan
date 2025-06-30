@@ -189,11 +189,295 @@
         .dashboard-content {
             padding: 32px;
         }
+
+        /* YENI: Action Hero Section */
+        .action-hero {
+            background: linear-gradient(135deg, #0a66c2, #004182);
+            border-radius: 16px;
+            padding: 32px;
+            margin-bottom: 32px;
+            color: white;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .action-hero::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -20%;
+            width: 300px;
+            height: 300px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 50%;
+            z-index: 1;
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 2;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 32px;
+            align-items: center;
+        }
+
+        .hero-text h2 {
+            font-size: 28px;
+            font-weight: 800;
+            margin-bottom: 12px;
+        }
+
+        .hero-text p {
+            font-size: 16px;
+            opacity: 0.9;
+            margin-bottom: 24px;
+            line-height: 1.6;
+        }
+
+        .hero-actions {
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+
+        .primary-cta {
+            background: white;
+            color: #0a66c2;
+            padding: 14px 28px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .primary-cta:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+            color: #0a66c2;
+        }
+
+        .secondary-cta {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            padding: 14px 28px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            border: 2px solid rgba(255,255,255,0.3);
+        }
+
+        .secondary-cta:hover {
+            background: rgba(255,255,255,0.3);
+            color: white;
+        }
+
+        .hero-stats {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+        }
+
+        .hero-stat {
+            text-align: center;
+        }
+
+        .hero-stat-number {
+            font-size: 32px;
+            font-weight: 800;
+            margin-bottom: 4px;
+        }
+
+        .hero-stat-label {
+            font-size: 14px;
+            opacity: 0.8;
+        }
+
+        /* YENI: Quick Actions Grid */
+        .quick-actions {
+            margin-bottom: 32px;
+        }
+
+        .section-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .actions-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+        }
+
+        .action-card {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+
+        .action-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+            border-color: #0a66c2;
+        }
+
+        .action-card-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .action-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            background: linear-gradient(135deg, #f0f9ff, #dbeafe);
+            color: #0a66c2;
+        }
+
+        .action-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: #1e293b;
+        }
+
+        .action-description {
+            color: #64748b;
+            font-size: 14px;
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
+
+        .action-button {
+            width: 100%;
+            background: linear-gradient(135deg, #0a66c2, #004182);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .action-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(10, 102, 194, 0.4);
+        }
+
+        /* YENI: Priority Tasks */
+        .priority-section {
+            margin-bottom: 32px;
+        }
+
+        .priority-tasks {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .task-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            border-left: 4px solid #0a66c2;
+        }
+
+        .task-card.urgent {
+            border-left-color: #dc2626;
+        }
+
+        .task-card.warning {
+            border-left-color: #f59e0b;
+        }
+
+        .task-header {
+            display: flex;
+            justify-content: between;
+            align-items: flex-start;
+            margin-bottom: 12px;
+        }
+
+        .task-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #1e293b;
+            flex: 1;
+        }
+
+        .task-badge {
+            background: #fef3c7;
+            color: #92400e;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .task-badge.urgent {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .task-description {
+            color: #64748b;
+            font-size: 14px;
+            margin-bottom: 16px;
+        }
+
+        .task-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .task-btn {
+            padding: 6px 12px;
+            border: 1px solid #e2e8f0;
+            background: white;
+            border-radius: 6px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .task-btn.primary {
+            background: #0a66c2;
+            color: white;
+            border-color: #0a66c2;
+        }
+
+        .task-btn:hover {
+            transform: translateY(-1px);
+        }
         
-        /* Stats Cards */
+        /* Enhanced Stats Cards */
         .stats-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
             gap: 24px;
             margin-bottom: 32px;
         }
@@ -204,6 +488,7 @@
             padding: 24px;
             box-shadow: 0 1px 3px rgba(0,0,0,0.1);
             transition: all 0.3s ease;
+            position: relative;
         }
         
         .stat-card:hover {
@@ -450,12 +735,29 @@
             .dashboard-content {
                 padding: 20px;
             }
+
+            .hero-content {
+                grid-template-columns: 1fr;
+                text-align: center;
+            }
+
+            .hero-actions {
+                justify-content: center;
+            }
+
+            .actions-grid {
+                grid-template-columns: 1fr;
+            }
             
             .charts-grid {
                 grid-template-columns: 1fr;
             }
             
             .activity-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .priority-tasks {
                 grid-template-columns: 1fr;
             }
         }
@@ -541,6 +843,33 @@
         
         <!-- Dashboard Content -->
         <div class="dashboard-content">
+            <!-- YENI: Action Hero Section -->
+            <div class="action-hero" id="actionHero">
+                <!-- İçerik rol-tabanlı olarak JavaScript ile yüklenecek -->
+            </div>
+
+            <!-- YENI: Quick Actions -->
+            <div class="quick-actions">
+                <h2 class="section-title">
+                    <span>⚡</span>
+                    Hızlı Aksiyonlar
+                </h2>
+                <div class="actions-grid" id="actionsGrid">
+                    <!-- İçerik rol-tabanlı olarak JavaScript ile yüklenecek -->
+                </div>
+            </div>
+
+            <!-- YENI: Priority Tasks -->
+            <div class="priority-section">
+                <h2 class="section-title">
+                    <span>🎯</span>
+                    Öncelikli Görevler
+                </h2>
+                <div class="priority-tasks" id="priorityTasks">
+                    <!-- İçerik rol-tabanlı olarak JavaScript ile yüklenecek -->
+                </div>
+            </div>
+            
             <!-- Stats Cards -->
             <div class="stats-grid" id="statsGrid">
                 <!-- Stats will be loaded here -->
@@ -606,7 +935,7 @@
             name: "Admin User",
             email: "admin@kuaforilan.com",
             avatar: "A",
-            userType: "job_seeker"
+            userType: "job_seeker" // job_seeker, business, admin
         };
         
         let statsData = {
@@ -618,6 +947,213 @@
         
         // Chart variables
         let performanceChart, categoryChart;
+        
+        // YENI: Rol-tabanlı Hero Section Content
+        const heroContent = {
+            job_seeker: {
+                title: "Merhaba! Ne yapmak istiyorsun?",
+                description: "Yeni iş fırsatları seni bekliyor. Hemen harekete geç ve kariyerinde bir sonraki adımı at!",
+                primaryCTA: {
+                    text: "İş Ara",
+                    icon: "🔍",
+                    action: "searchJobs()"
+                },
+                secondaryCTA: {
+                    text: "Profili Güncelle",
+                    action: "updateProfile()"
+                },
+                stats: [
+                    { number: "45", label: "Başvuru" },
+                    { number: "12", label: "Görüşme" },
+                    { number: "89%", label: "Profil Tamamlama" },
+                    { number: "156", label: "Profil Görüntüleme" }
+                ]
+            },
+            business: {
+                title: "İşletmenizi büyütmeye hazır mısınız?",
+                description: "Yetenekli adayları bulun, ilanlarınızı yönetin ve işe alım sürecinizi hızlandırın.",
+                primaryCTA: {
+                    text: "Yeni İlan Oluştur",
+                    icon: "➕",
+                    action: "createJobPost()"
+                },
+                secondaryCTA: {
+                    text: "Başvuruları İncele",
+                    action: "reviewApplications()"
+                },
+                stats: [
+                    { number: "8", label: "Aktif İlan" },
+                    { number: "23", label: "Yeni Başvuru" },
+                    { number: "156", label: "Toplam Görüntüleme" },
+                    { number: "4.8", label: "Değerlendirme" }
+                ]
+            },
+            admin: {
+                title: "Sistem durumu mükemmel!",
+                description: "Platform performansını izleyin, kullanıcıları yönetin ve sistem sağlığını kontrol edin.",
+                primaryCTA: {
+                    text: "Sistem Raporu",
+                    icon: "📊",
+                    action: "generateReport()"
+                },
+                secondaryCTA: {
+                    text: "Kullanıcı Yönetimi",
+                    action: "manageUsers()"
+                },
+                stats: [
+                    { number: "1.2K", label: "Aktif Kullanıcı" },
+                    { number: "98%", label: "Sistem Sağlığı" },
+                    { number: "234", label: "Yeni Kayıt" },
+                    { number: "45", label: "Bekleyen Onay" }
+                ]
+            }
+        };
+
+        // YENI: Rol-tabanlı Quick Actions
+        const quickActions = {
+            job_seeker: [
+                {
+                    icon: "🔍",
+                    title: "İş Ara",
+                    description: "Yeni iş fırsatlarını keşfet ve hemen başvur",
+                    action: "searchJobs()"
+                },
+                {
+                    icon: "📝",
+                    title: "CV Güncelle",
+                    description: "Profilini güncelle ve daha fazla işveren tarafından görül",
+                    action: "updateCV()"
+                },
+                {
+                    icon: "📊",
+                    title: "Başvuru Takibi",
+                    description: "Başvurularının durumunu kontrol et",
+                    action: "trackApplications()"
+                },
+                {
+                    icon: "💬",
+                    title: "Mesajlar",
+                    description: "İşverenlerden gelen mesajları kontrol et",
+                    action: "checkMessages()"
+                }
+            ],
+            business: [
+                {
+                    icon: "➕",
+                    title: "Yeni İlan Yayınla",
+                    description: "Yeni pozisyon için ilan oluştur ve yayınla",
+                    action: "createJobPost()"
+                },
+                {
+                    icon: "👥",
+                    title: "Başvuruları İncele",
+                    description: "Gelen başvuruları değerlendir ve adayları filtrele",
+                    action: "reviewApplications()"
+                },
+                {
+                    icon: "📊",
+                    title: "İlan Performansı",
+                    description: "İlanlarının performansını analiz et",
+                    action: "viewPerformance()"
+                },
+                {
+                    icon: "🏢",
+                    title: "Şirket Profili",
+                    description: "Şirket profilini güncelle ve görünürlüğü artır",
+                    action: "updateCompany()"
+                }
+            ],
+            admin: [
+                {
+                    icon: "👥",
+                    title: "Kullanıcı Yönetimi",
+                    description: "Kullanıcıları yönet, yetkilendirmeleri düzenle",
+                    action: "manageUsers()"
+                },
+                {
+                    icon: "📊",
+                    title: "Sistem Raporu",
+                    description: "Detaylı sistem analizi ve performans raporu",
+                    action: "generateReport()"
+                },
+                {
+                    icon: "⚙️",
+                    title: "Sistem Ayarları",
+                    description: "Platform ayarlarını düzenle ve güncelle",
+                    action: "systemSettings()"
+                },
+                {
+                    icon: "🔒",
+                    title: "Güvenlik",
+                    description: "Güvenlik loglarını incele ve izinleri yönet",
+                    action: "securityPanel()"
+                }
+            ]
+        };
+
+        // YENI: Rol-tabanlı Priority Tasks
+        const priorityTasks = {
+            job_seeker: [
+                {
+                    title: "Profil fotoğrafı ekle",
+                    description: "Profil fotoğrafı olan adaylar 3x daha fazla görüntüleniyor",
+                    type: "urgent",
+                    badge: "Acil"
+                },
+                {
+                    title: "2 yeni mesaj var",
+                    description: "İşverenlerden gelen mesajları kontrol et",
+                    type: "warning",
+                    badge: "Yeni"
+                },
+                {
+                    title: "Profil tamamlama %85",
+                    description: "Eksik bilgileri tamamla ve daha fazla fırsat yakala",
+                    type: "normal",
+                    badge: "İyileştir"
+                }
+            ],
+            business: [
+                {
+                    title: "23 yeni başvuru bekliyor",
+                    description: "Gelen başvuruları değerlendir ve geri dönüş yap",
+                    type: "urgent",
+                    badge: "Acil"
+                },
+                {
+                    title: "İlan süresi bitiyor",
+                    description: "'Kuaför Uzmanı' ilanının süresi 2 gün sonra bitiyor",
+                    type: "warning",
+                    badge: "Uyarı"
+                },
+                {
+                    title: "Şirket profili güncelle",
+                    description: "Şirket bilgilerini güncelle, daha çok aday çek",
+                    type: "normal",
+                    badge: "Öneri"
+                }
+            ],
+            admin: [
+                {
+                    title: "45 kullanıcı onay bekliyor",
+                    description: "Yeni kayıt olan kullanıcıları onayla",
+                    type: "urgent",
+                    badge: "Acil"
+                },
+                {
+                    title: "Sistem güncellemesi mevcut",
+                    description: "Güvenlik güncellemesi için sistem yeniden başlatılmalı",
+                    type: "warning",
+                    badge: "Güncelleme"
+                },
+                {
+                    title: "Haftalık rapor hazır",
+                    description: "Sistem performans raporu incelenmek için hazır",
+                    type: "normal",
+                    badge: "Rapor"
+                }
+            ]
+        };
         
         // Sample data
         const activitiesData = [
@@ -688,6 +1224,11 @@
             document.getElementById('userName').textContent = userData.name;
             document.getElementById('userEmail').textContent = userData.email;
             
+            // YENI: Load role-based content
+            loadHeroSection();
+            loadQuickActions();
+            loadPriorityTasks();
+            
             // Load stats
             loadStats();
             
@@ -702,6 +1243,144 @@
             
             // Initialize charts
             initializeCharts();
+        }
+
+        // YENI: Load Hero Section
+        function loadHeroSection() {
+            const heroContainer = document.getElementById('actionHero');
+            const content = heroContent[userData.userType];
+            
+            heroContainer.innerHTML = `
+                <div class="hero-content">
+                    <div class="hero-text">
+                        <h2>${content.title}</h2>
+                        <p>${content.description}</p>
+                        <div class="hero-actions">
+                            <a href="#" class="primary-cta" onclick="${content.primaryCTA.action}">
+                                <span>${content.primaryCTA.icon || '🚀'}</span>
+                                ${content.primaryCTA.text}
+                            </a>
+                            <a href="#" class="secondary-cta" onclick="${content.secondaryCTA.action}">
+                                ${content.secondaryCTA.text}
+                            </a>
+                        </div>
+                    </div>
+                    <div class="hero-stats">
+                        ${content.stats.map(stat => `
+                            <div class="hero-stat">
+                                <div class="hero-stat-number">${stat.number}</div>
+                                <div class="hero-stat-label">${stat.label}</div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+        }
+
+        // YENI: Load Quick Actions
+        function loadQuickActions() {
+            const actionsContainer = document.getElementById('actionsGrid');
+            const actions = quickActions[userData.userType];
+            
+            actionsContainer.innerHTML = actions.map(action => `
+                <div class="action-card">
+                    <div class="action-card-header">
+                        <div class="action-icon">${action.icon}</div>
+                        <div class="action-title">${action.title}</div>
+                    </div>
+                    <div class="action-description">${action.description}</div>
+                    <button class="action-button" onclick="${action.action}">
+                        <span>Başla</span>
+                        <span>→</span>
+                    </button>
+                </div>
+            `).join('');
+        }
+
+        // YENI: Load Priority Tasks
+        function loadPriorityTasks() {
+            const tasksContainer = document.getElementById('priorityTasks');
+            const tasks = priorityTasks[userData.userType];
+            
+            tasksContainer.innerHTML = tasks.map(task => `
+                <div class="task-card ${task.type}">
+                    <div class="task-header">
+                        <div class="task-title">${task.title}</div>
+                        <div class="task-badge ${task.type}">${task.badge}</div>
+                    </div>
+                    <div class="task-description">${task.description}</div>
+                    <div class="task-actions">
+                        <button class="task-btn primary">Şimdi Yap</button>
+                        <button class="task-btn">Daha Sonra</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // YENI: Action Functions
+        function searchJobs() {
+            alert('İş arama sayfasına yönlendiriliyor...');
+            // window.location.href = '/jobs/search/';
+        }
+
+        function updateProfile() {
+            alert('Profil güncelleme sayfasına yönlendiriliyor...');
+            // window.location.href = '/profile/edit/';
+        }
+
+        function updateCV() {
+            alert('CV güncelleme sayfasına yönlendiriliyor...');
+            // window.location.href = '/profile/cv/';
+        }
+
+        function trackApplications() {
+            alert('Başvuru takip sayfasına yönlendiriliyor...');
+            // window.location.href = '/applications/';
+        }
+
+        function checkMessages() {
+            alert('Mesajlar sayfasına yönlendiriliyor...');
+            // window.location.href = '/messages/';
+        }
+
+        function createJobPost() {
+            alert('Yeni ilan oluşturma sayfasına yönlendiriliyor...');
+            // window.location.href = '/jobs/create/';
+        }
+
+        function reviewApplications() {
+            alert('Başvuru değerlendirme sayfasına yönlendiriliyor...');
+            // window.location.href = '/applications/review/';
+        }
+
+        function viewPerformance() {
+            alert('İlan performans sayfasına yönlendiriliyor...');
+            // window.location.href = '/jobs/analytics/';
+        }
+
+        function updateCompany() {
+            alert('Şirket profili sayfasına yönlendiriliyor...');
+            // window.location.href = '/company/profile/';
+        }
+
+        function manageUsers() {
+            alert('Kullanıcı yönetimi sayfasına yönlendiriliyor...');
+            // window.location.href = '/admin/users/';
+        }
+
+        function generateReport() {
+            alert('Sistem raporu oluşturuluyor...');
+            // window.location.href = '/admin/reports/';
+        }
+
+        function systemSettings() {
+            alert('Sistem ayarları sayfasına yönlendiriliyor...');
+            // window.location.href = '/admin/settings/';
+        }
+
+        function securityPanel() {
+            alert('Güvenlik paneli açılıyor...');
+            // window.location.href = '/admin/security/';
         }
         
         function loadStats() {
@@ -759,6 +1438,57 @@
                         </div>
                     </div>
                 `;
+            } else if (userData.userType === 'admin') {
+                statsHtml = `
+                    <div class="stat-card" style="position: relative;">
+                        <div class="live-indicator"></div>
+                        <div class="stat-header">
+                            <div class="stat-title">Toplam Kullanıcı</div>
+                            <div class="stat-icon blue">👥</div>
+                        </div>
+                        <div class="stat-value">1,234</div>
+                        <div class="stat-change positive">
+                            <span>↗️</span>
+                            <span>+45 bu hafta</span>
+                        </div>
+                    </div>
+                    <div class="stat-card" style="position: relative;">
+                        <div class="live-indicator"></div>
+                        <div class="stat-header">
+                            <div class="stat-title">Aktif İlanlar</div>
+                            <div class="stat-icon green">💼</div>
+                        </div>
+                        <div class="stat-value">856</div>
+                        <div class="stat-change positive">
+                            <span>↗️</span>
+                            <span>+23% bu ay</span>
+                        </div>
+                    </div>
+                    <div class="stat-card" style="position: relative;">
+                        <div class="live-indicator"></div>
+                        <div class="stat-header">
+                            <div class="stat-title">Sistem Sağlığı</div>
+                            <div class="stat-icon purple">⚡</div>
+                        </div>
+                        <div class="stat-value">98%</div>
+                        <div class="stat-change positive">
+                            <span>↗️</span>
+                            <span>Mükemmel</span>
+                        </div>
+                    </div>
+                    <div class="stat-card" style="position: relative;">
+                        <div class="live-indicator"></div>
+                        <div class="stat-header">
+                            <div class="stat-title">Bekleyen Onay</div>
+                            <div class="stat-icon orange">⏳</div>
+                        </div>
+                        <div class="stat-value">45</div>
+                        <div class="stat-change positive">
+                            <span>↗️</span>
+                            <span>+5 bugün</span>
+                        </div>
+                    </div>
+                `;
             } else {
                 statsHtml = `
                     <div class="stat-card" style="position: relative;">
@@ -803,7 +1533,7 @@
                             <div class="stat-title">Mesajlar</div>
                             <div class="stat-icon orange">💬</div>
                         </div>
-                        <div class="stat-value">${statsData.stat4}</div>
+                        <div class="stat-value">12</div>
                         <div class="stat-change positive">
                             <span>↗️</span>
                             <span>+1 bugün</span>
@@ -868,6 +1598,10 @@
                 document.getElementById('chartTitle').textContent = 'İlan Performansı';
                 document.getElementById('activityTitle').textContent = 'Son Başvurular';
                 document.getElementById('jobsTitle').textContent = 'İlanlarım';
+            } else if (userData.userType === 'admin') {
+                document.getElementById('chartTitle').textContent = 'Platform Aktivitesi';
+                document.getElementById('activityTitle').textContent = 'Son Aktiviteler';
+                document.getElementById('jobsTitle').textContent = 'Popüler İlanlar';
             } else {
                 document.getElementById('chartTitle').textContent = 'Başvuru Aktivitesi';
                 document.getElementById('activityTitle').textContent = 'Son Aktiviteler';
@@ -968,13 +1702,12 @@
         function updateRealTimeStats() {
             const statValues = document.querySelectorAll('.stat-value');
             statValues.forEach((stat, index) => {
-                if (!stat.textContent.includes('₺')) {
-                    const currentValue = parseInt(stat.textContent);
+                if (!stat.textContent.includes('₺') && !stat.textContent.includes('%')) {
+                    const currentValue = parseInt(stat.textContent.replace(/,/g, ''));
                     const change = Math.floor(Math.random() * 5) - 2;
                     if (change !== 0) {
                         const newValue = Math.max(0, currentValue + change);
-                        stat.textContent = newValue;
-                        statsData[`stat${index + 1}`] = newValue;
+                        stat.textContent = newValue.toLocaleString();
                         
                         // Add animation
                         stat.style.transform = 'scale(1.1)';
@@ -1045,17 +1778,17 @@
             const wb = XLSX.utils.book_new();
             
             // Stats data
-            const statsData = [];
+            const statsDataExport = [];
             document.querySelectorAll('.stat-card').forEach(card => {
                 const title = card.querySelector('.stat-title').textContent;
                 const value = card.querySelector('.stat-value').textContent;
                 const change = card.querySelector('.stat-change span:last-child').textContent;
-                statsData.push([title, value, change]);
+                statsDataExport.push([title, value, change]);
             });
             
             const ws1 = XLSX.utils.aoa_to_sheet([
                 ['İstatistik', 'Değer', 'Değişim'],
-                ...statsData
+                ...statsDataExport
             ]);
             
             // Activities data
@@ -1135,6 +1868,35 @@
         // Initialize dashboard when DOM is ready
         document.addEventListener('DOMContentLoaded', () => {
             initializeDashboard();
+        });
+
+        // DEMO: Test different user types
+        function switchUserType(type) {
+            userData.userType = type;
+            initializeDashboard();
+        }
+
+        // Add demo buttons for testing
+        document.addEventListener('DOMContentLoaded', () => {
+            const demoControls = document.createElement('div');
+            demoControls.style.cssText = `
+                position: fixed;
+                bottom: 20px;
+                right: 20px;
+                background: white;
+                padding: 15px;
+                border-radius: 8px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                z-index: 1000;
+                font-size: 12px;
+            `;
+            demoControls.innerHTML = `
+                <div style="margin-bottom: 10px; font-weight: 600;">Demo Kullanıcı Rolleri:</div>
+                <button onclick="switchUserType('job_seeker')" style="margin: 2px; padding: 5px 10px; border: none; background: #0a66c2; color: white; border-radius: 4px; cursor: pointer;">İş Arayan</button>
+                <button onclick="switchUserType('business')" style="margin: 2px; padding: 5px 10px; border: none; background: #16a34a; color: white; border-radius: 4px; cursor: pointer;">İş Veren</button>
+                <button onclick="switchUserType('admin')" style="margin: 2px; padding: 5px 10px; border: none; background: #9333ea; color: white; border-radius: 4px; cursor: pointer;">Admin</button>
+            `;
+            document.body.appendChild(demoControls);
         });
     </script>
 </body>

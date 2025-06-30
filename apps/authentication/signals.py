@@ -1,8 +1,8 @@
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.utils import timezone
-from .models import CustomUser, JobSeekerProfile, BusinessProfile
-
+from .models import CustomUser # CustomUser, kendi uygulamasındaki models.py'den
+from apps.profiles.models import JobSeekerProfile, BusinessProfile # Profil modelleri 'profiles' uygulamasından
 
 @receiver(post_save, sender=CustomUser)
 def create_user_profile(sender, instance, created, **kwargs):
@@ -14,8 +14,8 @@ def create_user_profile(sender, instance, created, **kwargs):
                 user=instance,
                 defaults={
                     'city': '',
-                    'experience_years': 'beginner',
-                    'skills': [],
+                    'experience_years': 0,  # ← INTEGER DEĞERİ
+                    'skills': '',  # ← BOŞ STRING
                     'bio': '',
                 }
             )
@@ -25,7 +25,7 @@ def create_user_profile(sender, instance, created, **kwargs):
                 user=instance,
                 defaults={
                     'company_name': f"{instance.get_full_name()} Şirketi",
-                    'company_size': '1-5',
+                    'company_size': '1-10',  # ← GEÇERLİ CHOICE
                     'establishment_year': timezone.now().year,
                     'city': '',
                     'address': '',
@@ -46,4 +46,4 @@ def save_user_profile(sender, instance, **kwargs):
     except:
         # Profil yoksa hata verme
         pass
-      
+    

@@ -1,0 +1,822 @@
+{% extends 'base.html' %}
+
+{% block title %}
+{% if is_own_profile %}
+    Profilim - Kuaför İlan
+{% else %}
+    {{ profile_user.get_full_name }} - Kuaför İlan
+{% endif %}
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .profile-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 24px 20px;
+    }
+
+    /* Profile Header */
+    .profile-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: var(--border-radius);
+        padding: 40px 32px;
+        color: white;
+        margin-bottom: 24px;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .profile-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        right: 0;
+        width: 200px;
+        height: 200px;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 50%;
+        transform: translate(50%, -50%);
+    }
+
+    .profile-header-content {
+        position: relative;
+        z-index: 2;
+        display: flex;
+        align-items: center;
+        gap: 32px;
+    }
+
+    .profile-avatar-large {
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.2);
+        backdrop-filter: blur(10px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 48px;
+        font-weight: 700;
+        color: white;
+        border: 4px solid rgba(255, 255, 255, 0.3);
+        flex-shrink: 0;
+    }
+
+    .profile-info {
+        flex: 1;
+    }
+
+    .profile-name {
+        font-size: 32px;
+        font-weight: 800;
+        margin-bottom: 8px;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .profile-title {
+        font-size: 18px;
+        opacity: 0.9;
+        margin-bottom: 16px;
+        font-weight: 500;
+    }
+
+    .profile-meta {
+        display: flex;
+        gap: 24px;
+        font-size: 14px;
+        opacity: 0.8;
+    }
+
+    .profile-actions {
+        display: flex;
+        gap: 12px;
+        align-items: center;
+    }
+
+    .profile-btn {
+        padding: 12px 24px;
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        background: rgba(255, 255, 255, 0.1);
+        color: white;
+        text-decoration: none;
+        border-radius: 8px;
+        font-weight: 600;
+        transition: var(--transition);
+        backdrop-filter: blur(10px);
+    }
+
+    .profile-btn:hover {
+        background: rgba(255, 255, 255, 0.2);
+        border-color: rgba(255, 255, 255, 0.5);
+        color: white;
+        transform: translateY(-2px);
+    }
+
+    .profile-btn.primary {
+        background: rgba(255, 255, 255, 0.9);
+        color: var(--primary-color);
+        border-color: transparent;
+    }
+
+    .profile-btn.primary:hover {
+        background: white;
+        color: var(--primary-color);
+    }
+
+    /* Main Content */
+    .profile-main {
+        display: grid;
+        grid-template-columns: 2fr 1fr;
+        gap: 24px;
+    }
+
+    .profile-content {
+        display: flex;
+        flex-direction: column;
+        gap: 24px;
+    }
+
+    .profile-sidebar {
+        display: flex;
+        flex-direction: column;
+        gap: 24px;
+    }
+
+    /* Profile Cards */
+    .profile-card {
+        background: var(--white);
+        border-radius: var(--border-radius);
+        padding: 24px;
+        box-shadow: var(--shadow-sm);
+        border: 1px solid var(--border-color);
+    }
+
+    .profile-card-header {
+        display: flex;
+        justify-content: between;
+        align-items: center;
+        margin-bottom: 20px;
+        padding-bottom: 16px;
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    .profile-card-title {
+        font-size: 20px;
+        font-weight: 700;
+        color: var(--text-color);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .profile-card-action {
+        color: var(--primary-color);
+        text-decoration: none;
+        font-size: 14px;
+        font-weight: 600;
+    }
+
+    /* About Section */
+    .about-text {
+        line-height: 1.7;
+        color: var(--text-color);
+        margin-bottom: 20px;
+    }
+
+    .profile-details {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 16px;
+    }
+
+    .detail-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px;
+        background: #f8fafc;
+        border-radius: 8px;
+    }
+
+    .detail-icon {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        background: var(--primary-color);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 16px;
+    }
+
+    .detail-info h4 {
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--text-color);
+        margin-bottom: 2px;
+    }
+
+    .detail-info span {
+        font-size: 12px;
+        color: var(--text-muted);
+    }
+
+    /* Skills */
+    .skills-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .skill-tag {
+        background: #f0f9ff;
+        color: var(--primary-color);
+        padding: 6px 16px;
+        border-radius: 20px;
+        font-size: 14px;
+        font-weight: 500;
+        border: 1px solid #e0f2fe;
+    }
+
+    /* Stats */
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+        gap: 16px;
+    }
+
+    .stat-item {
+        text-align: center;
+        padding: 16px;
+        background: #f8fafc;
+        border-radius: 8px;
+    }
+
+    .stat-number {
+        font-size: 24px;
+        font-weight: 800;
+        color: var(--primary-color);
+        margin-bottom: 4px;
+    }
+
+    .stat-label {
+        font-size: 12px;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        font-weight: 600;
+        letter-spacing: 0.5px;
+    }
+
+    /* Activity Timeline */
+    .activity-timeline {
+        position: relative;
+    }
+
+    .activity-item {
+        display: flex;
+        gap: 16px;
+        margin-bottom: 20px;
+        position: relative;
+    }
+
+    .activity-item::before {
+        content: '';
+        position: absolute;
+        left: 18px;
+        top: 40px;
+        bottom: -20px;
+        width: 2px;
+        background: #e2e8f0;
+    }
+
+    .activity-item:last-child::before {
+        display: none;
+    }
+
+    .activity-icon {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        background: var(--primary-color);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 14px;
+        position: relative;
+        z-index: 2;
+        flex-shrink: 0;
+    }
+
+    .activity-content {
+        flex: 1;
+        padding-top: 4px;
+    }
+
+    .activity-title {
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--text-color);
+        margin-bottom: 4px;
+    }
+
+    .activity-description {
+        font-size: 13px;
+        color: var(--text-muted);
+        margin-bottom: 4px;
+    }
+
+    .activity-date {
+        font-size: 12px;
+        color: var(--text-muted);
+    }
+
+    .activity-status {
+        display: inline-block;
+        padding: 2px 8px;
+        border-radius: 12px;
+        font-size: 11px;
+        font-weight: 600;
+        text-transform: uppercase;
+        margin-left: 8px;
+    }
+
+    .status-pending {
+        background: #fef3c7;
+        color: #d97706;
+    }
+
+    .status-accepted {
+        background: #dcfce7;
+        color: #16a34a;
+    }
+
+    .status-rejected {
+        background: #fee2e2;
+        color: #dc2626;
+    }
+
+    .status-active {
+        background: #dbeafe;
+        color: #1d4ed8;
+    }
+
+    /* Availability Status */
+    .availability-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .availability-badge.available {
+        background: #dcfce7;
+        color: #16a34a;
+    }
+
+    .availability-badge.unavailable {
+        background: #fee2e2;
+        color: #dc2626;
+    }
+
+    .availability-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: currentColor;
+    }
+
+    /* Responsive */
+    @media (max-width: 1024px) {
+        .profile-main {
+            grid-template-columns: 1fr;
+        }
+        
+        .profile-sidebar {
+            order: -1;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .profile-container {
+            padding: 16px;
+        }
+        
+        .profile-header {
+            padding: 24px 20px;
+        }
+        
+        .profile-header-content {
+            flex-direction: column;
+            text-align: center;
+            gap: 20px;
+        }
+        
+        .profile-avatar-large {
+            width: 100px;
+            height: 100px;
+            font-size: 40px;
+        }
+        
+        .profile-name {
+            font-size: 24px;
+        }
+        
+        .profile-meta {
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        .profile-actions {
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        .profile-card {
+            padding: 16px;
+        }
+        
+        .profile-details {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="profile-container">
+    <!-- Profile Header -->
+    <div class="profile-header">
+        <div class="profile-header-content">
+            <div class="profile-avatar-large">
+                {% if profile_data.type == 'business' and profile_data.business_name %}
+                    {{ profile_data.business_name|first|upper }}
+                {% else %}
+                    {{ profile_user.first_name|first|upper|default:'U' }}
+                {% endif %}
+            </div>
+            
+            <div class="profile-info">
+                <h1 class="profile-name">
+                    {% if profile_data.type == 'business' %}
+                        {{ profile_data.business_name|default:profile_user.get_full_name }}
+                    {% else %}
+                        {{ profile_data.full_name|default:profile_user.get_full_name }}
+                    {% endif %}
+                </h1>
+                
+                <div class="profile-title">
+                    {% if profile_data.type == 'business' %}
+                        İş Veren
+                        {% if profile_data.is_verified %}
+                            <i class="fas fa-check-circle" style="margin-left: 8px; color: #16a34a;"></i>
+                        {% endif %}
+                    {% else %}
+                        {% if profile_data.experience_years > 0 %}
+                            {{ profile_data.experience_years }} Yıl Deneyimli 
+                        {% endif %}
+                        Kuaför Uzmanı
+                        {% if profile_data.is_available %}
+                            <span class="availability-badge available">
+                                <span class="availability-dot"></span>
+                                Müsait
+                            </span>
+                        {% else %}
+                            <span class="availability-badge unavailable">
+                                <span class="availability-dot"></span>
+                                Meşgul
+                            </span>
+                        {% endif %}
+                    {% endif %}
+                </div>
+                
+                <div class="profile-meta">
+                    <span><i class="fas fa-map-marker-alt"></i> {{ profile_data.city }}{% if profile_data.district %}, {{ profile_data.district }}{% endif %}</span>
+                    <span><i class="fas fa-calendar-alt"></i> {{ user_stats.join_date|date:"M Y" }} tarihinde katıldı</span>
+                    {% if user_stats.last_active %}
+                        <span><i class="fas fa-clock"></i> {{ user_stats.last_active|timesince }} önce aktif</span>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="profile-actions">
+                {% if is_own_profile %}
+                    <a href="{% url 'profiles:profile_edit' %}" class="profile-btn primary">
+                        <i class="fas fa-edit"></i> Profili Düzenle
+                    </a>
+                    <a href="{% url 'profiles:settings' %}" class="profile-btn">
+                        <i class="fas fa-cog"></i> Ayarlar
+                    </a>
+                {% else %}
+                    <a href="#" class="profile-btn primary" onclick="showComingSoon('Mesaj gönderme özelliği yakında!')">
+                        <i class="fas fa-envelope"></i> Mesaj Gönder
+                    </a>
+                    <a href="#" class="profile-btn" onclick="showComingSoon('Takip özelliği yakında!')">
+                        <i class="fas fa-user-plus"></i> Takip Et
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="profile-main">
+        <!-- Left Column -->
+        <div class="profile-content">
+            <!-- About -->
+            <div class="profile-card">
+                <div class="profile-card-header">
+                    <h2 class="profile-card-title">
+                        <i class="fas fa-user"></i>
+                        {% if profile_data.type == 'business' %}Şirket Hakkında{% else %}Hakkımda{% endif %}
+                    </h2>
+                </div>
+                
+                {% if profile_data.bio or profile_data.description %}
+                    <p class="about-text">
+                        {{ profile_data.bio|default:profile_data.description|default:'Henüz açıklama eklenmemiş.' }}
+                    </p>
+                {% else %}
+                    <p class="about-text" style="color: var(--text-muted); font-style: italic;">
+                        Henüz bir açıklama eklenmemiş.
+                    </p>
+                {% endif %}
+                
+                <div class="profile-details">
+                    {% if profile_data.type == 'business' %}
+                        {% if profile_data.contact_person %}
+                        <div class="detail-item">
+                            <div class="detail-icon">
+                                <i class="fas fa-user-tie"></i>
+                            </div>
+                            <div class="detail-info">
+                                <h4>İletişim Kişisi</h4>
+                                <span>{{ profile_data.contact_person }}</span>
+                            </div>
+                        </div>
+                        {% endif %}
+                        
+                        {% if profile_data.phone %}
+                        <div class="detail-item">
+                            <div class="detail-icon">
+                                <i class="fas fa-phone"></i>
+                            </div>
+                            <div class="detail-info">
+                                <h4>Telefon</h4>
+                                <span>{{ profile_data.phone }}</span>
+                            </div>
+                        </div>
+                        {% endif %}
+                        
+                        {% if profile_data.website %}
+                        <div class="detail-item">
+                            <div class="detail-icon">
+                                <i class="fas fa-globe"></i>
+                            </div>
+                            <div class="detail-info">
+                                <h4>Website</h4>
+                                <span><a href="{{ profile_data.website }}" target="_blank">{{ profile_data.website }}</a></span>
+                            </div>
+                        </div>
+                        {% endif %}
+                    {% else %}
+                        {% if profile_data.experience_years %}
+                        <div class="detail-item">
+                            <div class="detail-icon">
+                                <i class="fas fa-clock"></i>
+                            </div>
+                            <div class="detail-info">
+                                <h4>Deneyim</h4>
+                                <span>{{ profile_data.experience_years }} yıl</span>
+                            </div>
+                        </div>
+                        {% endif %}
+                        
+                        <div class="detail-item">
+                            <div class="detail-icon">
+                                <i class="fas fa-briefcase"></i>
+                            </div>
+                            <div class="detail-info">
+                                <h4>Durum</h4>
+                                <span>{% if profile_data.is_available %}İş arıyor{% else %}Meşgul{% endif %}</span>
+                            </div>
+                        </div>
+                        
+                        <div class="detail-item">
+                            <div class="detail-icon">
+                                <i class="fas fa-envelope"></i>
+                            </div>
+                            <div class="detail-info">
+                                <h4>E-posta</h4>
+                                <span>{{ profile_user.email }}</span>
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Skills (for job seekers) -->
+            {% if profile_data.type == 'jobseeker' and profile_data.skills_list %}
+            <div class="profile-card">
+                <div class="profile-card-header">
+                    <h2 class="profile-card-title">
+                        <i class="fas fa-star"></i>
+                        Yetenekler
+                    </h2>
+                </div>
+                
+                <div class="skills-list">
+                    {% for skill in profile_data.skills_list %}
+                        <span class="skill-tag">{{ skill }}</span>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Recent Activity -->
+            {% if is_own_profile and recent_activities %}
+            <div class="profile-card">
+                <div class="profile-card-header">
+                    <h2 class="profile-card-title">
+                        <i class="fas fa-history"></i>
+                        Son Aktiviteler
+                    </h2>
+                    {% if profile_data.type == 'jobseeker' %}
+                        <a href="{% url 'profiles:my_applications' %}" class="profile-card-action">Tümünü Gör</a>
+                    {% else %}
+                        <a href="{% url 'profiles:my_jobs' %}" class="profile-card-action">Tümünü Gör</a>
+                    {% endif %}
+                </div>
+                
+                <div class="activity-timeline">
+                    {% for activity in recent_activities %}
+                    <div class="activity-item">
+                        <div class="activity-icon">
+                            {% if activity.type == 'application' %}
+                                <i class="fas fa-paper-plane"></i>
+                            {% elif activity.type == 'job_post' %}
+                                <i class="fas fa-briefcase"></i>
+                            {% else %}
+                                <i class="fas fa-star"></i>
+                            {% endif %}
+                        </div>
+                        <div class="activity-content">
+                            <div class="activity-title">{{ activity.title }}</div>
+                            <div class="activity-description">
+                                {% if activity.company %}{{ activity.company }}{% endif %}
+                                {% if activity.location %}{{ activity.location }}{% endif %}
+                                <span class="activity-status status-{{ activity.status }}">{{ activity.status }}</span>
+                            </div>
+                            <div class="activity-date">{{ activity.date|timesince }} önce</div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Right Sidebar -->
+        <div class="profile-sidebar">
+            <!-- Stats -->
+            <div class="profile-card">
+                <div class="profile-card-header">
+                    <h2 class="profile-card-title">
+                        <i class="fas fa-chart-bar"></i>
+                        İstatistikler
+                    </h2>
+                </div>
+                
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <div class="stat-number">{{ user_stats.total_views|default:0 }}</div>
+                        <div class="stat-label">Görüntüleme</div>
+                    </div>
+                    
+                    {% if profile_data.type == 'jobseeker' %}
+                        <div class="stat-item">
+                            <div class="stat-number">{{ user_stats.total_applications|default:0 }}</div>
+                            <div class="stat-label">Başvuru</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number">{{ user_stats.successful_applications|default:0 }}</div>
+                            <div class="stat-label">Başarılı</div>
+                        </div>
+                    {% else %}
+                        <div class="stat-item">
+                            <div class="stat-number">{{ user_stats.total_job_posts|default:0 }}</div>
+                            <div class="stat-label">Toplam İlan</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number">{{ user_stats.active_job_posts|default:0 }}</div>
+                            <div class="stat-label">Aktif İlan</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number">{{ user_stats.total_applications_received|default:0 }}</div>
+                            <div class="stat-label">Başvuru Alındı</div>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="profile-card">
+                <div class="profile-card-header">
+                    <h2 class="profile-card-title">
+                        <i class="fas fa-lightning-bolt"></i>
+                        Hızlı İşlemler
+                    </h2>
+                </div>
+                
+                {% if is_own_profile %}
+                    {% if profile_data.type == 'jobseeker' %}
+                        <div style="display: flex; flex-direction: column; gap: 12px;">
+                            <a href="{% url 'jobs:list' %}" class="btn btn-primary btn-sm">
+                                <i class="fas fa-search"></i> İş Ara
+                            </a>
+                            <a href="{% url 'profiles:my_applications' %}" class="btn btn-secondary btn-sm">
+                                <i class="fas fa-paper-plane"></i> Başvurularım
+                            </a>
+                            <a href="{% url 'profiles:saved_jobs' %}" class="btn btn-secondary btn-sm">
+                                <i class="fas fa-bookmark"></i> Kayıtlı İlanlar
+                            </a>
+                        </div>
+                    {% else %}
+                        <div style="display: flex; flex-direction: column; gap: 12px;">
+                            <a href="#" class="btn btn-primary btn-sm" onclick="showComingSoon('İlan verme özelliği yakında!')">
+                                <i class="fas fa-plus"></i> İlan Ver
+                            </a>
+                            <a href="{% url 'profiles:my_jobs' %}" class="btn btn-secondary btn-sm">
+                                <i class="fas fa-briefcase"></i> İlanlarım
+                            </a>
+                            <a href="{% url 'dashboard:home' %}" class="btn btn-secondary btn-sm">
+                                <i class="fas fa-chart-line"></i> Dashboard
+                            </a>
+                        </div>
+                    {% endif %}
+                {% else %}
+                    <div style="display: flex; flex-direction: column; gap: 12px;">
+                        <button class="btn btn-primary btn-sm" onclick="showComingSoon('Mesaj gönderme özelliği yakında!')">
+                            <i class="fas fa-envelope"></i> Mesaj Gönder
+                        </button>
+                        <button class="btn btn-secondary btn-sm" onclick="showComingSoon('Rapor özelliği yakında!')">
+                            <i class="fas fa-flag"></i> Rapor Et
+                        </button>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function showComingSoon(message) {
+        if (typeof App !== 'undefined' && App.showToast) {
+            App.showToast(message, 'info');
+        } else {
+            alert(message);
+        }
+    }
+
+    // Profile view tracking (for non-own profiles)
+    {% if not is_own_profile %}
+    document.addEventListener('DOMContentLoaded', function() {
+        // Track profile view (you can implement this in the backend)
+        fetch('/profiles/api/track-view/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]')?.value || ''
+            },
+            body: JSON.stringify({
+                'profile_user_id': {{ profile_user.id }}
+            })
+        }).catch(err => console.log('View tracking failed:', err));
+    });
+    {% endif %}
+
+    // Smooth animations
+    document.addEventListener('DOMContentLoaded', function() {
+        const cards = document.querySelectorAll('.profile-card');
+        cards.forEach((card, index) => {
+            card.style.opacity = '0';
+            card.style.transform = 'translateY(20px)';
+            card.style.transition = 'all 0.3s ease';
+            
+            setTimeout(() => {
+                card.style.opacity = '1';
+                card.style.transform = 'translateY(0)';
+            }, index * 100);
+        });
+    });
+</script>
+{% endblock %}

@@ -6,7 +6,7 @@ app_name = 'profiles'
 urlpatterns = [
     # Profile Views
     path('', views.profile_view, name='profile'),  # Kendi profili
-    path('<int:user_id>/', views.profile_view, name='profile_detail'),  # Başka kullanıcı profili
+    path('<str:username>/', views.profile_view, name='profile_detail'),  # Başka kullanıcı profili
     path('edit/', views.profile_edit_view, name='profile_edit'),  # Profil düzenleme
     path('complete/', views.profile_completion_wizard_view, name='profile_complete'), # Profil tamamlama sihirbazı
     
