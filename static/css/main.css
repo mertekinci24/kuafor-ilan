@@ -788,4 +788,10 @@ body {
     .composer-buttons {
         grid-template-columns: 1fr;
     }
-}
+
+    /* ULTRA AGGRESSIVE: Hide ALL navbars except ours on posts page */
+    header.main-header {
+            display: none !important;
+            height: 0 !important;
+            margin: 0 !important;
+            padding: 0 !important;
