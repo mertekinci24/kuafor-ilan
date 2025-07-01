@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ödeme - Kuaförİlan</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 0; padding: 20px; background: #f5f5f5; }
+        .container { max-width: 600px; margin: 0 auto; }
+        .back-link { margin-bottom: 20px; }
+        .back-link a { color: #007bff; text-decoration: none; }
+        .back-link a:hover { text-decoration: underline; }
+        
+        h1 { color: #333; text-align: center; margin-bottom: 30px; }
+        
+        .payment-container { 
+            background: white; 
+            border-radius: 10px; 
+            padding: 30px; 
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        
+        .order-summary { 
+            background: #f8f9fa; 
+            border-radius: 8px; 
+            padding: 20px; 
+            margin-bottom: 25px; 
+        }
+        
+        .order-summary h3 { 
+            margin-top: 0; 
+            color: #333; 
+            font-size: 18px;
+        }
+        
+        .summary-item { 
+            display: flex; 
+            justify-content: space-between; 
+            margin: 10px 0; 
+            padding: 5px 0; 
+        }
+        
+        .summary-item.total { 
+            border-top: 2px solid #007bff; 
+            font-weight: bold; 
+            font-size: 18px; 
+            color: #007bff;
+            margin-top: 15px;
+            padding-top: 15px;
+        }
+        
+        .payment-method { 
+            margin: 20px 0; 
+        }
+        
+        .payment-method h4 { 
+            color: #333; 
+            margin-bottom: 15px; 
+        }
+        
+        .payment-options { 
+            display: grid; 
+            gap: 10px; 
+        }
+        
+        .payment-option { 
+            border: 2px solid #dee2e6; 
+            border-radius: 8px; 
+            padding: 15px; 
+            cursor: pointer; 
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .payment-option:hover { border-color: #007bff; }
+        .payment-option.selected { border-color: #007bff; background: #e3f2fd; }
+        
+        .payment-option input[type="radio"] { 
+            margin: 0; 
+        }
+        
+        .payment-option-info { 
+            flex: 1; 
+        }
+        
+        .payment-option-title { 
+            font-weight: bold; 
+            color: #333; 
+        }
+        
+        .payment-option-desc { 
+            font-size: 14px; 
+            color: #666; 
+            margin-top: 5px;
+        }
+        
+        .mock-payment-notice { 
+            background: #fff3cd; 
+            border: 1px solid #ffeaa7; 
+            border-radius: 6px; 
+            padding: 15px; 
+            margin: 20px 0; 
+            color: #856404; 
+        }
+        
+        .mock-payment-notice strong { 
+            color: #856404; 
+        }
+        
+        .form-group { 
+            margin: 15px 0; 
+        }
+        
+        .form-group label { 
+            display: block; 
+            margin-bottom: 5px; 
+            font-weight: bold; 
+            color: #333; 
+        }
+        
+        .form-group input, 
+        .form-group select { 
+            width: 100%; 
+            padding: 10px; 
+            border: 1px solid #ddd; 
+            border-radius: 4px; 
+            font-size: 14px;
+            box-sizing: border-box;
+        }
+        
+        .form-row { 
+            display: grid; 
+            grid-template-columns: 1fr 1fr; 
+            gap: 15px; 
+        }
+        
+        @media (max-width: 768px) {
+            .form-row { 
+                grid-template-columns: 1fr; 
+            }
+        }
+        
+        .security-info { 
+            background: #d4edda; 
+            border: 1px solid #c3e6cb; 
+            border-radius: 6px; 
+            padding: 10px; 
+            margin: 15px 0; 
+            font-size: 14px; 
+            color: #155724; 
+        }
+        
+        .action-buttons { 
+            text-align: center; 
+            margin-top: 30px; 
+        }
+        
+        .btn { 
+            display: inline-block; 
+            padding: 12px 30px; 
+            margin: 10px; 
+            border: none; 
+            border-radius: 6px; 
+            text-decoration: none; 
+            font-size: 16px; 
+            cursor: pointer; 
+            transition: background-color 0.3s ease;
+        }
+        
+        .btn-success { background: #28a745; color: white; }
+        .btn-success:hover { background: #218838; }
+        .btn-secondary { background: #6c757d; color: white; }
+        .btn-secondary:hover { background: #545b62; }
+        
+        .loading { 
+            display: none; 
+            text-align: center; 
+            color: #007bff; 
+        }
+        
+        .error-message { 
+            background: #f8d7da; 
+            border: 1px solid #f5c6cb; 
+            border-radius: 6px; 
+            padding: 10px; 
+            margin: 15px 0; 
+            color: #721c24; 
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="back-link">
+            <a href="{% url 'memberships:dashboard' %}">← Üyelik Paneline Dön</a>
+        </div>
+        
+        <h1>Ödeme Sayfası</h1>
+        
+        <div class="payment-container">
+            <!-- Sipariş Özeti -->
+            <div class="order-summary">
+                <h3>Sipariş Özeti</h3>
+                <div class="summary-item">
+                    <span>Plan Yükseltmesi:</span>
+                    <span>{{ upgrade.current_plan.name }} → {{ upgrade.requested_plan.name }}</span>
+                </div>
+                <div class="summary-item">
+                    <span>Dönem:</span>
+                    <span>{{ upgrade.requested_plan.get_billing_cycle_display }}</span>
+                </div>
+                <div class="summary-item total">
+                    <span>Toplam Tutar:</span>
+                    <span>₺{{ amount|floatformat:0 }}</span>
+                </div>
+            </div>
+            
+            <!-- Mock Ödeme Bildirimi -->
+            <div class="mock-payment-notice">
+                <strong>Test Modu:</strong> Bu demo bir ödeme sayfasıdır. Gerçek ödeme işlemi yapılmayacak, sadece sistemin çalışma mantığı test edilecektir. Üyeliğiniz otomatik olarak yükseltilecektir.
+            </div>
+            
+            <!-- Ödeme Formu -->
+            <form method="post" id="payment-form">
+                {% csrf_token %}
+                
+                <!-- Ödeme Yöntemi Seçimi -->
+                <div class="payment-method">
+                    <h4>Ödeme Yöntemi Seçin</h4>
+                    <div class="payment-options">
+                        <label class="payment-option selected">
+                            <input type="radio" name="payment_method" value="credit_card" checked>
+                            <div class="payment-option-info">
+                                <div class="payment-option-title">Kredi Kartı</div>
+                                <div class="payment-option-desc">Visa, MasterCard, American Express</div>
+                            </div>
+                        </label>
+                        
+                        <label class="payment-option">
+                            <input type="radio" name="payment_method" value="iyzico">
+                            <div class="payment-option-info">
+                                <div class="payment-option-title">İyzico ile Ödeme</div>
+                                <div class="payment-option-desc">Güvenli ödeme altyapısı</div>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+                
+                <!-- Kredi Kartı Bilgileri -->
+                <div id="credit-card-form">
+                    <h4>Kredi Kartı Bilgileri</h4>
+                    
+                    <div class="form-group">
+                        <label for="card_number">Kart Numarası</label>
+                        <input type="text" id="card_number" name="card_number" placeholder="1234 5678 9012 3456" maxlength="19">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="card_name">Kart Üzerindeki İsim</label>
+                        <input type="text" id="card_name" name="card_name" placeholder="Ad Soyad">
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="expiry_date">Son Kullanma Tarihi</label>
+                            <input type="text" id="expiry_date" name="expiry_date" placeholder="AA/YY" maxlength="5">
+                        </div>
+                        <div class="form-group">
+                            <label for="cvv">CVV</label>
+                            <input type="text" id="cvv" name="cvv" placeholder="123" maxlength="4">
+                        </div>
+                    </div>
+                    
+                    <div class="security-info">
+                        🔒 Tüm bilgileriniz 256-bit SSL şifreleme ile korunmaktadır.
+                    </div>
+                </div>
+                
+                <!-- Aksiyon Butonları -->
+                <div class="action-buttons">
+                    <button type="submit" class="btn btn-success" id="pay-button">
+                        ₺{{ amount|floatformat:0 }} Öde ve Planı Yükselt
+                    </button>
+                    <a href="{% url 'memberships:dashboard' %}" class="btn btn-secondary">
+                        İptal Et
+                    </a>
+                </div>
+                
+                <div class="loading" id="loading">
+                    ⏳ Ödemeniz işleniyor, lütfen bekleyin...
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <script>
+        // Ödeme yöntemi seçimi
+        document.querySelectorAll('input[name="payment_method"]').forEach(radio => {
+            radio.addEventListener('change', function() {
+                document.querySelectorAll('.payment-option').forEach(option => {
+                    option.classList.remove('selected');
+                });
+                this.closest('.payment-option').classList.add('selected');
+            });
+        });
+        
+        // Kart numarası formatlama
+        document.getElementById('card_number').addEventListener('input', function(e) {
+            let value = e.target.value.replace(/\s/g, '');
+            let formattedValue = value.replace(/(\d{4})(?=\d)/g, '$1 ');
+            e.target.value = formattedValue;
+        });
+        
+        // Son kullanma tarihi formatlama
+        document.getElementById('expiry_date').addEventListener('input', function(e) {
+            let value = e.target.value.replace(/\D/g, '');
+            if (value.length >= 2) {
+                value = value.substring(0, 2) + '/' + value.substring(2, 4);
+            }
+            e.target.value = value;
+        });
+        
+        // CVV sadece rakam
+        document.getElementById('cvv').addEventListener('input', function(e) {
+            e.target.value = e.target.value.replace(/\D/g, '');
+        });
+        
+        // Form gönderimi
+        document.getElementById('payment-form').addEventListener('submit', function(e) {
+            document.getElementById('pay-button').style.display = 'none';
+            document.getElementById('loading').style.display = 'block';
+        });
+    </script>
+</body>
+</html>

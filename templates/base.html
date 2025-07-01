@@ -4,35 +4,146 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    
     <title>{% block title %}Kuaför İlan - Türkiye'nin En Büyük Kuaför İş Platformu{% endblock %}</title>
-
     <!-- Ana stil dosyası -->
     <link rel="stylesheet" href="{% static 'css/main.css' %}">
-
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    
     <!-- Icons -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-
     <!-- Sayfa başına ekstra CSS -->
-     {% block extra_css %}{% endblock %}
+    {% block extra_css %}{% endblock %}
+    
+    <style>
+        .navbar-brand {
+            font-weight: 700;
+            font-size: 1.5rem;
+            color: #007bff !important;
+        }
+        .navbar-nav .nav-link {
+            font-weight: 500;
+            padding: 0.5rem 1rem;
+            margin: 0 0.25rem;
+            border-radius: 6px;
+            transition: all 0.3s ease;
+        }
+        .navbar-nav .nav-link:hover {
+            background-color: #f8f9fa;
+        }
+        .btn-outline-primary {
+            border-width: 2px;
+        }
+        .navbar {
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+    </style>
 </head>
 <body class="{% block body_class %}{% endblock %}">
-
     <!-- Ana navigasyon -->
-     <nav id="navbar" class="navbar" role="navigation" aria-label="Ana navigasyon">
-        {% block navbar %}{% endblock %}
-     </nav>
-
+    <nav class="navbar navbar-expand-lg navbar-light bg-white sticky-top" role="navigation" aria-label="Ana navigasyon">
+        <div class="container">
+            <!-- Logo/Brand -->
+            <a class="navbar-brand" href="/">
+                <i class="fas fa-cut me-2"></i>Kuaför İlan
+            </a>
+            
+            <!-- Mobile menu button -->
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            
+            <!-- Menu items -->
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/">
+                            <i class="fas fa-home me-1"></i>Ana Sayfa
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/posts/">
+                            <i class="fas fa-briefcase me-1"></i>İş İlanları
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/jobs/">
+                            <i class="fas fa-search me-1"></i>İş Ara
+                        </a>
+                    </li>
+                    {% if 'apps.memberships' in INSTALLED_APPS %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="/memberships/plans/">
+                            <i class="fas fa-crown me-1"></i>Üyelik Planları
+                        </a>
+                    </li>
+                    {% endif %}
+                    {% if 'apps.products' in INSTALLED_APPS %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="/products/">
+                            <i class="fas fa-shopping-bag me-1"></i>Ürünler
+                        </a>
+                    </li>
+                    {% endif %}
+                </ul>
+                
+                <!-- Right side menu -->
+                <ul class="navbar-nav">
+                    {% if user.is_authenticated %}
+                        <!-- Authenticated user menu -->
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown">
+                                <i class="fas fa-user-circle me-1"></i>
+                                {{ user.get_full_name|default:user.email }}
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="/dashboard/">
+                                    <i class="fas fa-tachometer-alt me-2"></i>Dashboard
+                                </a></li>
+                                <li><a class="dropdown-item" href="/profiles/">
+                                    <i class="fas fa-user me-2"></i>Profil
+                                </a></li>
+                                {% if 'apps.memberships' in INSTALLED_APPS %}
+                                <li><a class="dropdown-item" href="/memberships/dashboard/">
+                                    <i class="fas fa-crown me-2"></i>Üyeliğim
+                                </a></li>
+                                {% endif %}
+                                <li><a class="dropdown-item" href="/messages/">
+                                    <i class="fas fa-envelope me-2"></i>Mesajlar
+                                </a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" href="/auth/logout/">
+                                    <i class="fas fa-sign-out-alt me-2"></i>Çıkış Yap
+                                </a></li>
+                            </ul>
+                        </li>
+                    {% else %}
+                        <!-- Guest user menu -->
+                        <li class="nav-item">
+                            <a class="nav-link" href="/auth/login/">
+                                <i class="fas fa-sign-in-alt me-1"></i>Giriş Yap
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="btn btn-outline-primary" href="/auth/register/">
+                                <i class="fas fa-user-plus me-1"></i>Kayıt Ol
+                            </a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </nav>
+    
     <!-- Sayfa içeriği -->
-     <main id="main-content" class="fade-in" role="main">
+    <main id="main-content" class="fade-in" role="main">
         {% block content %}{% endblock %}
-     </main>
-
-     <!-- Sayfa sonu ekstra JavaScript -->
-      {% block extra_js %}{% endblock %}
+    </main>
+    
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Sayfa sonu ekstra JavaScript -->
+    {% block extra_js %}{% endblock %}
 </body>
 </html>
-    

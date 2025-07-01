@@ -38,6 +38,8 @@ INSTALLED_APPS = [
     'apps.posts',
     'apps.messages.apps.MessagesConfig',
     'apps.notifications.apps.NotificationsConfig',
+    'apps.memberships.apps.MembershipsConfig',
+    'apps.products.apps.ProductsConfig',
 ]
 
 # Authentication settings

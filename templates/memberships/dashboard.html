@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Üyelik Paneli - Kuaförİlan</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 0; padding: 20px; background: #f5f5f5; }
+        .container { max-width: 1200px; margin: 0 auto; }
+        .back-link { margin-bottom: 20px; }
+        .back-link a { color: #007bff; text-decoration: none; }
+        .back-link a:hover { text-decoration: underline; }
+        h1 { color: #333; margin-bottom: 30px; }
+        
+        .dashboard-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 30px; }
+        @media (max-width: 768px) { .dashboard-grid { grid-template-columns: 1fr; } }
+        
+        .card { 
+            background: white; 
+            border-radius: 10px; 
+            padding: 25px; 
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .card h2 { margin-top: 0; color: #333; font-size: 20px; }
+        
+        .current-plan { border-left: 4px solid #007bff; }
+        .plan-name { font-size: 24px; font-weight: bold; color: #007bff; margin: 10px 0; }
+        .plan-status { 
+            display: inline-block; 
+            padding: 5px 12px; 
+            border-radius: 20px; 
+            font-size: 12px; 
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+        .status-active { background: #d4edda; color: #155724; }
+        .status-expired { background: #f8d7da; color: #721c24; }
+        
+        .plan-info { margin: 15px 0; }
+        .plan-info div { margin: 8px 0; color: #666; }
+        .plan-info strong { color: #333; }
+        
+        .usage-stats { }
+        .usage-item { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            padding: 12px 0; 
+            border-bottom: 1px solid #eee; 
+        }
+        .usage-item:last-child { border-bottom: none; }
+        .usage-bar { 
+            width: 100px; 
+            height: 8px; 
+            background: #eee; 
+            border-radius: 4px; 
+            overflow: hidden; 
+        }
+        .usage-fill { 
+            height: 100%; 
+            background: #007bff; 
+            transition: width 0.3s ease; 
+        }
+        .usage-fill.warning { background: #ffc107; }
+        .usage-fill.danger { background: #dc3545; }
+        
+        .feature-list { list-style: none; padding: 0; }
+        .feature-list li { 
+            padding: 8px 0; 
+            color: #666; 
+            border-bottom: 1px solid #eee; 
+        }
+        .feature-list li:last-child { border-bottom: none; }
+        .feature-list li.enabled { color: #28a745; }
+        .feature-list li.enabled::before { content: "✓ "; font-weight: bold; }
+        .feature-list li.disabled { color: #dc3545; }
+        .feature-list li.disabled::before { content: "✗ "; font-weight: bold; }
+        
+        .action-buttons { margin-top: 20px; }
+        .btn { 
+            display: inline-block; 
+            padding: 10px 20px; 
+            margin: 5px; 
+            border: none; 
+            border-radius: 5px; 
+            text-decoration: none; 
+            cursor: pointer; 
+            font-size: 14px;
+        }
+        .btn-primary { background: #007bff; color: white; }
+        .btn-primary:hover { background: #0056b3; }
+        .btn-success { background: #28a745; color: white; }
+        .btn-success:hover { background: #1e7e34; }
+        .btn-warning { background: #ffc107; color: #212529; }
+        .btn-warning:hover { background: #e0a800; }
+        .btn-danger { background: #dc3545; color: white; }
+        .btn-danger:hover { background: #c82333; }
+        
+        .payment-history { margin-top: 30px; }
+        .payment-table { width: 100%; border-collapse: collapse; background: white; border-radius: 10px; overflow: hidden; }
+        .payment-table th, .payment-table td { padding: 12px; text-align: left; border-bottom: 1px solid #eee; }
+        .payment-table th { background: #f8f9fa; font-weight: bold; color: #333; }
+        .payment-status { 
+            display: inline-block; 
+            padding: 3px 8px; 
+            border-radius: 12px; 
+            font-size: 11px; 
+            font-weight: bold; 
+        }
+        .status-completed { background: #d4edda; color: #155724; }
+        .status-pending { background: #fff3cd; color: #856404; }
+        .status-failed { background: #f8d7da; color: #721c24; }
+        
+        .upgrade-plans { margin-top: 30px; }
+        .plans-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; }
+        .plan-card { 
+            background: white; 
+            border: 1px solid #dee2e6; 
+            border-radius: 8px; 
+            padding: 20px; 
+            text-align: center; 
+        }
+        .plan-card.recommended { border-color: #007bff; }
+        .plan-price { font-size: 24px; font-weight: bold; color: #007bff; margin: 10px 0; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="back-link">
+            <a href="/">← Ana Sayfaya Dön</a>
+        </div>
+        
+        <h1>Üyelik Paneli</h1>
+        
+        <div class="dashboard-grid">
+            <!-- Mevcut Plan -->
+            <div class="card current-plan">
+                <h2>Mevcut Planınız</h2>
+                <div class="plan-name">{{ membership.plan.name }}</div>
+                <div class="plan-status {% if membership.is_active %}status-active{% else %}status-expired{% endif %}">
+                    {% if membership.is_active %}AKTİF{% else %}SÜRESİ DOLMUŞ{% endif %}
+                </div>
+                
+                <div class="plan-info">
+                    <div><strong>Plan Tipi:</strong> {{ membership.plan.get_plan_type_display }}</div>
+                    <div><strong>Aylık Ücret:</strong> ₺{{ membership.plan.price|floatformat:0 }}</div>
+                    {% if days_remaining > 0 %}
+                        <div><strong>Kalan Süre:</strong> {{ days_remaining }} gün</div>
+                    {% endif %}
+                    <div><strong>Başlangıç:</strong> {{ membership.start_date|date:"d.m.Y" }}</div>
+                    <div><strong>Bitiş:</strong> {{ membership.end_date|date:"d.m.Y" }}</div>
+                    <div><strong>Otomatik Yenileme:</strong> {% if membership.auto_renew %}Açık{% else %}Kapalı{% endif %}</div>
+                </div>
+                
+                <div class="action-buttons">
+                    <a href="{% url 'memberships:plans' %}" class="btn btn-primary">Planları Görüntüle</a>
+                    {% if membership.auto_renew %}
+                        <a href="{% url 'memberships:cancel' %}" class="btn btn-warning">Otomatik Yenilemeyi Durdur</a>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Kullanım İstatistikleri -->
+            <div class="card">
+                <h2>Bu Ay Kullanımınız</h2>
+                <div class="usage-stats">
+                    <div class="usage-item">
+                        <span>İş İlanları</span>
+                        <div>
+                            <div class="usage-bar">
+                                {% if membership.plan.max_job_posts >= 999 %}
+                                    <div class="usage-fill" style="width: 10%;"></div>
+                                {% else %}
+                                    {% widthratio membership.jobs_posted_this_period membership.plan.max_job_posts 100 as usage_percent %}
+                                    <div class="usage-fill {% if usage_percent > 80 %}danger{% elif usage_percent > 60 %}warning{% endif %}" style="width: {{ usage_percent }}%;"></div>
+                                {% endif %}
+                            </div>
+                            <small>{{ membership.jobs_posted_this_period }}/{% if membership.plan.max_job_posts >= 999 %}∞{% else %}{{ membership.plan.max_job_posts }}{% endif %}</small>
+                        </div>
+                    </div>
+                </div>
+                
+                <div style="margin-top: 20px;">
+                    <h3 style="font-size: 16px; margin-bottom: 10px;">Plan Özellikleriniz</h3>
+                    <ul class="feature-list">
+                        <li class="{% if membership.plan.max_job_posts > 0 %}enabled{% else %}disabled{% endif %}">
+                            {% if membership.plan.max_job_posts >= 999 %}
+                                Sınırsız İş İlanı
+                            {% else %}
+                                {{ membership.plan.max_job_posts }} Aylık İş İlanı
+                            {% endif %}
+                        </li>
+                        <li class="{% if membership.plan.can_highlight_jobs %}enabled{% else %}disabled{% endif %}">İlan Öne Çıkarma</li>
+                        <li class="{% if membership.plan.can_feature_jobs %}enabled{% else %}disabled{% endif %}">Öne Çıkan İlan</li>
+                        <li class="{% if membership.plan.cv_pool_access %}enabled{% else %}disabled{% endif %}">CV Havuzu Erişimi</li>
+                        <li class="{% if membership.plan.analytics_access %}enabled{% else %}disabled{% endif %}">Analitik Raporları</li>
+                        <li class="{% if membership.plan.priority_support %}enabled{% else %}disabled{% endif %}">Öncelikli Destek</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Son Ödemeler -->
+        {% if recent_payments %}
+        <div class="payment-history">
+            <h2>Son Ödemeler</h2>
+            <table class="payment-table">
+                <thead>
+                    <tr>
+                        <th>Tarih</th>
+                        <th>Plan</th>
+                        <th>Tutar</th>
+                        <th>Yöntem</th>
+                        <th>Durum</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for payment in recent_payments %}
+                    <tr>
+                        <td>{{ payment.created_at|date:"d.m.Y H:i" }}</td>
+                        <td>{{ payment.plan.name }}</td>
+                        <td>₺{{ payment.amount|floatformat:0 }}</td>
+                        <td>{{ payment.get_payment_method_display }}</td>
+                        <td>
+                            <span class="payment-status status-{{ payment.status }}">
+                                {{ payment.get_status_display }}
+                            </span>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% endif %}
+        
+        <!-- Plan Yükseltme Önerileri -->
+        {% if available_plans %}
+        <div class="upgrade-plans">
+            <h2>Planınızı Yükseltin</h2>
+            <div class="plans-list">
+                {% for plan in available_plans %}
+                <div class="plan-card {% if plan.plan_type == 'pro' %}recommended{% endif %}">
+                    <h3>{{ plan.name }}</h3>
+                    <div class="plan-price">₺{{ plan.price|floatformat:0 }}/ay</div>
+                    <ul style="list-style: none; padding: 0; font-size: 14px; color: #666;">
+                        <li>{% if plan.max_job_posts >= 999 %}Sınırsız{% else %}{{ plan.max_job_posts }}{% endif %} İlan</li>
+                        {% if plan.can_highlight_jobs %}<li>✓ İlan Öne Çıkarma</li>{% endif %}
+                        {% if plan.can_feature_jobs %}<li>✓ Öne Çıkan İlan</li>{% endif %}
+                        {% if plan.cv_pool_access %}<li>✓ CV Havuzu</li>{% endif %}
+                        {% if plan.analytics_access %}<li>✓ Analitik</li>{% endif %}
+                        {% if plan.priority_support %}<li>✓ Öncelikli Destek</li>{% endif %}
+                    </ul>
+                    <a href="{% url 'memberships:upgrade' plan.id %}" class="btn btn-success">Bu Plana Geç</a>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</body>
+</html>

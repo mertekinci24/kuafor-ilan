@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Plan Yükseltme - Kuaförİlan</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 0; padding: 20px; background: #f5f5f5; }
+        .container { max-width: 800px; margin: 0 auto; }
+        .back-link { margin-bottom: 20px; }
+        .back-link a { color: #007bff; text-decoration: none; }
+        .back-link a:hover { text-decoration: underline; }
+        
+        h1 { color: #333; text-align: center; margin-bottom: 30px; }
+        
+        .comparison-container { 
+            background: white; 
+            border-radius: 10px; 
+            padding: 30px; 
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
+        
+        .plans-comparison { 
+            display: grid; 
+            grid-template-columns: 1fr auto 1fr; 
+            gap: 30px; 
+            align-items: center; 
+        }
+        
+        .plan-box { 
+            text-align: center; 
+            padding: 25px; 
+            border-radius: 10px; 
+            border: 2px solid #dee2e6; 
+        }
+        
+        .current-plan { border-color: #6c757d; background: #f8f9fa; }
+        .new-plan { border-color: #007bff; background: #e3f2fd; }
+        
+        .plan-title { font-size: 18px; font-weight: bold; margin-bottom: 10px; color: #333; }
+        .plan-name { font-size: 24px; font-weight: bold; margin: 10px 0; }
+        .current-plan .plan-name { color: #6c757d; }
+        .new-plan .plan-name { color: #007bff; }
+        
+        .plan-price { font-size: 20px; margin: 15px 0; }
+        .price-difference { font-size: 18px; color: #28a745; font-weight: bold; }
+        
+        .plan-features { list-style: none; padding: 0; margin: 20px 0; text-align: left; }
+        .plan-features li { 
+            padding: 5px 0; 
+            color: #666; 
+            font-size: 14px;
+        }
+        .feature-enabled { color: #28a745; }
+        .feature-enabled::before { content: "✓ "; font-weight: bold; }
+        .feature-disabled { color: #dc3545; }
+        .feature-disabled::before { content: "✗ "; font-weight: bold; }
+        
+        .arrow { 
+            font-size: 36px; 
+            color: #007bff; 
+            text-align: center; 
+        }
+        
+        .upgrade-summary { 
+            background: #e8f5e8; 
+            border: 1px solid #28a745; 
+            border-radius: 8px; 
+            padding: 20px; 
+            margin: 20px 0; 
+        }
+        
+        .upgrade-summary h3 { 
+            margin-top: 0; 
+            color: #155724; 
+        }
+        
+        .summary-item { 
+            display: flex; 
+            justify-content: space-between; 
+            margin: 10px 0; 
+            padding: 5px 0; 
+        }
+        
+        .summary-item.total { 
+            border-top: 1px solid #28a745; 
+            font-weight: bold; 
+            font-size: 18px; 
+        }
+        
+        .action-buttons { 
+            text-align: center; 
+            margin-top: 30px; 
+        }
+        
+        .btn { 
+            display: inline-block; 
+            padding: 12px 30px; 
+            margin: 10px; 
+            border: none; 
+            border-radius: 6px; 
+            text-decoration: none; 
+            font-size: 16px; 
+            cursor: pointer; 
+            transition: background-color 0.3s ease;
+        }
+        
+        .btn-primary { background: #007bff; color: white; }
+        .btn-primary:hover { background: #0056b3; }
+        .btn-secondary { background: #6c757d; color: white; }
+        .btn-secondary:hover { background: #545b62; }
+        
+        .warning-box { 
+            background: #fff3cd; 
+            border: 1px solid #ffeaa7; 
+            border-radius: 6px; 
+            padding: 15px; 
+            margin: 20px 0; 
+            color: #856404; 
+        }
+        
+        @media (max-width: 768px) {
+            .plans-comparison { 
+                grid-template-columns: 1fr; 
+                gap: 20px; 
+            }
+            .arrow { transform: rotate(90deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="back-link">
+            <a href="{% url 'memberships:dashboard' %}">← Üyelik Paneline Dön</a>
+        </div>
+        
+        <h1>Plan Yükseltme Onayı</h1>
+        
+        <div class="comparison-container">
+            <div class="plans-comparison">
+                <!-- Mevcut Plan -->
+                <div class="plan-box current-plan">
+                    <div class="plan-title">Mevcut Planınız</div>
+                    <div class="plan-name">{{ current_plan.name }}</div>
+                    <div class="plan-price">₺{{ current_plan.price|floatformat:0 }}/ay</div>
+                    
+                    <ul class="plan-features">
+                        <li class="{% if current_plan.max_job_posts > 0 %}feature-enabled{% else %}feature-disabled{% endif %}">
+                            {% if current_plan.max_job_posts >= 999 %}
+                                Sınırsız İlan
+                            {% else %}
+                                {{ current_plan.max_job_posts }} Aylık İlan
+                            {% endif %}
+                        </li>
+                        <li class="{% if current_plan.can_highlight_jobs %}feature-enabled{% else %}feature-disabled{% endif %}">İlan Öne Çıkarma</li>
+                        <li class="{% if current_plan.can_feature_jobs %}feature-enabled{% else %}feature-disabled{% endif %}">Öne Çıkan İlan</li>
+                        <li class="{% if current_plan.cv_pool_access %}feature-enabled{% else %}feature-disabled{% endif %}">CV Havuzu Erişimi</li>
+                        <li class="{% if current_plan.analytics_access %}feature-enabled{% else %}feature-disabled{% endif %}">Analitik Raporları</li>
+                        <li class="{% if current_plan.priority_support %}feature-enabled{% else %}feature-disabled{% endif %}">Öncelikli Destek</li>
+                    </ul>
+                </div>
+                
+                <!-- Ok işareti -->
+                <div class="arrow">→</div>
+                
+                <!-- Yeni Plan -->
+                <div class="plan-box new-plan">
+                    <div class="plan-title">Yeni Planınız</div>
+                    <div class="plan-name">{{ new_plan.name }}</div>
+                    <div class="plan-price">₺{{ new_plan.price|floatformat:0 }}/ay</div>
+                    
+                    <ul class="plan-features">
+                        <li class="{% if new_plan.max_job_posts > 0 %}feature-enabled{% else %}feature-disabled{% endif %}">
+                            {% if new_plan.max_job_posts >= 999 %}
+                                Sınırsız İlan
+                            {% else %}
+                                {{ new_plan.max_job_posts }} Aylık İlan
+                            {% endif %}
+                        </li>
+                        <li class="{% if new_plan.can_highlight_jobs %}feature-enabled{% else %}feature-disabled{% endif %}">İlan Öne Çıkarma</li>
+                        <li class="{% if new_plan.can_feature_jobs %}feature-enabled{% else %}feature-disabled{% endif %}">Öne Çıkan İlan</li>
+                        <li class="{% if new_plan.cv_pool_access %}feature-enabled{% else %}feature-disabled{% endif %}">CV Havuzu Erişimi</li>
+                        <li class="{% if new_plan.analytics_access %}feature-enabled{% else %}feature-disabled{% endif %}">Analitik Raporları</li>
+                        <li class="{% if new_plan.priority_support %}feature-enabled{% else %}feature-disabled{% endif %}">Öncelikli Destek</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Ödeme Özeti -->
+        <div class="upgrade-summary">
+            <h3>Ödeme Özeti</h3>
+            <div class="summary-item">
+                <span>Mevcut Plan ({{ current_plan.name }}):</span>
+                <span>₺{{ current_plan.price|floatformat:0 }}/ay</span>
+            </div>
+            <div class="summary-item">
+                <span>Yeni Plan ({{ new_plan.name }}):</span>
+                <span>₺{{ new_plan.price|floatformat:0 }}/ay</span>
+            </div>
+            <div class="summary-item total">
+                <span>Fark:</span>
+                <span class="price-difference">+₺{{ price_difference|floatformat:0 }}/ay</span>
+            </div>
+        </div>
+        
+        {% if price_difference > 0 %}
+        <div class="warning-box">
+            <strong>Önemli:</strong> Plan yükseltmesi derhal etkili olacaktır. Fark tutarı bugün tahsil edilecek ve gelecek dönemde yeni plan ücreti uygulanacaktır.
+        </div>
+        {% endif %}
+        
+        <!-- Aksiyon Butonları -->
+        <div class="action-buttons">
+            <form method="post" style="display: inline;">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-primary">
+                    Planı Yükselt ve Ödeme Yap
+                </button>
+            </form>
+            <a href="{% url 'memberships:dashboard' %}" class="btn btn-secondary">
+                İptal Et
+            </a>
+        </div>
+        
+        <div style="text-align: center; margin-top: 20px; color: #666; font-size: 14px;">
+            <p>Plan değişikliği ile ilgili sorularınız için <a href="#">destek ekibimizle</a> iletişime geçebilirsiniz.</p>
+        </div>
+    </div>
+</body>
+</html>

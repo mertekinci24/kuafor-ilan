@@ -2,6 +2,10 @@
 
 {% block title %}Ana Sayfa - Kuaför İlan{% endblock %}
 
+{% block navbar %}
+<!-- Base.html navbar'ını kullan, template'in kendi navbar'ını devre dışı bırak -->
+{% endblock %}
+
 {% block extra_css %}
 <style>
     :root {
@@ -24,52 +28,6 @@
         --transition: all 0.3s ease;
         --gradient-primary: linear-gradient(135deg, var(--primary-color), var(--primary-light));
     }
-
-    /* Dashboard - Birincil aksiyon (en üstte, vurgulu) */
-.dropdown-item.primary {
-    background: linear-gradient(135deg, #f0f9ff, #e0f2fe);
-    color: var(--primary-color);
-    font-weight: 600;
-    border-left: 3px solid var(--primary-color);
-}
-
-.dropdown-item.primary:hover {
-    background: linear-gradient(135deg, #dbeafe, #bae6fd);
-    transform: translateX(4px);
-    box-shadow: 0 2px 8px rgba(10, 102, 194, 0.15);
-}
-
-.dropdown-item.primary i {
-    color: var(--primary-color);
-    font-size: 16px;
-}
-
-/* Ayarlar - eğer varsa */
-.dropdown-item.settings {
-    color: var(--text-muted);
-}
-
-.dropdown-item.settings:hover {
-    background: #f1f5f9;
-    color: var(--text-muted);
-    border-left-color: var(--text-muted);
-}
-
-.icon-wrapper {
-    width: 20px;
-    display: flex;
-    justify-content: center;
-}
-
-/* Improved dropdown item styling */
-.dropdown-item {
-    border-left: 3px solid transparent;
-}
-
-.dropdown-item:hover {
-    border-left-color: var(--primary-color);
-    transform: translateX(2px);
-}
 
     * {
         margin: 0;
@@ -115,226 +73,6 @@
         animation: slideIn 0.5s ease-out forwards;
     }
 
-    /* Header */
-    .main-header {
-        background: var(--white);
-        box-shadow: var(--shadow-sm);
-        position: sticky;
-        top: 0;
-        z-index: 1000;
-        border-bottom: 1px solid var(--border-color);
-    }
-
-    .header-container {
-        max-width: 1200px;
-        margin: 0 auto;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        padding: 12px 20px;
-    }
-
-    .logo-container {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        text-decoration: none;
-        color: var(--primary-color);
-        transition: var(--transition);
-    }
-
-    .logo-container:hover {
-        transform: scale(1.02);
-        color: var(--primary-color);
-    }
-
-    .logo {
-        font-size: 28px;
-        animation: bounce 2s infinite;
-    }
-
-    .logo-text {
-        font-size: 20px;
-        font-weight: 700;
-    }
-
-    .search-container {
-        flex: 1;
-        max-width: 400px;
-        margin: 0 40px;
-        position: relative;
-    }
-
-    .search-box {
-        width: 100%;
-        padding: 12px 16px 12px 48px;
-        border: 2px solid var(--border-color);
-        border-radius: 25px;
-        font-size: 16px;
-        background: #f8fafc;
-        transition: var(--transition);
-    }
-
-    .search-box:focus {
-        outline: none;
-        border-color: var(--primary-color);
-        box-shadow: 0 0 0 3px rgba(10, 102, 194, 0.1);
-        background: var(--white);
-        transform: scale(1.02);
-    }
-
-    .search-icon {
-        position: absolute;
-        left: 16px;
-        top: 50%;
-        transform: translateY(-50%);
-        color: var(--text-muted);
-        font-size: 18px;
-        transition: var(--transition);
-    }
-
-    .search-box:focus + .search-icon {
-        color: var(--primary-color);
-    }
-
-    .nav-icons {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-    }
-
-    .nav-icon {
-        width: 44px;
-        height: 44px;
-        border-radius: 50%;
-        background: #f8fafc;
-        border: none;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: var(--text-color);
-        font-size: 18px;
-        cursor: pointer;
-        transition: var(--transition);
-        position: relative;
-        text-decoration: none;
-    }
-
-    .nav-icon:hover {
-        background: var(--primary-color);
-        color: var(--white);
-        transform: translateY(-2px);
-        box-shadow: var(--shadow-md);
-    }
-
-    .nav-icon.active {
-        background: var(--primary-color);
-        color: var(--white);
-        transform: scale(1.1);
-    }
-
-    .notification-badge {
-        position: absolute;
-        top: -4px;
-        right: -4px;
-        background: var(--danger-color);
-        color: var(--white);
-        border-radius: 50%;
-        width: 20px;
-        height: 20px;
-        font-size: 12px;
-        font-weight: 600;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        animation: pulse 2s infinite;
-    }
-
-    .user-menu {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        margin-left: 16px;
-    }
-
-    .user-avatar {
-        width: 44px;
-        height: 44px;
-        border-radius: 50%;
-        background: var(--gradient-primary);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: var(--white);
-        font-weight: 600;
-        cursor: pointer;
-        transition: var(--transition);
-        text-decoration: none;
-    }
-
-    .user-avatar:hover {
-        transform: scale(1.05);
-        box-shadow: var(--shadow-md);
-        color: var(--white);
-    }
-
-    /* User Dropdown Menu */
-    .user-dropdown {
-        position: relative;
-        display: inline-block;
-    }
-
-    .dropdown-menu {
-        display: none;
-        position: absolute;
-        right: 0;
-        top: 100%;
-        background: var(--white);
-        border-radius: var(--border-radius);
-        box-shadow: var(--shadow-md);
-        border: 1px solid var(--border-color);
-        min-width: 200px;
-        z-index: 1000;
-        padding: 8px 0;
-        margin-top: 8px;
-        animation: fadeIn 0.2s ease-out;
-    }
-
-    .user-dropdown:hover .dropdown-menu {
-        display: block;
-    }
-
-    .dropdown-item {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        padding: 12px 20px;
-        color: var(--text-color);
-        text-decoration: none;
-        transition: var(--transition);
-        font-size: 14px;
-        font-weight: 500;
-    }
-
-    .dropdown-item:hover {
-        background: #f8fafc;
-        color: var(--primary-color);
-    }
-
-    .dropdown-item.logout-btn {
-        color: var(--danger-color);
-    }
-
-    .dropdown-item.logout-btn:hover {
-        background: #ffebee;
-        color: var(--danger-color);
-    }
-
-    .dropdown-divider {
-        height: 1px;
-        background: var(--border-color);
-        margin: 8px 0;
-    }
     /* Main Layout */
     .main-container {
         max-width: 1200px;
@@ -929,25 +667,6 @@
     }
 
     @media (max-width: 768px) {
-        .header-container {
-            padding: 12px 16px;
-        }
-        
-        .search-container {
-            margin: 0 16px;
-            max-width: none;
-        }
-        
-        .nav-icons {
-            gap: 4px;
-        }
-        
-        .nav-icon {
-            width: 40px;
-            height: 40px;
-            font-size: 16px;
-        }
-        
         .main-container {
             padding: 16px;
         }
@@ -961,27 +680,9 @@
         .composer-buttons {
             grid-template-columns: repeat(2, 1fr);
         }
-
-        /* Mobile dropdown adjustments */
-        .dropdown-menu {
-            right: -10px;
-            min-width: 180px;
-        }
-
-        .user-dropdown:hover .dropdown-menu {
-            display: none; /* Disable hover on mobile */
-        }
     }
 
     @media (max-width: 480px) {
-        .logo-text {
-            display: none;
-        }
-        
-        .search-container {
-            margin: 0 12px;
-        }
-        
         .composer-header {
             flex-direction: column;
             align-items: stretch;
@@ -999,90 +700,6 @@
 {% endblock %}
 
 {% block content %}
-<header class="main-header">
-    <div class="header-container">
-        <a href="{% url 'home' %}" class="logo-container">
-            <span class="logo">💇‍♀️</span>
-            <span class="logo-text">Kuaför İlan</span>
-        </a>
-        
-        <div class="search-container">
-            <input type="text" class="search-box" placeholder="İş ilanı, şirket veya kişi ara..." id="searchInput">
-            <i class="fas fa-search search-icon"></i>
-        </div>
-        
-        <div class="nav-icons">
-            <a href="{% url 'home' %}" class="nav-icon active" title="Ana Sayfa">
-                <i class="fas fa-home"></i>
-            </a>
-            <a href="{% url 'jobs:list' %}" class="nav-icon" title="İş İlanları">
-                <i class="fas fa-briefcase"></i>
-            </a>
-            <a href="/messages/" class="nav-icon" title="Mesajlar">
-                <i class="fas fa-comment-dots"></i>
-                <span class="notification-badge">3</span>
-            </a>
-            <a href="/notifications/" class="nav-icon" title="Bildirimler">
-                <i class="fas fa-bell"></i>
-                <span class="notification-badge">5</span>
-            </a>
-            <a href="{% url 'profiles:profile' %}" class="nav-icon" title="Profilim">
-                <i class="fas fa-user"></i>
-            </a>
-        </div>
-        
-<div class="user-menu">
-    {% if user.is_authenticated %}
-        <div class="user-dropdown">
-            <a href="{% url 'dashboard:home' %}" class="user-avatar" title="Dashboard">
-                {{ user.first_name|first|upper|default:'U' }}
-            </a>
-<div class="dropdown-menu">
-    <!-- 1. Dashboard - En üste, birincil aksiyon -->
-    <a href="{% url 'dashboard:home' %}" class="dropdown-item primary">
-        <div class="icon-wrapper">
-            <i class="fas fa-chart-bar"></i>
-        </div>
-        Dashboard
-    </a>
-    
-    <!-- 2. Profil - Kişisel bilgiler -->
-    <a href="{% url 'profiles:profile' %}" class="dropdown-item">
-        <div class="icon-wrapper">
-            <i class="fas fa-user"></i>
-        </div>
-        Profilim
-    </a>
-    
-    <!-- 3. Ayarlar - Hesap ayarları (eğer varsa) -->
-    <a href="#" class="dropdown-item settings" onclick="showComingSoon('Ayarlar sayfası yakında eklenecek!')">
-        <div class="icon-wrapper">
-            <i class="fas fa-cog"></i>
-        </div>
-        Ayarlar
-    </a>
-    
-    <div class="dropdown-divider"></div>
-    
-    <!-- 4. Çıkış - En altta -->
-    <a href="{% url 'auth:logout' %}" class="dropdown-item logout-btn">
-        <div class="icon-wrapper">
-            <i class="fas fa-sign-out-alt"></i>
-        </div>
-        Çıkış Yap
-    </a>
-</div>
-            </div>
-        </div>
-    {% else %}
-        <a href="{% url 'authentication:login' %}" class="user-avatar" title="Giriş Yap">
-            G
-        </a>
-    {% endif %}
-</div>
-    </div>
-</header>
-
 <main class="main-container">
     <aside class="sidebar slide-in">
         <div class="sidebar-section">
@@ -1090,13 +707,17 @@
                 <i class="fas fa-compass"></i>
                 Keşfet
             </h3>
-            <a href="{% url 'jobs:list' %}" class="sidebar-item">
+            <a href="/jobs/" class="sidebar-item">
                 <i class="fas fa-search sidebar-icon"></i>
                 <span>İş Ara</span>
             </a>
-            <a href="{% url 'dashboard:home' %}" class="sidebar-item">
+            <a href="/dashboard/" class="sidebar-item">
                 <i class="fas fa-chart-bar sidebar-icon"></i>
                 <span>İstatistikler</span>
+            </a>
+            <a href="/memberships/plans/" class="sidebar-item">
+                <i class="fas fa-crown sidebar-icon"></i>
+                <span>Üyelik Planları</span>
             </a>
             <a href="#" class="sidebar-item" onclick="showComingSoon('Kayıtlı ilanlar özelliği yakında!')">
                 <i class="fas fa-bookmark sidebar-icon"></i>
@@ -1135,7 +756,7 @@
     <section class="feed">
         {% if user.is_authenticated %}
         <div class="post-composer fade-in">
-            <form id="postForm" method="post" action="{% url 'posts:create' %}" enctype="multipart/form-data">
+            <form id="postForm" method="post" action="/posts/create/" enctype="multipart/form-data">
                 {% csrf_token %}
                 <div class="composer-header">
                     <div class="composer-avatar">{{ user.first_name|first|upper|default:'U' }}</div>
@@ -1309,74 +930,7 @@
                     </button>
                 </div>
             </article>
-
-            <article class="post-card fade-in">
-                <div class="post-header">
-                    <div class="post-user">
-                        <div class="post-avatar">MK</div>
-                        <div class="post-user-info">
-                            <h4>Mehmet Kaya</h4>
-                            <span>Berber Uzmanı • 4 saat önce</span>
-                        </div>
-                    </div>
-                    <button class="post-menu">
-                        <i class="fas fa-ellipsis-h"></i>
-                    </button>
-                </div>
-                <div class="post-content">
-                    <p class="post-text">
-                        Bugün gerçekleştirdiğim saç kesimi çalışması. Modern erkek kuaförlüğünde 
-                        trendleri takip etmek ve müşteri memnuniyeti her zaman önceliğim! 💪
-                    </p>
-                    <div class="post-tags">
-                        <span class="post-tag" onclick="searchTag('berber')">#berber</span>
-                        <span class="post-tag" onclick="searchTag('saçkesimi')">#saçkesimi</span>
-                        <span class="post-tag" onclick="searchTag('erkekstili')">#erkekstili</span>
-                        <span class="post-tag" onclick="searchTag('profesyonel')">#profesyonel</span>
-                    </div>
-                </div>
-                <div class="post-stats">
-                    <span>45 beğeni</span>
-                    <span>12 yorum • 7 paylaşım</span>
-                </div>
-                <div class="post-actions">
-                    <button class="action-btn liked" onclick="toggleLike(this)" data-post-id="sample2">
-                        <i class="fas fa-heart"></i>
-                        <span>Beğendim</span>
-                    </button>
-                    <button class="action-btn" onclick="toggleComments(this)">
-                        <i class="fas fa-comment"></i>
-                        <span>Yorum</span>
-                    </button>
-                    <button class="action-btn" onclick="sharePost(this)">
-                        <i class="fas fa-share"></i>
-                        <span>Paylaş</span>
-                    </button>
-                    <button class="action-btn saved" onclick="toggleSave(this)">
-                        <i class="fas fa-bookmark"></i>
-                        <span>Kaydedildi</span>
-                    </button>
-                </div>
-            </article>
         {% endfor %}
-
-        {% if posts_page.has_other_pages %}
-            <div class="pagination-container" style="text-align: center; margin-top: 32px;">
-                {% if posts_page.has_previous %}
-                    <a href="?page=1" class="pagination-btn">«« İlk</a>
-                    <a href="?page={{ posts_page.previous_page_number }}" class="pagination-btn">‹ Önceki</a>
-                {% endif %}
-                
-                <span class="pagination-info">
-                    Sayfa {{ posts_page.number }} / {{ posts_page.paginator.num_pages }}
-                </span>
-                
-                {% if posts_page.has_next %}
-                    <a href="?page={{ posts_page.next_page_number }}" class="pagination-btn">Sonraki ›</a>
-                    <a href="?page={{ posts_page.paginator.num_pages }}" class="pagination-btn">Son »»</a>
-                {% endif %}
-            </div>
-        {% endif %}
     </section>
 
     <aside class="right-sidebar slide-in">
@@ -1428,14 +982,6 @@
                 <div class="trending-tag">#saçmodelleri</div>
                 <div class="trending-count">756 gönderi</div>
             </div>
-            <div class="trending-item" onclick="searchTag('güzelliksalonu')">
-                <div class="trending-tag">#güzelliksalonu</div>
-                <div class="trending-count">634 gönderi</div>
-            </div>
-            <div class="trending-item" onclick="searchTag('profesyonelgelişim')">
-                <div class="trending-tag">#profesyonelgelişim</div>
-                <div class="trending-count">523 gönderi</div>
-            </div>
         </div>
 
         <div class="widget fade-in">
@@ -1464,14 +1010,13 @@
                     <div class="suggestion-title">Beşiktaş, İstanbul</div>
                 </div>
             </div>
-            <a href="{% url 'jobs:list' %}" style="display: block; text-align: center; margin-top: 16px; color: var(--primary-color); text-decoration: none; font-weight: 600;">
+            <a href="/jobs/" style="display: block; text-align: center; margin-top: 16px; color: var(--primary-color); text-decoration: none; font-weight: 600;">
                 Tüm İlanları Gör →
             </a>
         </div>
     </aside>
 </main>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/js/all.min.js"></script>
 <script>
     // Global variables
     let mediaUploadActive = false;
@@ -1572,49 +1117,37 @@
         }, 'image/jpeg', 0.8);
     }
 
-    // Enhanced like functionality with API
+    // Like functionality
     async function toggleLike(button) {
         const postId = button.getAttribute('data-post-id');
         const icon = button.querySelector('i');
         const text = button.querySelector('span');
         
+        if (!postId || postId.startsWith('sample')) {
+            // Demo functionality for sample posts
+            if (button.classList.contains('liked')) {
+                button.classList.remove('liked');
+                text.textContent = 'Beğen';
+                showToast('Beğeni kaldırıldı!', 'info');
+            } else {
+                button.classList.add('liked');
+                text.textContent = 'Beğendim';
+                icon.style.animation = 'bounce 0.5s ease';
+                showToast('Beğenildi!', 'success');
+            }
+            setTimeout(() => icon.style.animation = '', 500);
+            return;
+        }
+        
         button.style.pointerEvents = 'none';
         
         try {
-            {% if user.is_authenticated %}
-            const response = await fetch('{% url "posts:like_api" %}', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': '{{ csrf_token }}'
-                },
-                body: JSON.stringify({ post_id: postId })
-            });
-            
-            const data = await response.json();
-            
-            if (data.success) {
-                if (data.is_liked) {
-                    button.classList.add('liked');
-                    text.textContent = 'Beğendim';
-                    icon.style.animation = 'bounce 0.5s ease';
-                } else {
-                    button.classList.remove('liked');
-                    text.textContent = 'Beğen';
-                }
-                showToast(data.is_liked ? 'Beğenildi!' : 'Beğeni kaldırıldı!', 'success');
-            } else {
-                showToast('Bir hata oluştu.', 'error');
-            }
-            {% else %}
-            showToast('Beğenmek için giriş yapmalısınız.', 'info');
-            {% endif %}
+            showToast('Beğeni özelliği yakında aktif olacak!', 'info');
         } catch (error) {
             showToast('Bağlantı hatası.', 'error');
         }
         
         button.style.pointerEvents = 'auto';
-        setTimeout(() => icon.style.animation = '', 500);
     }
 
     // Save functionality
@@ -1626,41 +1159,12 @@
         button.style.pointerEvents = 'none';
         
         try {
-            {% if user.is_authenticated %}
-            const response = await fetch('{% url "posts:save_api" %}', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': '{{ csrf_token }}'
-                },
-                body: JSON.stringify({ post_id: postId })
-            });
-            
-            const data = await response.json();
-            
-            if (data.success) {
-                if (data.is_saved) {
-                    button.classList.add('saved');
-                    text.textContent = 'Kaydedildi';
-                    icon.style.animation = 'bounce 0.5s ease';
-                    showToast('Kaydedildi!', 'success');
-                } else {
-                    button.classList.remove('saved');
-                    text.textContent = 'Kaydet';
-                    showToast('Kaydetme kaldırıldı!', 'info');
-                }
-            } else {
-                showToast('Bir hata oluştu.', 'error');
-            }
-            {% else %}
-            showToast('Kaydetmek için giriş yapmalısınız.', 'info');
-            {% endif %}
+            showToast('Kaydetme özelliği yakında aktif olacak!', 'info');
         } catch (error) {
             showToast('Bağlantı hatası.', 'error');
         }
         
         button.style.pointerEvents = 'auto';
-        setTimeout(() => icon.style.animation = '', 500);
     }
 
     // Share functionality
@@ -1711,83 +1215,32 @@
         }
     }
 
-    // Search functionality
-    document.getElementById('searchInput').addEventListener('keypress', function(e) {
-        if (e.key === 'Enter') {
-            const query = this.value.trim();
-            if (query) {
-                window.location.href = `{% url 'jobs:list' %}?search=${encodeURIComponent(query)}`;
-            }
-        }
-    });
-
     // Tag search
     function searchTag(tag) {
-        window.location.href = `{% url 'jobs:list' %}?search=${encodeURIComponent('#' + tag)}`;
+        window.location.href = `/jobs/?search=${encodeURIComponent('#' + tag)}`;
     }
 
     // Post form submission
-    document.getElementById('postForm').addEventListener('submit', async function(e) {
-        e.preventDefault();
-        
-        const submitBtn = this.querySelector('.post-btn');
-        const btnText = submitBtn.querySelector('.btn-text');
-        const btnLoading = submitBtn.querySelector('.btn-loading');
-        
-        // Show loading state
-        btnText.style.display = 'none';
-        btnLoading.style.display = 'inline-block';
-        submitBtn.disabled = true;
-        
-        try {
-            const formData = new FormData(this);
+    if (document.getElementById('postForm')) {
+        document.getElementById('postForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
             
-            const response = await fetch(this.action, {
-                method: 'POST',
-                body: formData,
-                headers: {
-                    'X-CSRFToken': '{{ csrf_token }}'
-                }
-            });
+            showToast('Post paylaşma özelliği yakında aktif olacak!', 'info');
             
-            if (response.ok) {
-                showToast('Gönderi başarıyla paylaşıldı!', 'success');
-                this.reset();
-                if (mediaUploadActive) {
-                    toggleMediaUpload(); // Close media upload area
-                }
-                
-                // Reload page after 1 second
-                setTimeout(() => {
-                    window.location.reload();
-                }, 1000);
-            } else {
-                showToast('Gönderi paylaşılamadı. Tekrar deneyin.', 'error');
-            }
-        } catch (error) {
-            showToast('Bağlantı hatası.', 'error');
-        }
-        
-        // Reset button state
-        btnText.style.display = 'inline-block';
-        btnLoading.style.display = 'none';
-        submitBtn.disabled = false;
-    });
-
-    // File input change handlers
-    if (document.getElementById('imageInput')) {
-        document.getElementById('imageInput').addEventListener('change', function() {
-            if (this.files.length > 0) {
-                showToast(`${this.files[0].name} seçildi.`, 'success');
-            }
-        });
-    }
-
-    if (document.getElementById('videoInput')) {
-        document.getElementById('videoInput').addEventListener('change', function() {
-            if (this.files.length > 0) {
-                showToast(`${this.files[0].name} seçildi.`, 'success');
-            }
+            const submitBtn = this.querySelector('.post-btn');
+            const btnText = submitBtn.querySelector('.btn-text');
+            const btnLoading = submitBtn.querySelector('.btn-loading');
+            
+            // Show loading state temporarily
+            btnText.style.display = 'none';
+            btnLoading.style.display = 'inline-block';
+            submitBtn.disabled = true;
+            
+            setTimeout(() => {
+                btnText.style.display = 'inline-block';
+                btnLoading.style.display = 'none';
+                submitBtn.disabled = false;
+            }, 2000);
         });
     }
 
@@ -1798,62 +1251,6 @@
         cards.forEach((card, index) => {
             card.style.animationDelay = `${index * 0.1}s`;
         });
-        
-        // Simulate real-time updates
-        setTimeout(function() {
-            const badges = document.querySelectorAll('.notification-badge');
-            badges.forEach(badge => {
-                const currentCount = parseInt(badge.textContent);
-                if (Math.random() > 0.7) {
-                    badge.textContent = currentCount + 1;
-                    badge.style.animation = 'pulse 0.5s ease-in-out';
-                }
-            });
-        }, 15000);
-
-        // Add drag and drop functionality
-        const uploadArea = document.getElementById('mediaUploadArea');
-        
-        if (uploadArea) {
-            uploadArea.addEventListener('dragover', function(e) {
-                e.preventDefault();
-                this.style.borderColor = 'var(--primary-color)';
-                this.style.backgroundColor = '#f0f9ff';
-            });
-            
-            uploadArea.addEventListener('dragleave', function(e) {
-                e.preventDefault();
-                this.style.borderColor = 'var(--border-color)';
-                this.style.backgroundColor = '#f8fafc';
-            });
-            
-            uploadArea.addEventListener('drop', function(e) {
-                e.preventDefault();
-                this.style.borderColor = 'var(--border-color)';
-                this.style.backgroundColor = '#f8fafc';
-                
-                const files = e.dataTransfer.files;
-                if (files.length > 0) {
-                    const file = files[0];
-                    if (file.type.startsWith('image/')) {
-                        document.getElementById('imageInput').files = files;
-                        showToast(`${file.name} yüklendi.`, 'success');
-                    } else if (file.type.startsWith('video/')) {
-                        document.getElementById('videoInput').files = files;
-                        showToast(`${file.name} yüklendi.`, 'success');
-                    } else {
-                        showToast('Sadece resim ve video dosyaları desteklenir.', 'error');
-                    }
-                }
-            });
-        }
-    });
-
-    // Cleanup function for camera
-    window.addEventListener('beforeunload', function() {
-        if (currentStream) {
-            currentStream.getTracks().forEach(track => track.stop());
-        }
     });
 
     // Post menu functionality
